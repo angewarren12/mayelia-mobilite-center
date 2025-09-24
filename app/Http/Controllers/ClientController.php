@@ -91,32 +91,42 @@ class ClientController extends Controller
     }
 
     /**
-     * Afficher les détails d'un client
+     * Afficher un client spécifique
      */
-    public function show(Client $client)
+    public function show($id)
     {
-        $client->load(['rendezVous.service', 'rendezVous.formule', 'rendezVous.centre']);
-        
-        return view('clients.show', compact('client'));
-    }
+        try {
+            $client = Client::withCount('rendezVous')->findOrFail($id);
 
-    /**
-     * Afficher le formulaire d'édition
-     */
-    public function edit(Client $client)
-    {
-        return view('clients.edit', compact('client'));
+            return response()->json([
+                'success' => true,
+                'client' => $client
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors de la récupération du client:', [
+                'error' => $e->getMessage(),
+                'client_id' => $id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Client non trouvé'
+            ], 404);
+        }
     }
 
     /**
      * Mettre à jour un client
      */
-    public function update(Request $request, Client $client)
+    public function update(Request $request, $id)
     {
+        $client = Client::findOrFail($id);
+
         $validator = Validator::make($request->all(), [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
-            'email' => 'required|email|unique:clients,email,' . $client->id,
+            'email' => 'required|email|unique:clients,email,' . $id,
             'telephone' => 'required|string|max:20',
             'date_naissance' => 'nullable|date|before:today',
             'lieu_naissance' => 'nullable|string|max:255',
@@ -126,7 +136,6 @@ class ClientController extends Controller
             'numero_piece_identite' => 'nullable|string|max:50',
             'type_piece_identite' => 'nullable|in:CNI,Passeport,Carte de résident,Autre',
             'notes' => 'nullable|string|max:1000',
-            'actif' => 'boolean',
         ]);
 
         if ($validator->fails()) {
@@ -142,20 +151,20 @@ class ClientController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Client mis à jour avec succès',
+                'message' => 'Client modifié avec succès',
                 'client' => $client
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Erreur lors de la mise à jour du client:', [
-                'client_id' => $client->id,
+            \Log::error('Erreur lors de la modification du client:', [
                 'error' => $e->getMessage(),
+                'client_id' => $id,
                 'data' => $request->all()
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la mise à jour du client'
+                'message' => 'Erreur lors de la modification du client'
             ], 500);
         }
     }
@@ -163,17 +172,17 @@ class ClientController extends Controller
     /**
      * Supprimer un client
      */
-    public function destroy(Client $client)
+    public function destroy($id)
     {
         try {
-            // Vérifier s'il y a des rendez-vous
-            $rendezVousCount = $client->rendezVous()->count();
+            $client = Client::findOrFail($id);
             
-            if ($rendezVousCount > 0) {
+            // Vérifier s'il y a des rendez-vous associés
+            if ($client->rendezVous()->count() > 0) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Impossible de supprimer ce client car il a {$rendezVousCount} rendez-vous associés"
-                ], 422);
+                    'message' => 'Impossible de supprimer ce client car il a des rendez-vous associés'
+                ], 400);
             }
 
             $client->delete();
@@ -185,8 +194,8 @@ class ClientController extends Controller
 
         } catch (\Exception $e) {
             \Log::error('Erreur lors de la suppression du client:', [
-                'client_id' => $client->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'client_id' => $id
             ]);
 
             return response()->json([
@@ -195,6 +204,46 @@ class ClientController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Changer le statut d'un client
+     */
+    public function toggleStatus($id)
+    {
+        try {
+            $client = Client::findOrFail($id);
+            $client->actif = !$client->actif;
+            $client->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Statut du client modifié avec succès',
+                'client' => $client
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors du changement de statut du client:', [
+                'error' => $e->getMessage(),
+                'client_id' => $id
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du changement de statut'
+            ], 500);
+        }
+    }
+
+
+    /**
+     * Afficher le formulaire d'édition
+     */
+    public function edit(Client $client)
+    {
+        return view('clients.edit', compact('client'));
+    }
+
+
 
     /**
      * API pour rechercher des clients (pour autocomplétion)
@@ -226,32 +275,6 @@ class ClientController extends Controller
         return response()->json($clients);
     }
 
-    /**
-     * Toggle le statut actif d'un client
-     */
-    public function toggleStatus(Client $client)
-    {
-        try {
-            $client->update(['actif' => !$client->actif]);
-
-            return response()->json([
-                'success' => true,
-                'message' => $client->actif ? 'Client activé' : 'Client désactivé',
-                'actif' => $client->actif
-            ]);
-
-        } catch (\Exception $e) {
-            \Log::error('Erreur lors du changement de statut du client:', [
-                'client_id' => $client->id,
-                'error' => $e->getMessage()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors du changement de statut'
-            ], 500);
-        }
-    }
 
     /**
      * Vérifier si un client existe par numéro de téléphone

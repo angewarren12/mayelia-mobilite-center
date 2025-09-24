@@ -2,25 +2,74 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Models\DocumentRequis;
 use App\Models\Service;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class DocumentRequisController extends Controller
 {
-    public function index()
+    /**
+     * Afficher la liste des documents requis par service
+     */
+    public function index(Request $request)
     {
-        $documents = DocumentRequis::with('service')->paginate(15);
-        return view('document-requis.index', compact('documents'));
+        $query = DocumentRequis::with('service');
+        
+        // Filtrage par service
+        if ($request->filled('service_id')) {
+            $query->where('service_id', $request->service_id);
+        }
+        
+        // Filtrage par type de demande
+        if ($request->filled('type_demande')) {
+            $query->where('type_demande', $request->type_demande);
+        }
+        
+        // Filtrage par statut obligatoire
+        if ($request->filled('obligatoire')) {
+            $query->where('obligatoire', $request->boolean('obligatoire'));
+        }
+        
+        $documentsRequis = $query->orderBy('service_id')
+                                ->orderBy('type_demande')
+                                ->orderBy('ordre')
+                                ->paginate(20);
+        
+        // Récupérer tous les services pour le filtre
+        $services = Service::where('statut', 'actif')->orderBy('nom')->get();
+        
+        // Types de demande disponibles
+        $typesDemande = [
+            'Première demande' => 'Première demande',
+            'Renouvellement' => 'Renouvellement',
+            'Modification' => 'Modification',
+            'Duplicata' => 'Duplicata'
+        ];
+        
+        return view('document-requis.index', compact('documentsRequis', 'services', 'typesDemande'));
     }
 
+    /**
+     * Afficher le formulaire de création
+     */
     public function create()
     {
-        $services = Service::where('actif', true)->get();
-        return view('document-requis.create', compact('services'));
+        $services = Service::where('statut', 'actif')->orderBy('nom')->get();
+        
+        $typesDemande = [
+            'Première demande' => 'Première demande',
+            'Renouvellement' => 'Renouvellement',
+            'Modification' => 'Modification',
+            'Duplicata' => 'Duplicata'
+        ];
+        
+        return view('document-requis.create', compact('services', 'typesDemande'));
     }
 
+    /**
+     * Enregistrer un nouveau document requis
+     */
     public function store(Request $request)
     {
         $request->validate([
@@ -29,28 +78,65 @@ class DocumentRequisController extends Controller
             'nom_document' => 'required|string|max:255',
             'description' => 'nullable|string',
             'obligatoire' => 'boolean',
-            'ordre' => 'required|integer|min:1'
+            'ordre' => 'required|integer|min:0'
         ]);
 
         try {
-            DocumentRequis::create($request->all());
+            DocumentRequis::create([
+                'service_id' => $request->service_id,
+                'type_demande' => $request->type_demande,
+                'nom_document' => $request->nom_document,
+                'description' => $request->description,
+                'obligatoire' => $request->boolean('obligatoire'),
+                'ordre' => $request->ordre
+            ]);
 
             return redirect()->route('document-requis.index')
-                ->with('success', 'Document requis créé avec succès');
+                           ->with('success', 'Document requis ajouté avec succès');
+
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la création du document requis: ' . $e->getMessage());
+            Log::error('Erreur création document requis: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Erreur lors de la création du document requis')
-                ->withInput();
+                           ->withInput()
+                           ->with('error', 'Erreur lors de l\'ajout du document requis');
         }
     }
 
-    public function edit(DocumentRequis $documentRequis)
+    /**
+     * Afficher un document requis spécifique
+     */
+    public function show(DocumentRequis $documentRequis)
     {
-        $services = Service::where('actif', true)->get();
-        return view('document-requis.edit', compact('documentRequis', 'services'));
+        $documentRequis->load('service');
+        
+        // Si c'est une requête AJAX, retourner JSON
+        if (request()->ajax()) {
+            return response()->json($documentRequis);
+        }
+        
+        return view('document-requis.show', compact('documentRequis'));
     }
 
+    /**
+     * Afficher le formulaire d'édition
+     */
+    public function edit(DocumentRequis $documentRequis)
+    {
+        $services = Service::where('statut', 'actif')->orderBy('nom')->get();
+        
+        $typesDemande = [
+            'Première demande' => 'Première demande',
+            'Renouvellement' => 'Renouvellement',
+            'Modification' => 'Modification',
+            'Duplicata' => 'Duplicata'
+        ];
+        
+        return view('document-requis.edit', compact('documentRequis', 'services', 'typesDemande'));
+    }
+
+    /**
+     * Mettre à jour un document requis
+     */
     public function update(Request $request, DocumentRequis $documentRequis)
     {
         $request->validate([
@@ -59,34 +145,73 @@ class DocumentRequisController extends Controller
             'nom_document' => 'required|string|max:255',
             'description' => 'nullable|string',
             'obligatoire' => 'boolean',
-            'ordre' => 'required|integer|min:1'
+            'ordre' => 'required|integer|min:0'
         ]);
 
         try {
-            $documentRequis->update($request->all());
+            $documentRequis->update([
+                'service_id' => $request->service_id,
+                'type_demande' => $request->type_demande,
+                'nom_document' => $request->nom_document,
+                'description' => $request->description,
+                'obligatoire' => $request->boolean('obligatoire'),
+                'ordre' => $request->ordre
+            ]);
 
             return redirect()->route('document-requis.index')
-                ->with('success', 'Document requis modifié avec succès');
+                           ->with('success', 'Document requis modifié avec succès');
+
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la modification du document requis: ' . $e->getMessage());
+            Log::error('Erreur modification document requis: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Erreur lors de la modification du document requis')
-                ->withInput();
+                           ->withInput()
+                           ->with('error', 'Erreur lors de la modification du document requis');
         }
     }
 
+    /**
+     * Supprimer un document requis
+     */
     public function destroy(DocumentRequis $documentRequis)
     {
         try {
             $documentRequis->delete();
+            
             return redirect()->route('document-requis.index')
-                ->with('success', 'Document requis supprimé avec succès');
+                           ->with('success', 'Document requis supprimé avec succès');
+
         } catch (\Exception $e) {
-            Log::error('Erreur lors de la suppression du document requis: ' . $e->getMessage());
+            Log::error('Erreur suppression document requis: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Erreur lors de la suppression du document requis');
+                           ->with('error', 'Erreur lors de la suppression du document requis');
         }
     }
+
+    /**
+     * API: Récupérer les documents requis pour un service
+     */
+    public function getByService(Service $service)
+    {
+        $documents = DocumentRequis::where('service_id', $service->id)
+                                 ->orderBy('type_demande')
+                                 ->orderBy('ordre')
+                                 ->get();
+        
+        return response()->json($documents);
+    }
+
+    /**
+     * API: Récupérer les documents requis par type de demande
+     */
+    public function getByType(Request $request, Service $service)
+    {
+        $typeDemande = $request->input('type_demande', 'premiere_demande');
+        
+        $documents = DocumentRequis::where('service_id', $service->id)
+                                 ->where('type_demande', $typeDemande)
+                                 ->orderBy('ordre')
+                                 ->get();
+        
+        return response()->json($documents);
+    }
 }
-
-

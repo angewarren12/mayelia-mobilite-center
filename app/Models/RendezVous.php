@@ -60,14 +60,29 @@ class RendezVous extends Model
     }
 
     /**
+     * Relation avec le dossier ouvert
+     */
+    public function dossierOuvert()
+    {
+        return $this->hasOne(DossierOuvert::class);
+    }
+
+    /**
      * Accessor pour le statut formaté
      */
     public function getStatutFormateAttribute()
     {
         $statuts = [
             'confirme' => 'Confirmé',
-            'annule' => 'Annulé',
-            'completed' => 'Terminé'
+            'dossier_ouvert' => 'Dossier ouvert',
+            'documents_verifies' => 'Documents vérifiés',
+            'documents_manquants' => 'Documents manquants',
+            'paiement_effectue' => 'Paiement effectué',
+            'dossier_oneci' => 'Dossier ONECI',
+            'carte_mayelia' => 'Carte Mayelia',
+            'carte_prete' => 'Carte prête',
+            'termine' => 'Terminé',
+            'annule' => 'Annulé'
         ];
 
         return $statuts[$this->statut] ?? $this->statut;

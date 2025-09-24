@@ -49,5 +49,13 @@ class Service extends Model
     {
         return $this->hasMany(CreneauGenere::class);
     }
+
+    /**
+     * Relation avec les documents requis
+     */
+    public function documentsRequis()
+    {
+        return $this->hasMany(DocumentRequis::class);
+    }
 }
 

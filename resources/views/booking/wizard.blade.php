@@ -15,50 +15,6 @@
             Suivez les étapes pour réserver votre créneau
         </p>
         
-        <!-- Barre de progression -->
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center">
-                    <div id="step-indicator-1" class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-medium">1</div>
-                    <span class="ml-2 text-sm font-medium text-gray-700">Pays</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-200 mx-4">
-                    <div id="progress-bar-1" class="h-full bg-blue-600 transition-all duration-300" style="width: 0%"></div>
-                </div>
-                <div class="flex items-center">
-                    <div id="step-indicator-2" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-medium">2</div>
-                    <span class="ml-2 text-sm font-medium text-gray-500">Ville</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-200 mx-4">
-                    <div id="progress-bar-2" class="h-full bg-gray-200 transition-all duration-300"></div>
-                </div>
-                <div class="flex items-center">
-                    <div id="step-indicator-3" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-medium">3</div>
-                    <span class="ml-2 text-sm font-medium text-gray-500">Centre</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-200 mx-4">
-                    <div id="progress-bar-3" class="h-full bg-gray-200 transition-all duration-300"></div>
-                </div>
-                <div class="flex items-center">
-                    <div id="step-indicator-4" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-medium">4</div>
-                    <span class="ml-2 text-sm font-medium text-gray-500">Service</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-200 mx-4">
-                    <div id="progress-bar-4" class="h-full bg-gray-200 transition-all duration-300"></div>
-                </div>
-                <div class="flex items-center">
-                    <div id="step-indicator-5" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-medium">5</div>
-                    <span class="ml-2 text-sm font-medium text-gray-500">Formule</span>
-                </div>
-                <div class="flex-1 h-1 bg-gray-200 mx-4">
-                    <div id="progress-bar-5" class="h-full bg-gray-200 transition-all duration-300"></div>
-                </div>
-                <div class="flex items-center">
-                    <div id="step-indicator-6" class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-medium">6</div>
-                    <span class="ml-2 text-sm font-medium text-gray-500">Créneau</span>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Wizard Container -->
@@ -780,43 +736,47 @@
         document.getElementById(stepId).classList.add('active');
         
         // Mettre à jour le numéro d'étape
-        currentStepNumber = parseInt(stepId.split('-')[1].replace('step', ''));
+        currentStepNumber = getStepNumber(stepId);
         updateNavigation();
         updateStepIndicators();
     }
 
+    function getStepNumber(stepId) {
+        const stepMap = {
+            'step-pays': 1,
+            'step-ville': 2,
+            'step-centre': 3,
+            'step-service': 4,
+            'step-formule': 5,
+            'step-calendrier': 6,
+            'step-informations': 7,
+            'step-paiement': 8,
+            'step-confirmation': 9
+        };
+        return stepMap[stepId] || 1;
+    }
+
     function updateStepIndicators() {
-        // Mettre à jour tous les indicateurs
-        for (let i = 1; i <= 6; i++) {
-            const indicator = document.getElementById(`step-indicator-${i}`);
-            const progressBar = document.getElementById(`progress-bar-${i}`);
+        // Mettre à jour les indicateurs du layout principal
+        const progressSteps = document.querySelectorAll('.progress-step');
+        
+        progressSteps.forEach((step, index) => {
+            const stepNumber = index + 1;
             
-            // Vérifier que les éléments existent
-            if (!indicator || !progressBar) {
-                console.warn(`Élément manquant pour l'étape ${i}`);
-                continue;
-            }
-            
-            // Trouver le label (span qui suit l'indicateur)
-            const label = indicator.parentElement.querySelector('span');
-            
-            if (i < currentStepNumber) {
-                // Étapes complétées
-                indicator.className = 'w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center text-sm font-medium';
-                progressBar.className = 'h-full bg-green-600 transition-all duration-300';
-                if (label) label.className = 'ml-2 text-sm font-medium text-green-600';
-            } else if (i === currentStepNumber) {
+            if (stepNumber < currentStepNumber) {
+                // Étape terminée
+                step.className = 'progress-step flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium completed';
+                step.innerHTML = '<i class="fas fa-check"></i>';
+            } else if (stepNumber === currentStepNumber) {
                 // Étape actuelle
-                indicator.className = 'w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-medium';
-                progressBar.className = 'h-full bg-blue-600 transition-all duration-300';
-                if (label) label.className = 'ml-2 text-sm font-medium text-blue-600';
+                step.className = 'progress-step flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium active';
+                step.innerHTML = stepNumber;
             } else {
-                // Étapes futures
-                indicator.className = 'w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center text-sm font-medium';
-                progressBar.className = 'h-full bg-gray-200 transition-all duration-300';
-                if (label) label.className = 'ml-2 text-sm font-medium text-gray-500';
+                // Étape future
+                step.className = 'progress-step flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium bg-gray-200 text-gray-500';
+                step.innerHTML = stepNumber;
             }
-        }
+        });
     }
 
     function updateNavigation() {

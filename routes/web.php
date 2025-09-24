@@ -13,12 +13,37 @@ use App\Http\Controllers\RendezVousController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\AgentController;
 use App\Http\Controllers\DossierController;
+use App\Http\Controllers\DossierWorkflowController;
 use App\Http\Controllers\DocumentRequisController;
 use Illuminate\Support\Facades\Route;
 
-// Page d'accueil - Rediriger vers le wizard de rendez-vous
-Route::get('/', function () {
-    return redirect()->route('booking.wizard');
+// Page d'accueil institutionnelle
+Route::get('/', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+// Page d'accueil alternative (si nécessaire)
+Route::get('/accueil', [App\Http\Controllers\HomeController::class, 'index'])->name('homepage');
+
+// Route de test pour les services
+Route::get('/test-services', function() {
+    $services = App\Models\Service::with(['formules', 'documentsRequis'])
+        ->where('statut', 'actif')
+        ->orderBy('id', 'asc')
+        ->take(4)
+        ->get();
+    
+    return response()->json([
+        'count' => $services->count(),
+        'services' => $services->map(function($service) {
+            return [
+                'id' => $service->id,
+                'nom' => $service->nom,
+                'description' => $service->description,
+                'formules_count' => $service->formules->count(),
+                'documents_count' => $service->documentsRequis->count(),
+                'statut' => $service->statut
+            ];
+        })
+    ]);
 });
 
 // Routes publiques pour le wizard de rendez-vous
@@ -108,6 +133,47 @@ Route::put('/exceptions/{exception}', [CreneauxController::class, 'updateExcepti
     Route::resource('clients', ClientController::class);
     Route::get('/api/clients/search', [ClientController::class, 'search'])->name('api.clients.search');
     Route::post('/clients/{client}/toggle-status', [ClientController::class, 'toggleStatus'])->name('clients.toggle-status');
+
+    // Routes pour les rendez-vous
+    Route::get('/rendez-vous', [RendezVousController::class, 'index'])->name('rendez-vous.index');
+    Route::get('/rendez-vous/create', [RendezVousController::class, 'create'])->name('rendez-vous.create');
+    Route::post('/rendez-vous', [RendezVousController::class, 'store'])->name('rendez-vous.store');
+    Route::get('/rendez-vous/{rendezVous}', [RendezVousController::class, 'show'])->name('rendez-vous.show');
+    Route::get('/rendez-vous/{rendezVous}/edit', [RendezVousController::class, 'edit'])->name('rendez-vous.edit');
+    Route::put('/rendez-vous/{rendezVous}', [RendezVousController::class, 'update'])->name('rendez-vous.update');
+    Route::delete('/rendez-vous/{rendezVous}', [RendezVousController::class, 'destroy'])->name('rendez-vous.destroy');
+    Route::get('/api/services/{service}/formules', [RendezVousController::class, 'getFormulesByService'])->name('api.services.formules');
+Route::post('/rendez-vous/{rendezVous}/open-dossier', [DossierWorkflowController::class, 'openDossier'])->name('rendez-vous.open-dossier')->withoutMiddleware(['csrf']);
+Route::get('/dossier/{dossierOuvert}/workflow', [DossierWorkflowController::class, 'showWorkflow'])->name('dossier.workflow');
+
+// Routes pour les étapes du workflow
+Route::post('/dossier/{dossierOuvert}/etape1-fiche', [DossierWorkflowController::class, 'validerEtape1'])->name('dossier.etape1');
+Route::post('/dossier/{dossierOuvert}/etape2-documents', [DossierWorkflowController::class, 'validerEtape2'])->name('dossier.etape2');
+Route::post('/dossier/{dossierOuvert}/etape3-infos', [DossierWorkflowController::class, 'validerEtape3'])->name('dossier.etape3');
+Route::post('/dossier/{dossierOuvert}/etape4-paiement', [DossierWorkflowController::class, 'validerEtape4'])->name('dossier.etape4');
+
+// Routes pour les documents requis
+Route::resource('document-requis', DocumentRequisController::class);
+Route::get('/api/services/{service}/documents-requis', [DocumentRequisController::class, 'getByService'])->name('api.services.documents-requis');
+Route::get('/api/services/{service}/documents-requis-by-type', [DocumentRequisController::class, 'getByType'])->name('api.services.documents-requis-by-type');
+
+// Routes pour l'export
+Route::post('/export/rendez-vous', [App\Http\Controllers\ExportController::class, 'exportRendezVous'])->name('export.rendez-vous');
+    
+    // Route de test temporaire
+    Route::get('/test-login', function() {
+        $user = App\Models\User::where('email', 'test@test.com')->first();
+        if ($user) {
+            Auth::login($user);
+            return redirect('/rendez-vous')->with('success', 'Connecté en tant que ' . $user->nom);
+        }
+        return 'Utilisateur de test non trouvé';
+    });
+
+    // Routes pour les dossiers
+    Route::resource('dossiers', DossierController::class);
+    Route::post('/dossiers/{dossier}/update-documents', [DossierController::class, 'updateDocuments'])->name('dossiers.update-documents');
+    Route::post('/dossiers/{dossier}/update-payment', [DossierController::class, 'updatePayment'])->name('dossiers.update-payment');
 
     // Routes pour les agents
     Route::resource('agents', AgentController::class);

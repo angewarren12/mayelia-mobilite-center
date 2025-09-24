@@ -14,7 +14,7 @@ class RendezVousController extends Controller
 {
     public function index()
     {
-        $query = RendezVous::with(['client', 'service', 'formule', 'centre']);
+        $query = RendezVous::with(['client', 'service', 'formule', 'centre', 'dossierOuvert.agent']);
         
         // Filtres
         if (request('centre_id')) {
@@ -43,9 +43,9 @@ class RendezVousController extends Controller
 
     public function create()
     {
-        $centres = Centre::where('actif', true)->get();
-        $services = Service::where('actif', true)->get();
-        $formules = Formule::where('actif', true)->get();
+        $centres = Centre::where('statut', 'actif')->get();
+        $services = Service::where('statut', 'actif')->get();
+        $formules = Formule::where('statut', 'actif')->get();
         $clients = Client::where('actif', true)->get();
         
         return view('rendez-vous.create', compact('centres', 'services', 'formules', 'clients'));
@@ -93,9 +93,9 @@ class RendezVousController extends Controller
     public function edit(RendezVous $rendezVous)
     {
         $rendezVous->load(['client', 'service', 'formule', 'centre']);
-        $centres = Centre::where('actif', true)->get();
-        $services = Service::where('actif', true)->get();
-        $formules = Formule::where('actif', true)->get();
+        $centres = Centre::where('statut', 'actif')->get();
+        $services = Service::where('statut', 'actif')->get();
+        $formules = Formule::where('statut', 'actif')->get();
         $clients = Client::where('actif', true)->get();
         
         return view('rendez-vous.edit', compact('rendezVous', 'centres', 'services', 'formules', 'clients'));
@@ -137,6 +137,23 @@ class RendezVousController extends Controller
             Log::error('Erreur lors de la suppression du rendez-vous: ' . $e->getMessage());
             return redirect()->back()
                 ->with('error', 'Erreur lors de la suppression du rendez-vous');
+        }
+    }
+
+    /**
+     * API pour récupérer les formules d'un service
+     */
+    public function getFormulesByService($serviceId)
+    {
+        try {
+            $formules = Formule::where('service_id', $serviceId)
+                             ->where('statut', 'actif')
+                             ->get(['id', 'nom', 'prix', 'description']);
+
+            return response()->json($formules);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des formules: ' . $e->getMessage());
+            return response()->json([], 500);
         }
     }
 }

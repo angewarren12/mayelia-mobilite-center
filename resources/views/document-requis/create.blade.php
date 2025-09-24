@@ -1,103 +1,172 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Créer un Document Requis')
+@section('title', 'Ajouter un Document Requis')
+@section('subtitle', 'Créer un nouveau document requis pour un service')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Créer un Nouveau Document Requis</h3>
-                    <a href="{{ route('document-requis.index') }}" class="btn btn-secondary float-end">
-                        <i class="fas fa-arrow-left"></i> Retour
-                    </a>
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <!-- En-tête -->
+        <div class="mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">Ajouter un Document Requis</h1>
+            <p class="text-gray-600">Définissez un nouveau document requis pour un service</p>
+        </div>
+
+        <!-- Formulaire -->
+        <form action="{{ route('document-requis.store') }}" method="POST" class="space-y-6">
+            @csrf
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Service -->
+                <div>
+                    <label for="service_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Service <span class="text-red-500">*</span>
+                    </label>
+                    <select name="service_id" id="service_id" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('service_id') border-red-500 @enderror">
+                        <option value="">Sélectionner un service</option>
+                        @foreach($services as $service)
+                            <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
+                                {{ $service->nom }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('service_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="card-body">
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
-                    <form action="{{ route('document-requis.store') }}" method="POST">
-                        @csrf
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="service_id" class="form-label">Service *</label>
-                                    <select class="form-select" id="service_id" name="service_id" required>
-                                        <option value="">Sélectionner un service</option>
-                                        @foreach($services as $service)
-                                            <option value="{{ $service->id }}" {{ old('service_id') == $service->id ? 'selected' : '' }}>
-                                                {{ $service->nom }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="type_demande" class="form-label">Type de Demande *</label>
-                                    <input type="text" class="form-control" id="type_demande" name="type_demande" 
-                                           value="{{ old('type_demande') }}" required
-                                           placeholder="Ex: Première demande, Renouvellement, Duplicata">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="nom_document" class="form-label">Nom du Document *</label>
-                                    <input type="text" class="form-control" id="nom_document" name="nom_document" 
-                                           value="{{ old('nom_document') }}" required
-                                           placeholder="Ex: Carte nationale d'identité">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="ordre" class="form-label">Ordre d'affichage *</label>
-                                    <input type="number" class="form-control" id="ordre" name="ordre" 
-                                           value="{{ old('ordre', 1) }}" required min="1">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" 
-                                      placeholder="Description détaillée du document...">{{ old('description') }}</textarea>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="obligatoire" name="obligatoire" 
-                                       {{ old('obligatoire') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="obligatoire">
-                                    Document obligatoire
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end">
-                            <a href="{{ route('document-requis.index') }}" class="btn btn-secondary me-2">
-                                Annuler
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Créer le Document
-                            </button>
-                        </div>
-                    </form>
+                <!-- Type de demande -->
+                <div>
+                    <label for="type_demande" class="block text-sm font-medium text-gray-700 mb-2">
+                        Type de demande <span class="text-red-500">*</span>
+                    </label>
+                    <select name="type_demande" id="type_demande" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type_demande') border-red-500 @enderror">
+                        <option value="">Sélectionner un type</option>
+                        @foreach($typesDemande as $key => $label)
+                            <option value="{{ $key }}" {{ old('type_demande') == $key ? 'selected' : '' }}>
+                                {{ $key }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('type_demande')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
+            </div>
+
+            <!-- Nom du document -->
+            <div>
+                <label for="nom_document" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nom du document <span class="text-red-500">*</span>
+                </label>
+                <input type="text" name="nom_document" id="nom_document" required
+                       value="{{ old('nom_document') }}"
+                       placeholder="Ex: Pièce d'identité, Justificatif de domicile..."
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('nom_document') border-red-500 @enderror">
+                @error('nom_document')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                    Description
+                </label>
+                <textarea name="description" id="description" rows="3"
+                          placeholder="Description détaillée du document requis..."
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('description') border-red-500 @enderror">{{ old('description') }}</textarea>
+                @error('description')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Statut obligatoire -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Statut du document
+                    </label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="obligatoire" value="1" 
+                                   {{ old('obligatoire', '1') == '1' ? 'checked' : '' }}
+                                   class="mr-2 text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">
+                                <i class="fas fa-exclamation-circle text-red-500 mr-1"></i>
+                                Obligatoire
+                            </span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="obligatoire" value="0" 
+                                   {{ old('obligatoire') == '0' ? 'checked' : '' }}
+                                   class="mr-2 text-blue-600 focus:ring-blue-500">
+                            <span class="text-sm text-gray-700">
+                                <i class="fas fa-info-circle text-gray-500 mr-1"></i>
+                                Facultatif
+                            </span>
+                        </label>
+                    </div>
+                    @error('obligatoire')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Ordre d'affichage -->
+                <div>
+                    <label for="ordre" class="block text-sm font-medium text-gray-700 mb-2">
+                        Ordre d'affichage <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" name="ordre" id="ordre" required min="0"
+                           value="{{ old('ordre', 0) }}"
+                           placeholder="0"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('ordre') border-red-500 @enderror">
+                    <p class="mt-1 text-sm text-gray-500">Les documents seront affichés dans cet ordre</p>
+                    @error('ordre')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                <a href="{{ route('document-requis.index') }}" 
+                   class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-times mr-2"></i>Annuler
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-save mr-2"></i>Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Messages d'erreur -->
+@if($errors->any())
+    <div class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+        <div class="flex items-center">
+            <i class="fas fa-exclamation-circle mr-2"></i>
+            <div>
+                <p class="font-medium">Erreurs de validation :</p>
+                <ul class="text-sm mt-1">
+                    @foreach($errors->all() as $error)
+                        <li>• {{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         </div>
     </div>
-</div>
+@endif
+
+<script>
+// Auto-hide error messages
+setTimeout(() => {
+    const errorToast = document.querySelector('.fixed.top-4.right-4');
+    if (errorToast) errorToast.remove();
+}, 8000);
+</script>
 @endsection
-
-

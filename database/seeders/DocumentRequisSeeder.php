@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\DocumentRequis;
+use App\Models\DocumentRequis; 
 use App\Models\Service;
 
 class DocumentRequisSeeder extends Seeder

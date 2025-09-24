@@ -315,8 +315,16 @@ class BookingController extends Controller
         $rendezVous = RendezVous::with(['centre.ville', 'service', 'formule', 'client'])
                                ->findOrFail($rendezVousId);
 
+        // Générer le QR code en SVG (ne nécessite pas ImageMagick)
+        $qrCodeSvg = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(100)
+            ->format('svg')
+            ->generate($rendezVous->numero_suivi);
+
+        // Convertir en base64 pour l'affichage dans le PDF
+        $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrCodeSvg);
+
         // Générer le PDF du reçu
-        $pdf = Pdf::loadView('booking.receipt', compact('rendezVous'));
+        $pdf = Pdf::loadView('booking.receipt', compact('rendezVous', 'qrCodeBase64'));
         
         // Configuration du PDF
         $pdf->setPaper('A4', 'portrait');

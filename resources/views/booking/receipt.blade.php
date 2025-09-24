@@ -8,64 +8,64 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 10px;
+            padding: 5px;
             background-color: #f5f5f5;
-            font-size: 12px;
+            font-size: 11px;
         }
         .receipt-container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .header {
             text-align: center;
             border-bottom: 2px solid #3b82f6;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
         }
         .logo {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: bold;
             color: #3b82f6;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
         .receipt-title {
-            font-size: 18px;
+            font-size: 16px;
             color: #1f2937;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         .receipt-subtitle {
             color: #6b7280;
-            font-size: 12px;
+            font-size: 11px;
         }
         .receipt-number {
             background: #3b82f6;
             color: white;
-            padding: 8px 15px;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0;
             text-align: center;
         }
         .section {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
         }
         .section-title {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: bold;
             color: #1f2937;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e5e7eb;
-            padding-bottom: 5px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 3px;
         }
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 10px;
         }
         .info-item {
             display: flex;
@@ -106,12 +106,12 @@
             color: #059669;
         }
         .footer {
-            margin-top: 30px;
+            margin-top: 15px;
             text-align: center;
             color: #6b7280;
-            font-size: 14px;
+            font-size: 10px;
             border-top: 1px solid #e5e7eb;
-            padding-top: 20px;
+            padding-top: 10px;
         }
         .status-badge {
             display: inline-block;
@@ -152,65 +152,66 @@
             {{ $rendezVous->numero_suivi }}
         </div>
 
-        <!-- Informations client -->
-        <div class="section">
-            <div class="section-title">Informations Client</div>
-            <div class="client-info">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Nom complet</div>
-                        <div class="info-value">{{ $rendezVous->client->nom }} {{ $rendezVous->client->prenom }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Téléphone</div>
-                        <div class="info-value">{{ $rendezVous->client->telephone }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Email</div>
-                        <div class="info-value">{{ $rendezVous->client->email }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Date de naissance</div>
-                        <div class="info-value">{{ $rendezVous->client->date_naissance ? \Carbon\Carbon::parse($rendezVous->client->date_naissance)->format('d/m/Y') : 'Non renseignée' }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Détails du rendez-vous -->
-        <div class="section">
-            <div class="section-title">Détails du Rendez-vous</div>
-            <div class="appointment-details">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Centre</div>
-                        <div class="info-value">{{ $rendezVous->centre->nom }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Service</div>
-                        <div class="info-value">{{ $rendezVous->service->nom }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Formule</div>
-                        <div class="info-value">{{ $rendezVous->formule->nom }}</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Statut</div>
-                        <div class="info-value">
-                            <span class="status-badge status-confirme">{{ $rendezVous->statut_formate }}</span>
+        <!-- Informations client et détails du rendez-vous sur deux colonnes -->
+        <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
+            <tr>
+                <!-- Colonne gauche : Informations client -->
+                <td style="width: 50%; vertical-align: top; background: #f8fafc; padding: 10px; border-radius: 4px; border-left: 3px solid #3b82f6;">
+                    <div class="section-title">Informations Client</div>
+                    <div class="client-info">
+                        <div class="info-item">
+                            <div class="info-label">Nom complet</div>
+                            <div class="info-value">{{ $rendezVous->client->nom }} {{ $rendezVous->client->prenom }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Téléphone</div>
+                            <div class="info-value">{{ $rendezVous->client->telephone }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Email</div>
+                            <div class="info-value">{{ $rendezVous->client->email }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Date de naissance</div>
+                            <div class="info-value">{{ $rendezVous->client->date_naissance ? \Carbon\Carbon::parse($rendezVous->client->date_naissance)->format('d/m/Y') : 'Non renseignée' }}</div>
                         </div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Date</div>
-                        <div class="info-value">{{ \Carbon\Carbon::parse($rendezVous->date_rendez_vous)->format('l d F Y') }}</div>
+                </td>
+                
+                <!-- Colonne droite : Détails du rendez-vous -->
+                <td style="width: 50%; vertical-align: top; background: #f0f9ff; padding: 10px; border-radius: 4px; border-left: 3px solid #0ea5e9;">
+                    <div class="section-title">Détails du Rendez-vous</div>
+                    <div class="appointment-details">
+                        <div class="info-item">
+                            <div class="info-label">Centre</div>
+                            <div class="info-value">{{ $rendezVous->centre->nom }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Service</div>
+                            <div class="info-value">{{ $rendezVous->service->nom }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Formule</div>
+                            <div class="info-value">{{ $rendezVous->formule->nom }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Statut</div>
+                            <div class="info-value">
+                                <span class="status-badge status-confirme">{{ $rendezVous->statut_formate }}</span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Date</div>
+                            <div class="info-value">{{ \Carbon\Carbon::parse($rendezVous->date_rendez_vous)->format('l d F Y') }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Heure</div>
+                            <div class="info-value">{{ $rendezVous->tranche_horaire }}</div>
+                        </div>
                     </div>
-                    <div class="info-item">
-                        <div class="info-label">Heure</div>
-                        <div class="info-value">{{ $rendezVous->tranche_horaire }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
+                </td>
+            </tr>
+        </table>
 
         <!-- Montant -->
         <div class="section">
@@ -220,11 +221,15 @@
             </div>
         </div>
 
-        <!-- QR Code placeholder -->
-        <div class="qr-placeholder">
-            <div style="text-align: center; color: #6b7280;">
-                <div style="font-size: 12px;">QR Code</div>
-                <div style="font-size: 10px;">{{ $rendezVous->numero_suivi }}</div>
+        <!-- QR Code -->
+        <div class="qr-section" style="text-align: center; margin: 15px 0;">
+            <div style="display: inline-block; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: white;">
+                @if(isset($qrCodeBase64))
+                    <img src="{{ $qrCodeBase64 }}" alt="QR Code" style="width: 80px; height: 80px;">
+                @else
+                    <div style="color: #6b7280; font-size: 12px;">QR Code</div>
+                    <div style="font-size: 10px;">{{ $rendezVous->numero_suivi }}</div>
+                @endif
             </div>
         </div>
 
