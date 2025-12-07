@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Dashboard - ' . $client->nom . ' ' . $client->prenom)
 
@@ -19,7 +19,7 @@
                         Retour
                     </a>
                     <a href="{{ route('booking.wizard') }}" 
-                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700">
                         <i class="fas fa-plus mr-2"></i>
                         Nouveau rendez-vous
                     </a>
@@ -35,7 +35,7 @@
                 <div class="p-5">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-calendar-alt text-blue-500 text-2xl"></i>
+                            <i class="fas fa-calendar-alt text-mayelia-500 text-2xl"></i>
                         </div>
                         <div class="ml-5 w-0 flex-1">
                             <dl>
@@ -98,19 +98,19 @@
 
         <!-- Prochain rendez-vous -->
         @if($stats['prochain'])
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+        <div class="bg-mayelia-50 border border-mayelia-200 rounded-lg p-6 mb-8">
             <div class="flex items-center">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-clock text-blue-500 text-2xl"></i>
+                    <i class="fas fa-clock text-mayelia-500 text-2xl"></i>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-lg font-medium text-blue-900">Prochain rendez-vous</h3>
-                    <div class="mt-2 text-sm text-blue-700">
+                    <h3 class="text-lg font-medium text-mayelia-900">Prochain rendez-vous</h3>
+                    <div class="mt-2 text-sm text-mayelia-700">
                         <p><strong>{{ $stats['prochain']->centre->nom }}</strong></p>
                         <p>{{ \Carbon\Carbon::parse($stats['prochain']->date_rendez_vous)->format('l d F Y') }} à {{ $stats['prochain']->tranche_horaire }}</p>
                         <p>{{ $stats['prochain']->service->nom }} - {{ $stats['prochain']->formule->nom }}</p>
                         <p class="mt-2">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-mayelia-100 text-mayelia-800">
                                 {{ $stats['prochain']->numero_suivi }}
                             </span>
                         </p>
@@ -185,7 +185,7 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun rendez-vous</h3>
                     <p class="text-gray-500 mb-4">Vous n'avez pas encore de rendez-vous.</p>
                     <a href="{{ route('booking.wizard') }}" 
-                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700">
                         <i class="fas fa-plus mr-2"></i>
                         Réserver maintenant
                     </a>

@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Modifier le Document Requis')
 @section('subtitle', 'Modifier les informations du document requis')
@@ -24,7 +24,7 @@
                         Service <span class="text-red-500">*</span>
                     </label>
                     <select name="service_id" id="service_id" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('service_id') border-red-500 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 @error('service_id') border-red-500 @enderror">
                         <option value="">Sélectionner un service</option>
                         @foreach($services as $service)
                             <option value="{{ $service->id }}" 
@@ -44,7 +44,7 @@
                         Type de demande <span class="text-red-500">*</span>
                     </label>
                     <select name="type_demande" id="type_demande" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('type_demande') border-red-500 @enderror">
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 @error('type_demande') border-red-500 @enderror">
                         <option value="">Sélectionner un type</option>
                         @foreach($typesDemande as $key => $label)
                             <option value="{{ $key }}" 
@@ -67,7 +67,7 @@
                 <input type="text" name="nom_document" id="nom_document" required
                        value="{{ old('nom_document', $documentRequis->nom_document) }}"
                        placeholder="Ex: Pièce d'identité, Justificatif de domicile..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('nom_document') border-red-500 @enderror">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 @error('nom_document') border-red-500 @enderror">
                 @error('nom_document')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -80,7 +80,7 @@
                 </label>
                 <textarea name="description" id="description" rows="3"
                           placeholder="Description détaillée du document requis..."
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('description') border-red-500 @enderror">{{ old('description', $documentRequis->description) }}</textarea>
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 @error('description') border-red-500 @enderror">{{ old('description', $documentRequis->description) }}</textarea>
                 @error('description')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -96,7 +96,7 @@
                         <label class="flex items-center">
                             <input type="radio" name="obligatoire" value="1" 
                                    {{ old('obligatoire', $documentRequis->obligatoire ? '1' : '0') == '1' ? 'checked' : '' }}
-                                   class="mr-2 text-blue-600 focus:ring-blue-500">
+                                   class="mr-2 text-mayelia-600 focus:ring-mayelia-500">
                             <span class="text-sm text-gray-700">
                                 <i class="fas fa-exclamation-circle text-red-500 mr-1"></i>
                                 Obligatoire
@@ -105,7 +105,7 @@
                         <label class="flex items-center">
                             <input type="radio" name="obligatoire" value="0" 
                                    {{ old('obligatoire', $documentRequis->obligatoire ? '1' : '0') == '0' ? 'checked' : '' }}
-                                   class="mr-2 text-blue-600 focus:ring-blue-500">
+                                   class="mr-2 text-mayelia-600 focus:ring-mayelia-500">
                             <span class="text-sm text-gray-700">
                                 <i class="fas fa-info-circle text-gray-500 mr-1"></i>
                                 Facultatif
@@ -125,7 +125,7 @@
                     <input type="number" name="ordre" id="ordre" required min="0"
                            value="{{ old('ordre', $documentRequis->ordre) }}"
                            placeholder="0"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('ordre') border-red-500 @enderror">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 @error('ordre') border-red-500 @enderror">
                     <p class="mt-1 text-sm text-gray-500">Les documents seront affichés dans cet ordre</p>
                     @error('ordre')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -140,7 +140,7 @@
                     <i class="fas fa-times mr-2"></i>Annuler
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        class="px-6 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 transition-colors">
                     <i class="fas fa-save mr-2"></i>Mettre à jour
                 </button>
             </div>

@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Rendez-vous - Interface Agent')
 @section('subtitle', 'Gestion des rendez-vous de votre centre')
@@ -28,11 +28,11 @@
                        name="search" 
                        value="{{ request('search') }}"
                        placeholder="Nom client, email, numéro de suivi..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div class="min-w-48">
                 <label for="statut" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                <select id="statut" name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="statut" name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les statuts</option>
                     <option value="confirme" {{ request('statut') === 'confirme' ? 'selected' : '' }}>Confirmé</option>
                     <option value="dossier_ouvert" {{ request('statut') === 'dossier_ouvert' ? 'selected' : '' }}>Dossier ouvert</option>
@@ -44,10 +44,10 @@
             </div>
             <div class="min-w-48">
                 <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input type="date" id="date" name="date" value="{{ request('date') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="date" id="date" name="date" value="{{ request('date') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div class="flex items-end">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button type="submit" class="px-4 py-2 bg-mayelia-600 text-white rounded-md hover:bg-mayelia-700">
                     <i class="fas fa-search mr-2"></i>
                     Filtrer
                 </button>
@@ -102,7 +102,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if($rdv->statut === 'confirme') bg-blue-100 text-blue-800
+                                        @if($rdv->statut === 'confirme') bg-mayelia-100 text-mayelia-800
                                         @elseif($rdv->statut === 'dossier_ouvert') bg-yellow-100 text-yellow-800
                                         @elseif($rdv->statut === 'documents_verifies') bg-green-100 text-green-800
                                         @elseif($rdv->statut === 'documents_manquants') bg-orange-100 text-orange-800
@@ -122,15 +122,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        @if($rdv->statut === 'confirme' && !$rdv->dossierOuvert)
-                                            <button onclick="openDossierModal({{ $rdv->id }}, '{{ $rdv->client->nom_complet }}')" 
-                                                    class="text-green-600 hover:text-green-900" title="Ouvrir le dossier">
-                                                <i class="fas fa-folder-open"></i>
-                                            </button>
-                                        @elseif($rdv->dossierOuvert)
+                                        @if($rdv->dossierOuvert)
                                             @if($rdv->dossierOuvert->canBeManagedBy(Auth::user()))
                                                 <a href="{{ route('agent.dossier.workflow', $rdv->dossierOuvert) }}" 
-                                                   class="text-blue-600 hover:text-blue-900" title="Gérer le dossier">
+                                                   class="text-mayelia-600 hover:text-mayelia-900" title="Gérer le dossier">
                                                     <i class="fas fa-cogs"></i>
                                                 </a>
                                             @else
@@ -181,7 +176,7 @@
                 </p>
                 <div class="mb-4">
                     <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes (optionnel)</label>
-                    <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Notes sur l'ouverture du dossier..."></textarea>
+                    <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Notes sur l'ouverture du dossier..."></textarea>
                 </div>
             </div>
             <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">

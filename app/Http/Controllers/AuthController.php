@@ -32,6 +32,17 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             
+            // Mettre à jour la dernière connexion
+            $user = Auth::user();
+            if ($user) {
+                $user->update(['derniere_connexion' => now()]);
+                
+                // Rediriger selon le rôle
+                if ($user->role === 'oneci') {
+                    return redirect()->route('oneci.dashboard');
+                }
+            }
+            
             return redirect()->intended('/dashboard');
         }
 

@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Nouvelle exception')
 @section('subtitle', 'Créez une exception pour un jour spécifique')
@@ -25,7 +25,7 @@
                            name="date_exception" 
                            value="{{ old('date_exception', now()->addDay()->toDateString()) }}"
                            min="{{ now()->toDateString() }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('date_exception') border-red-500 @enderror"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500 @error('date_exception') border-red-500 @enderror"
                            required>
                     @error('date_exception')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -39,7 +39,7 @@
                     </label>
                     <select id="type" 
                             name="type" 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('type') border-red-500 @enderror"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500 @error('type') border-red-500 @enderror"
                             required>
                         <option value="">Sélectionnez un type</option>
                         <option value="fermeture" {{ old('type') == 'fermeture' ? 'selected' : '' }}>Fermeture complète</option>
@@ -59,7 +59,7 @@
                     <textarea id="description" 
                               name="description" 
                               rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 @error('description') border-red-500 @enderror"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500 @error('description') border-red-500 @enderror"
                               placeholder="Décrivez la raison de cette exception...">{{ old('description') }}</textarea>
                     @error('description')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -76,7 +76,7 @@
                                    id="heure_debut" 
                                    name="heure_debut" 
                                    value="{{ old('heure_debut') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         </div>
                         <div>
                             <label for="heure_fin" class="block text-xs text-gray-500 mb-1">Heure de fin</label>
@@ -84,7 +84,7 @@
                                    id="heure_fin" 
                                    name="heure_fin" 
                                    value="{{ old('heure_fin') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         </div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                                    id="pause_debut" 
                                    name="pause_debut" 
                                    value="{{ old('pause_debut') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         </div>
                         <div>
                             <label for="pause_fin" class="block text-xs text-gray-500 mb-1">Fin de pause</label>
@@ -107,7 +107,7 @@
                                    id="pause_fin" 
                                    name="pause_fin" 
                                    value="{{ old('pause_fin') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         </div>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
                                name="capacite_reduite" 
                                value="1"
                                {{ old('capacite_reduite') ? 'checked' : '' }}
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                               class="h-4 w-4 text-mayelia-600 focus:ring-mayelia-500 border-gray-300 rounded">
                         <label for="capacite_reduite" class="ml-2 block text-sm text-gray-700">
                             Capacité réduite pour ce jour
                         </label>
@@ -131,11 +131,11 @@
             <!-- Boutons d'action -->
             <div class="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
                 <a href="{{ route('creneaux.exceptions') }}" 
-                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-mayelia-500">
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        class="px-4 py-2 text-sm font-medium text-white bg-mayelia-600 border border-transparent rounded-md hover:bg-mayelia-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-mayelia-500">
                     Créer l'exception
                 </button>
             </div>

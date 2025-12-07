@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'oneci' => [
+        'email' => env('ONECI_EMAIL', 'oneci@example.com'),
+    ],
+
 ];

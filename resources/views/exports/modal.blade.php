@@ -1,11 +1,11 @@
-<!-- Modal d'export des rendez-vous -->
+﻿<!-- Modal d'export des rendez-vous -->
 <div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-download text-blue-600 mr-2"></i>
+                        <i class="fas fa-download text-mayelia-600 mr-2"></i>
                         Exporter les rendez-vous
                     </h3>
                     <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">
@@ -25,7 +25,7 @@
                             <label class="flex items-center">
                                 <input type="radio" name="type_export" value="aujourdhui" class="mr-3" checked>
                                 <span class="text-sm text-gray-700">
-                                    <i class="fas fa-calendar-day text-blue-500 mr-2"></i>
+                                    <i class="fas fa-calendar-day text-mayelia-500 mr-2"></i>
                                     Aujourd'hui
                                 </span>
                             </label>
@@ -54,7 +54,7 @@
                             Date
                         </label>
                         <input type="date" name="date" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     
                     <!-- Plage de dates -->
@@ -65,14 +65,14 @@
                                     Date début
                                 </label>
                                 <input type="date" name="date_debut" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Date fin
                                 </label>
                                 <input type="date" name="date_fin" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             </div>
                         </div>
                     </div>
@@ -86,7 +86,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Statut
                                 </label>
-                                <select name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                     <option value="">Tous les statuts</option>
                                     <option value="confirme">Confirmé</option>
                                     <option value="dossier_ouvert">Dossier ouvert</option>
@@ -104,7 +104,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Centre
                                 </label>
-                                <select name="centre_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select name="centre_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                     <option value="">Tous les centres</option>
                                     @foreach(\App\Models\Centre::all() as $centre)
                                         <option value="{{ $centre->id }}">{{ $centre->nom }}</option>
@@ -120,7 +120,7 @@
                             Annuler
                         </button>
                         <button type="submit" 
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700">
                             <i class="fas fa-download mr-2"></i>Exporter
                         </button>
                     </div>

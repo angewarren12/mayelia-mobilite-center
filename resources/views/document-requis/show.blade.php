@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Détail du Document Requis')
 @section('subtitle', 'Informations détaillées du document requis')
@@ -13,10 +13,12 @@
                 <p class="text-gray-600">Détails du document requis</p>
             </div>
             <div class="flex space-x-2">
+                @isAdmin
                 <a href="{{ route('document-requis.edit', $documentRequis) }}" 
-                   class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                   class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
                     <i class="fas fa-edit mr-2"></i>Modifier
                 </a>
+                @endisAdmin
                 <a href="{{ route('document-requis.index') }}" 
                    class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
                     <i class="fas fa-arrow-left mr-2"></i>Retour
@@ -37,7 +39,7 @@
             <div class="bg-gray-50 rounded-lg p-4">
                 <h3 class="text-sm font-medium text-gray-500 mb-2">Type de demande</h3>
                 <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full
-                    @if($documentRequis->type_demande === 'Première demande') bg-blue-100 text-blue-800
+                    @if($documentRequis->type_demande === 'Première demande') bg-mayelia-100 text-mayelia-800
                     @elseif($documentRequis->type_demande === 'Renouvellement') bg-green-100 text-green-800
                     @elseif($documentRequis->type_demande === 'Modification') bg-yellow-100 text-yellow-800
                     @else bg-purple-100 text-purple-800
@@ -97,7 +99,7 @@
                 <div>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Ordre d'affichage</h3>
                     <div class="bg-gray-50 p-3 rounded-lg">
-                        <span class="text-2xl font-bold text-blue-600">{{ $documentRequis->ordre }}</span>
+                        <span class="text-2xl font-bold text-mayelia-600">{{ $documentRequis->ordre }}</span>
                     </div>
                     <p class="text-sm text-gray-600 mt-1">Position dans la liste des documents</p>
                 </div>
@@ -121,6 +123,7 @@
 
         <!-- Actions -->
         <div class="mt-8 pt-6 border-t border-gray-200 flex justify-between">
+            @isAdmin
             <form action="{{ route('document-requis.destroy', $documentRequis) }}" 
                   method="POST" 
                   onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce document requis ? Cette action est irréversible.')">
@@ -131,12 +134,17 @@
                     <i class="fas fa-trash mr-2"></i>Supprimer
                 </button>
             </form>
+            @else
+            <div></div>
+            @endisAdmin
             
             <div class="flex space-x-2">
+                @isAdmin
                 <a href="{{ route('document-requis.edit', $documentRequis) }}" 
-                   class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                   class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
                     <i class="fas fa-edit mr-2"></i>Modifier
                 </a>
+                @endisAdmin
                 <a href="{{ route('document-requis.index') }}" 
                    class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
                     <i class="fas fa-list mr-2"></i>Voir tous les documents

@@ -13,9 +13,19 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Services\AuthService;
+use App\Http\Controllers\Concerns\ChecksPermissions;
 
 class DossierWorkflowController extends Controller
 {
+    use ChecksPermissions;
+
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
     /**
      * Afficher la liste des rendez-vous pour les agents
      */
@@ -143,6 +153,17 @@ class DossierWorkflowController extends Controller
                 ]
             ]);
             
+            // Créer le dossier ouvert
+            Log::info('Création du dossier ouvert...', [
+                'data' => [
+                    'rendez_vous_id' => $rendezVous->id,
+                    'agent_id' => $agent->id,
+                    'date_ouverture' => now(),
+                    'statut' => 'ouvert',
+                    'notes' => $request->input('notes')
+                ]
+            ]);
+            
             $dossierOuvert = DossierOuvert::create([
                 'rendez_vous_id' => $rendezVous->id,
                 'agent_id' => $agent->id,
@@ -150,6 +171,8 @@ class DossierWorkflowController extends Controller
                 'statut' => 'ouvert',
                 'notes' => $request->input('notes')
             ]);
+            
+            $dossierOuvert->logAction('ouvert', 'Ouverture du dossier via workflow');
             
             Log::info('✓ Dossier créé avec succès', [
                 'dossier_id' => $dossierOuvert->id,
@@ -187,82 +210,6 @@ class DossierWorkflowController extends Controller
     }
 
     /**
-     * Afficher le workflow d'un dossier
-     */
-    public function showWorkflow(DossierOuvert $dossierOuvert)
-    {
-        $agent = Auth::user();
-
-        // Vérifier que l'agent peut gérer ce dossier
-        if (!$dossierOuvert->canBeManagedBy($agent)) {
-            abort(403, 'Vous ne pouvez pas gérer ce dossier');
-        }
-
-        $dossierOuvert->load([
-            'rendezVous.client',
-            'rendezVous.service',
-            'rendezVous.formule',
-            'rendezVous.centre',
-            'documentVerifications.documentRequis',
-            'paiementVerification'
-        ]);
-
-        // Récupérer les documents requis pour le service
-        $documentsRequis = DocumentRequis::where('service_id', $dossierOuvert->rendezVous->service_id)
-            ->orderBy('ordre')
-            ->get();
-
-        // Récupérer les résultats des documents vérifiés
-        $documentsVerifies = [];
-        $typeDemandeVerifie = null;
-        
-        if ($dossierOuvert->documents_verifies || $dossierOuvert->documents_manquants) {
-            // Récupérer le type de demande le plus récent vérifié
-            $derniereVerification = $dossierOuvert->documentVerifications()
-                ->with('documentRequis')
-                ->latest('date_verification')
-                ->first();
-                
-            if ($derniereVerification) {
-                $typeDemandeVerifie = $derniereVerification->documentRequis->type_demande;
-                
-                // Récupérer tous les documents vérifiés pour ce type de demande
-                $verifications = $dossierOuvert->documentVerifications()
-                    ->with('documentRequis')
-                    ->whereHas('documentRequis', function($query) use ($typeDemandeVerifie) {
-                        $query->where('type_demande', $typeDemandeVerifie);
-                    })
-                    ->get();
-                
-                $documentsSelectionnes = [];
-                $documentsManquants = [];
-                
-                foreach ($verifications as $verification) {
-                    $doc = [
-                        'id' => $verification->documentRequis->id,
-                        'nom' => $verification->documentRequis->nom_document,
-                        'obligatoire' => $verification->documentRequis->obligatoire
-                    ];
-                    
-                    if ($verification->present) {
-                        $documentsSelectionnes[] = $doc;
-                    } else {
-                        $documentsManquants[] = $doc;
-                    }
-                }
-                
-                $documentsVerifies = [
-                    'type_demande' => $typeDemandeVerifie,
-                    'documents_selectionnes' => $documentsSelectionnes,
-                    'documents_manquants' => $documentsManquants
-                ];
-            }
-        }
-
-        return view('agent.dossier.workflow', compact('dossierOuvert', 'documentsRequis', 'documentsVerifies'));
-    }
-
-    /**
      * Valider l'étape 1: Fiche pré-enrôlement
      */
     public function validerEtape1(Request $request, DossierOuvert $dossierOuvert)
@@ -280,6 +227,10 @@ class DossierWorkflowController extends Controller
                 'fiche_pre_enrolement_verifiee' => true,
                 'notes' => $request->input('commentaires', $dossierOuvert->notes)
             ]);
+            
+            $dossierOuvert->logAction('fiche_verifiee', 'Validation de la fiche de pré-enrôlement', [
+                'commentaire' => $request->input('commentaires')
+            ]);
 
             // Mettre à jour le statut du dossier
             $this->updateDossierStatus($dossierOuvert);
@@ -295,6 +246,7 @@ class DossierWorkflowController extends Controller
             return response()->json(['success' => false, 'message' => 'Erreur lors de la validation'], 500);
         }
     }
+
 
     /**
      * Valider l'étape 2: Documents
@@ -331,6 +283,9 @@ class DossierWorkflowController extends Controller
             // Créer les vérifications de documents
             foreach ($documentsRequis as $document) {
                 $present = false;
+                $fichierData = [];
+                
+                // Vérifier si le document est coché
                 foreach ($documentsCoches as $docCoche) {
                     if (is_array($docCoche) && $docCoche['id'] == $document->id) {
                         $present = true;
@@ -341,23 +296,46 @@ class DossierWorkflowController extends Controller
                     }
                 }
                 
+                // Gérer l'upload du fichier si présent
+                if ($present && $request->hasFile("documents.{$document->id}.fichier")) {
+                    $file = $request->file("documents.{$document->id}.fichier");
+                    
+                    // Valider le fichier
+                    $request->validate([
+                        "documents.{$document->id}.fichier" => 'file|mimes:pdf,jpg,jpeg,png|max:10240' // 10MB max
+                    ]);
+                    
+                    // Stocker le fichier
+                    $filename = time() . '_' . $document->id . '_' . $file->getClientOriginalName();
+                    $path = $file->storeAs('dossiers/' . $dossierOuvert->id . '/documents', $filename, 'public');
+                    
+                    $fichierData = [
+                        'nom_fichier' => $filename,
+                        'chemin_fichier' => $path,
+                        'taille_fichier' => $file->getSize(),
+                        'type_mime' => $file->getMimeType()
+                    ];
+                }
+                
+                // Créer ou mettre à jour la vérification
                 DocumentVerification::updateOrCreate(
                     [
                         'dossier_ouvert_id' => $dossierOuvert->id,
                         'document_requis_id' => $document->id
                     ],
-                    [
+                    array_merge([
                         'present' => $present,
                         'verifie_par' => $agent->id,
                         'date_verification' => now()
-                    ]
+                    ], $fichierData)
                 );
                 
                 if ($present) {
                     $documentsSelectionnes[] = [
                         'id' => $document->id,
                         'nom' => $document->nom_document,
-                        'obligatoire' => $document->obligatoire
+                        'obligatoire' => $document->obligatoire,
+                        'fichier_uploade' => !empty($fichierData)
                     ];
                 } else {
                     $documentsManquantsList[] = [
@@ -380,6 +358,15 @@ class DossierWorkflowController extends Controller
             ]);
 
             $this->updateDossierStatus($dossierOuvert);
+            
+            $action = $documentsManquants ? 'documents_incomplets' : 'documents_verifies';
+            $description = $documentsManquants ? 'Documents vérifiés avec des manquants' : 'Tous les documents ont été vérifiés';
+            
+            $dossierOuvert->logAction($action, $description, [
+                'type_demande' => $typeDemande,
+                'documents_manquants' => $documentsManquantsList,
+                'documents_uploades' => count(array_filter($documentsSelectionnes, fn($d) => $d['fichier_uploade']))
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -416,6 +403,8 @@ class DossierWorkflowController extends Controller
                 Log::info('Mise à jour R.A.S - Après:', ['informations_client_verifiees' => $dossierOuvert->fresh()->informations_client_verifiees]);
                 $this->updateDossierStatus($dossierOuvert);
                 
+                $dossierOuvert->logAction('infos_client_verifiees', 'Informations client validées (R.A.S)');
+                
                 return response()->json([
                     'success' => true,
                     'message' => 'Informations client validées (R.A.S)',
@@ -440,6 +429,8 @@ class DossierWorkflowController extends Controller
             $dossierOuvert->update(['informations_client_verifiees' => true]);
             Log::info('Mise à jour client - Après:', ['informations_client_verifiees' => $dossierOuvert->fresh()->informations_client_verifiees]);
             $this->updateDossierStatus($dossierOuvert);
+
+            $dossierOuvert->logAction('infos_client_maj', 'Informations client mises à jour et validées');
 
             return response()->json([
                 'success' => true,
@@ -487,6 +478,12 @@ class DossierWorkflowController extends Controller
             ]);
 
             $this->updateDossierStatus($dossierOuvert);
+            
+            $dossierOuvert->logAction('paiement_verifie', 'Paiement validé', [
+                'montant' => $request->input('montant'),
+                'mode' => $request->input('mode_paiement'),
+                'reference' => $request->input('reference')
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -500,8 +497,193 @@ class DossierWorkflowController extends Controller
         }
     }
 
+    // ...
+
     /**
-     * Mettre à jour le statut du dossier selon les étapes complétées
+     * Finaliser un dossier
+     */
+    public function finaliser(DossierOuvert $dossierOuvert)
+    {
+        // Vérifier la permission (pas de delete pour les agents)
+        $this->checkPermission('dossiers', 'update');
+
+        try {
+            $agent = $this->authService->getAuthenticatedUser();
+
+            // Vérifier que l'agent peut gérer ce dossier
+            if (!$dossierOuvert->canBeManagedBy($agent)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous ne pouvez pas gérer ce dossier'
+                ], 403);
+            }
+
+            // Vérifier que toutes les étapes sont validées
+            if (!$dossierOuvert->fiche_pre_enrolement_valide) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La fiche de pré-enrôlement n\'est pas encore validée'
+                ], 400);
+            }
+
+            if (!$dossierOuvert->documents_valides) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Les documents ne sont pas encore validés'
+                ], 400);
+            }
+
+            if (!$dossierOuvert->biometrie_validee) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La biométrie n\'est pas encore validée'
+                ], 400);
+            }
+
+            if (!$dossierOuvert->paiement_valide) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le paiement n\'est pas encore validé'
+                ], 400);
+            }
+
+            // Finaliser le dossier
+            $dossierOuvert->update([
+                'statut' => 'finalise',
+                'date_finalisation' => now()
+            ]);
+
+            // Mettre à jour le statut du rendez-vous
+            $dossierOuvert->rendezVous->update([
+                'statut' => 'finalise'
+            ]);
+
+            $dossierOuvert->logAction('finalise', 'Dossier finalisé');
+
+            Log::info('Dossier finalisé avec succès', [
+                'dossier_id' => $dossierOuvert->id,
+                'agent_id' => $agent->id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Le dossier a été finalisé avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la finalisation du dossier: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la finalisation du dossier'
+            ], 500);
+        }
+    }
+
+    /**
+     * Afficher la page de workflow d'un dossier
+     */
+    public function showWorkflow(DossierOuvert $dossierOuvert)
+    {
+        $agent = Auth::user();
+        
+        // Charger les relations nécessaires
+        $dossierOuvert->load([
+            'rendezVous.client',
+            'rendezVous.centre',
+            'rendezVous.service',
+            'rendezVous.formule',
+            'agent',
+            'documentVerifications.documentRequis',
+            'paiementVerification',
+            'actionsLog.user'
+        ]);
+        
+        // Vérifier que l'agent peut gérer ce dossier
+        if (!$dossierOuvert->canBeManagedBy($agent)) {
+            abort(403, 'Vous ne pouvez pas gérer ce dossier');
+        }
+        
+        // Récupérer les documents requis pour ce service
+        $documentsRequis = DocumentRequis::where('service_id', $dossierOuvert->rendezVous->service_id)
+            ->orderBy('type_demande')
+            ->orderBy('ordre')
+            ->get();
+        
+        // Récupérer les documents déjà vérifiés
+        $documentsVerifies = $dossierOuvert->documentVerifications()
+            ->with('documentRequis')
+            ->get()
+            ->keyBy('document_requis_id');
+        
+        return view('agent.dossier.workflow', compact('dossierOuvert', 'documentsRequis', 'documentsVerifies'));
+    }
+
+    /**
+     * Imprimer le reçu de traçabilité
+     */
+    public function imprimerRecu(DossierOuvert $dossierOuvert)
+    {
+        // Charger les relations nécessaires
+        $dossierOuvert->load([
+            'rendezVous.client',
+            'rendezVous.centre.ville',
+            'rendezVous.service',
+            'rendezVous.formule',
+            'agent',
+            'paiementVerification'
+        ]);
+        
+        // Vérifier que le dossier est finalisé
+        if ($dossierOuvert->statut !== 'finalise') {
+            abort(403, 'Le dossier doit être finalisé pour imprimer le reçu');
+        }
+        
+        // Générer le PDF
+        $pdf = Pdf::loadView('agent.dossier.recu', compact('dossierOuvert'));
+        
+        $filename = 'recu-mayelia-dossier-' . $dossierOuvert->id . '-' . date('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Imprimer l'étiquette avec code-barres
+     */
+    public function imprimerEtiquette(DossierOuvert $dossierOuvert)
+    {
+        // Charger les relations nécessaires
+        $dossierOuvert->load([
+            'rendezVous.client',
+            'rendezVous.centre',
+            'rendezVous.service',
+            'agent'
+        ]);
+        
+        // Vérifier que le dossier est finalisé
+        if ($dossierOuvert->statut !== 'finalise') {
+            abort(403, 'Le dossier doit être finalisé pour imprimer l\'étiquette');
+        }
+        
+        // Générer le code-barres si non existant
+        if (!$dossierOuvert->code_barre) {
+            $dossierOuvert->update([
+                'code_barre' => 'MAY-' . str_pad($dossierOuvert->id, 8, '0', STR_PAD_LEFT)
+            ]);
+        }
+        
+        // Générer le PDF
+        $pdf = Pdf::loadView('agent.dossier.etiquette', compact('dossierOuvert'));
+        
+        // Format A6 pour étiquette (105 x 148 mm)
+        $pdf->setPaper([0, 0, 297.64, 419.53], 'portrait'); // A6 en points
+        
+        $filename = 'etiquette-dossier-' . $dossierOuvert->id . '-' . date('Y-m-d') . '.pdf';
+        
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Mettre à jour le statut global du dossier
      */
     private function updateDossierStatus(DossierOuvert $dossierOuvert)
     {
@@ -520,4 +702,5 @@ class DossierWorkflowController extends Controller
             $dossierOuvert->update(['statut' => 'en_cours']);
         }
     }
+
 }

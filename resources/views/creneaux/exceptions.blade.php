@@ -1,4 +1,4 @@
-@extends('creneaux.layout')
+﻿@extends('creneaux.layout')
 
 @section('title', 'Gestion des Exceptions')
 @section('subtitle', 'Gérez les jours exceptionnels : fermetures, capacités réduites, horaires modifiés')
@@ -14,11 +14,13 @@
                 </h3>
                 <p class="text-sm text-gray-600 mt-1">Gérez les jours exceptionnels de votre centre</p>
             </div>
+            @userCan('creneaux', 'exceptions.create')
             <button onclick="openCreateExceptionModal()" 
-                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 flex items-center">
+                    class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 flex items-center">
                 <i class="fas fa-plus mr-2"></i>
                 Nouvelle Exception
             </button>
+            @enduserCan
         </div>
     </div>
 
@@ -27,7 +29,7 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Type d'exception</label>
-                    <select id="filterType" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="filterType" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="">Tous les types</option>
                         <option value="ferme">Centre fermé</option>
                         <option value="capacite_reduite">Capacité réduite</option>
@@ -36,11 +38,11 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date de début</label>
-                    <input type="date" id="filterDateDebut" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="date" id="filterDateDebut" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                 </div>
 e               <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Date de fin</label>
-                    <input type="date" id="filterDateFin" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="date" id="filterDateFin" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                 </div>
                 <div class="flex items-end">
                     <button onclick="applyFilters()" 
@@ -82,7 +84,7 @@ e               <div>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 <div class="flex items-center">
-                                    <i class="fas fa-calendar-day text-blue-500 mr-2"></i>
+                                    <i class="fas fa-calendar-day text-mayelia-500 mr-2"></i>
                                     {{ $exception->date_exception->format('d/m/Y') }}
                                     <span class="ml-2 text-xs text-gray-500">
                                         ({{ $exception->date_exception->format('l') }})
@@ -101,7 +103,7 @@ e               <div>
                                         Capacité réduite
                                     </span>
                                 @elseif($exception->type === 'horaires_modifies')
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-mayelia-100 text-mayelia-800">
                                         <i class="fas fa-clock mr-1"></i>
                                         Horaires modifiés
                                     </span>
@@ -141,14 +143,18 @@ e               <div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
+                                    @userCan('creneaux', 'exceptions.update')
                                     <button onclick="editException({{ $exception->id }})" 
-                                            class="text-blue-600 hover:text-blue-900 transition duration-200">
+                                            class="text-mayelia-600 hover:text-mayelia-900 transition duration-200">
                                         <i class="fas fa-edit"></i>
                                     </button>
+                                    @enduserCan
+                                    @userCan('creneaux', 'exceptions.delete')
                                     <button onclick="deleteException({{ $exception->id }})" 
                                             class="text-red-600 hover:text-red-900 transition duration-200">
                                         <i class="fas fa-trash"></i>
                                     </button>
+                                    @enduserCan
                                 </div>
                             </td>
                         </tr>
@@ -190,7 +196,7 @@ e               <div>
                             Date d'exception *
                         </label>
                         <input type="date" id="dateException" name="date_exception" required
-                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     
                     <!-- Type d'exception -->
@@ -200,7 +206,7 @@ e               <div>
                             Type d'exception *
                         </label>
                         <select id="typeException" name="type" required
-                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500"
                                 onchange="toggleExceptionFields()">
                             <option value="">Sélectionner un type</option>
                             <option value="ferme">Centre fermé</option>
@@ -217,7 +223,7 @@ e               <div>
                         Description
                     </label>
                     <textarea id="descriptionException" name="description" rows="3"
-                              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500"
                               placeholder="Ex: Jour férié, maintenance, événement spécial..."></textarea>
                 </div>
                 
@@ -232,12 +238,12 @@ e               <div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Heure de début</label>
                             <input type="time" id="heureDebut" name="heure_debut"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Heure de fin</label>
                             <input type="time" id="heureFin" name="heure_fin"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         </div>
                     </div>
                     
@@ -245,12 +251,12 @@ e               <div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pause début</label>
                             <input type="time" id="pauseDebut" name="pause_debut"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pause fin</label>
                             <input type="time" id="pauseFin" name="pause_fin"
-                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         </div>
                     </div>
                 </div>
@@ -261,7 +267,7 @@ e               <div>
                         Capacité réduite (nombre de personnes)
                     </label>
                     <input type="number" id="capaciteReduite" name="capacite_reduite" min="1"
-                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                           class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500"
                            placeholder="Ex: 5">
                 </div>
             </form>
@@ -272,7 +278,7 @@ e               <div>
                     Annuler
                 </button>
                 <button type="button" onclick="saveException()"
-                        class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition duration-200">
+                        class="px-4 py-2 text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700 rounded-md transition duration-200">
                     <i class="fas fa-save mr-2"></i>
                     Enregistrer
                 </button>

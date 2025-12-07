@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Configuration des services & formules')
 @section('subtitle', 'Gérez l\'activation des services et formules pour votre centre')
@@ -7,7 +7,7 @@
 <div class="flex items-center space-x-4">
     <div class="relative">
         <input type="text" id="searchServices" placeholder="Rechercher un service..." 
-               class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+               class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-transparent">
         <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
     </div>
 </div>
@@ -18,7 +18,7 @@
     <!-- Informations du centre -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center mb-4">
-            <i class="fas fa-building text-blue-600 text-xl mr-3"></i>
+            <i class="fas fa-building text-mayelia-600 text-xl mr-3"></i>
             <h3 class="text-lg font-semibold text-gray-900">{{ $centre->nom }}</h3>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
@@ -64,15 +64,21 @@
                             
                             <!-- Toggle principal du service -->
                             <div class="ml-4">
+                                @isAdmin
                                 <form method="POST" action="{{ route('centres.toggle-service', $service) }}" class="inline">
                                     @csrf
                                     <input type="hidden" name="actif" value="{{ $serviceActive ? '0' : '1' }}">
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" class="sr-only peer" {{ $serviceActive ? 'checked' : '' }} 
                                                onchange="this.form.submit()">
-                                        <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                                        <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mayelia-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-mayelia-600"></div>
                                     </label>
                                 </form>
+                                @else
+                                <div class="px-3 py-1 text-xs font-medium rounded-full {{ $serviceActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                    {{ $serviceActive ? 'Actif' : 'Inactif' }}
+                                </div>
+                                @endisAdmin
                             </div>
                         </div>
                     </div>
@@ -96,15 +102,21 @@
                                         </div>
                                         
                                         <!-- Toggle de la formule -->
+                                        @isAdmin
                                         <form method="POST" action="{{ route('centres.toggle-formule', $formule) }}" class="inline">
                                             @csrf
                                             <input type="hidden" name="actif" value="{{ $formuleActive ? '0' : '1' }}">
                                             <label class="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" class="sr-only peer" {{ $formuleActive ? 'checked' : '' }} 
                                                        onchange="this.form.submit()" {{ !$serviceActive ? 'disabled' : '' }}>
-                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
+                                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mayelia-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-mayelia-600 peer-disabled:opacity-50 peer-disabled:cursor-not-allowed"></div>
                                             </label>
                                         </form>
+                                        @else
+                                        <div class="px-2 py-1 text-xs font-medium rounded-full {{ $formuleActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                            {{ $formuleActive ? 'Actif' : 'Inactif' }}
+                                        </div>
+                                        @endisAdmin
                                     </div>
                                 @endforeach
                             </div>

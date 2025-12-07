@@ -1,10 +1,10 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Services & Formules')
 @section('subtitle', 'Gérez les services et leurs formules pour votre centre')
 
 @section('header-actions')
-<a href="{{ route('services.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+<a href="{{ route('services.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
     <i class="fas fa-plus"></i>
     <span>Nouveau service</span>
 </a>
@@ -18,7 +18,7 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center space-x-3">
-                            <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                            <div class="p-2 bg-mayelia-100 text-mayelia-600 rounded-lg">
                                 <i class="fas fa-cogs"></i>
                             </div>
                             <div>
@@ -33,7 +33,7 @@
                             </span>
                             
                             <div class="flex space-x-1">
-                                <a href="{{ route('services.edit', $service) }}" class="p-2 text-gray-400 hover:text-blue-600">
+                                <a href="{{ route('services.edit', $service) }}" class="p-2 text-gray-400 hover:text-mayelia-600">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="{{ route('services.formules.create', $service) }}" class="p-2 text-gray-400 hover:text-green-600" title="Ajouter une formule">
@@ -87,7 +87,7 @@
                                         </div>
                                         
                                         <div class="flex space-x-1">
-                                            <a href="{{ route('services.formules.edit', $formule) }}" class="p-1 text-gray-400 hover:text-blue-600">
+                                            <a href="{{ route('services.formules.edit', $formule) }}" class="p-1 text-gray-400 hover:text-mayelia-600">
                                                 <i class="fas fa-edit text-xs"></i>
                                             </a>
                                             <form method="POST" action="{{ route('services.formules.destroy', $formule) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette formule ?')">
@@ -107,7 +107,7 @@
                             <div class="text-center py-4">
                                 <i class="fas fa-tags text-gray-300 text-2xl mb-2"></i>
                                 <p class="text-gray-500 text-sm">Aucune formule configurée</p>
-                                <a href="{{ route('services.formules.create', $service) }}" class="text-blue-600 hover:text-blue-700 text-sm font-medium">
+                                <a href="{{ route('services.formules.create', $service) }}" class="text-mayelia-600 hover:text-mayelia-700 text-sm font-medium">
                                     Ajouter une formule
                                 </a>
                             </div>
@@ -121,7 +121,7 @@
             <i class="fas fa-cogs text-gray-300 text-4xl mb-4"></i>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun service configuré</h3>
             <p class="text-gray-600 mb-6">Commencez par créer votre premier service pour votre centre.</p>
-            <a href="{{ route('services.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
+            <a href="{{ route('services.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
                 <i class="fas fa-plus"></i>
                 <span>Créer un service</span>
             </a>

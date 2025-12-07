@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Calendrier de disponibilité')
 
@@ -66,7 +66,7 @@
 
         <!-- Bouton de confirmation -->
         <div id="confirm-booking" class="mt-6 hidden">
-            <button onclick="confirmBooking()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md">
+            <button onclick="confirmBooking()" class="w-full bg-mayelia-600 hover:bg-mayelia-700 text-white font-medium py-3 px-4 rounded-md">
                 Confirmer la réservation
             </button>
         </div>
@@ -142,9 +142,9 @@ function renderCalendar() {
         if (dayDate < today) {
             dayElement.className += ' text-gray-400 cursor-not-allowed';
         } else if (dayDate.toDateString() === today.toDateString()) {
-            dayElement.className += ' bg-blue-100 text-blue-600 font-medium';
+            dayElement.className += ' bg-mayelia-100 text-mayelia-600 font-medium';
         } else {
-            dayElement.className += ' text-gray-900 hover:bg-blue-50';
+            dayElement.className += ' text-gray-900 hover:bg-mayelia-50';
         }
         
         dayElement.textContent = day;
@@ -166,12 +166,12 @@ function selectDate(date) {
     
     // Mettre à jour l'affichage
     document.querySelectorAll('#calendar-grid > div').forEach(day => {
-        day.classList.remove('bg-blue-600', 'text-white');
-        day.classList.add('text-gray-900', 'hover:bg-blue-50');
+        day.classList.remove('bg-mayelia-600', 'text-white');
+        day.classList.add('text-gray-900', 'hover:bg-mayelia-50');
     });
     
-    event.target.classList.remove('text-gray-900', 'hover:bg-blue-50');
-    event.target.classList.add('bg-blue-600', 'text-white');
+    event.target.classList.remove('text-gray-900', 'hover:bg-mayelia-50');
+    event.target.classList.add('bg-mayelia-600', 'text-white');
     
     // Charger les créneaux disponibles
     loadAvailability(date);
@@ -216,7 +216,7 @@ function displayAvailability(availability) {
     
     availability.forEach(slot => {
         const slotElement = document.createElement('button');
-        slotElement.className = 'p-3 text-sm border border-gray-300 rounded-md hover:bg-blue-50 hover:border-blue-300 text-left';
+        slotElement.className = 'p-3 text-sm border border-gray-300 rounded-md hover:bg-mayelia-50 hover:border-mayelia-300 text-left';
         
         if (slot.disponible) {
             slotElement.className += ' bg-white text-gray-900';
@@ -241,12 +241,12 @@ function selectTimeSlot(slot) {
     
     // Mettre à jour l'affichage
     document.querySelectorAll('#time-slots > button').forEach(btn => {
-        btn.classList.remove('bg-blue-600', 'text-white');
+        btn.classList.remove('bg-mayelia-600', 'text-white');
         btn.classList.add('bg-white', 'text-gray-900');
     });
     
     event.target.classList.remove('bg-white', 'text-gray-900');
-    event.target.classList.add('bg-blue-600', 'text-white');
+    event.target.classList.add('bg-mayelia-600', 'text-white');
     
     // Afficher le bouton de confirmation
     document.getElementById('confirm-booking').classList.remove('hidden');

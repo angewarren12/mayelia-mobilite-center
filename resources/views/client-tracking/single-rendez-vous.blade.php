@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Suivi de rendez-vous - ' . $rendezVous->numero_suivi)
 
@@ -19,7 +19,7 @@
                         Retour
                     </a>
                     <a href="{{ route('receipt.download', $rendezVous->id) }}" 
-                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                       class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700">
                         <i class="fas fa-download mr-2"></i>
                         Télécharger le reçu
                     </a>
@@ -42,7 +42,7 @@
                     <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                         <dt class="text-sm font-medium text-gray-500">Numéro de suivi</dt>
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-mayelia-100 text-mayelia-800">
                                 {{ $rendezVous->numero_suivi }}
                             </span>
                         </dd>
@@ -168,7 +168,7 @@
                 Rechercher un autre rendez-vous
             </a>
             <a href="{{ route('booking.wizard') }}" 
-               class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700">
+               class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-mayelia-600 hover:bg-mayelia-700">
                 <i class="fas fa-plus mr-2"></i>
                 Nouveau rendez-vous
             </a>

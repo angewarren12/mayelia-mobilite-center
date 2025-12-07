@@ -1,4 +1,4 @@
-@extends('creneaux.layout')
+﻿@extends('creneaux.layout')
 
 @section('title', 'Jours Ouvrables')
 @section('subtitle', 'Configurez les jours d\'ouverture et les horaires de travail')
@@ -14,9 +14,9 @@
                     <p class="text-sm text-gray-600 mt-1">Définissez les jours d'ouverture et les horaires de travail du centre</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <div class="bg-blue-50 px-4 py-2 rounded-lg">
-                        <i class="fas fa-calendar-day text-blue-600 mr-2"></i>
-                        <span class="text-sm font-medium text-blue-900">{{ $joursOuverts }} jours ouverts</span>
+                    <div class="bg-mayelia-50 px-4 py-2 rounded-lg">
+                        <i class="fas fa-calendar-day text-mayelia-600 mr-2"></i>
+                        <span class="text-sm font-medium text-mayelia-900">{{ $joursOuverts }} jours ouverts</span>
                     </div>
                     <button onclick="testDatabase()" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium text-gray-700">
                         <i class="fas fa-database mr-2"></i>
@@ -53,15 +53,15 @@
                         }
                     @endphp
                     
-                    <div class="border border-gray-200 rounded-lg p-4 {{ $actif ? 'bg-white border-blue-200' : 'bg-gray-50' }}">
+                    <div class="border border-gray-200 rounded-lg p-4 {{ $actif ? 'bg-white border-mayelia-200' : 'bg-gray-50' }}">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $actif ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500' }}">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $actif ? 'bg-mayelia-100 text-mayelia-600' : 'bg-gray-200 text-gray-500' }}">
                                     <span class="font-semibold">{{ $jour['lettre'] }}</span>
                                 </div>
                                 <div>
                                     <h4 class="font-medium text-gray-900">{{ $jour['nom'] }}</h4>
-                                    <p class="text-sm {{ $actif ? 'text-blue-600' : 'text-gray-500' }}">
+                                    <p class="text-sm {{ $actif ? 'text-mayelia-600' : 'text-gray-500' }}">
                                         {{ $actif ? 'Jour ouvrable' : 'Fermé' }}
                                     </p>
                                 </div>
@@ -80,17 +80,22 @@
                                     </div>
                                 @endif
                                 
+                                @userCan('creneaux', 'jours-travail.update')
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" class="sr-only peer" {{ $actif ? 'checked' : '' }} 
                                            onchange="toggleJour({{ $jourTravail ? $jourTravail->id : 'null' }}, {{ $numero }})">
-                                    <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-blue-600"></div>
+                                    <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-mayelia-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-mayelia-600"></div>
                                 </label>
+                                @else
+                                <span class="text-sm text-gray-500 italic">Lecture seule</span>
+                                @enduserCan
                             </div>
                         </div>
                         
                         <!-- Formulaire des horaires (visible seulement si actif) -->
                         @if($actif && $jourTravail)
                             <div class="mt-4 pt-4 border-t border-gray-200">
+                                @userCan('creneaux', 'jours-travail.update')
                                 <form id="form-horaires-{{ $jourTravail->id }}" onsubmit="updateHoraires(event, {{ $jourTravail->id }})">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
@@ -99,12 +104,12 @@
                                                 <div>
                                                     <label class="block text-xs text-gray-500 mb-1">Ouverture</label>
                                                     <input type="time" name="heure_debut" value="{{ \Carbon\Carbon::parse($jourTravail->heure_debut)->format('H:i') }}" 
-                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                                 </div>
                                                 <div>
                                                     <label class="block text-xs text-gray-500 mb-1">Fermeture</label>
                                                     <input type="time" name="heure_fin" value="{{ \Carbon\Carbon::parse($jourTravail->heure_fin)->format('H:i') }}" 
-                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                                 </div>
                                             </div>
                                         </div>
@@ -112,7 +117,7 @@
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Intervalle des créneaux</label>
                                             <div class="flex items-center space-x-2">
-                                                <select name="intervalle_minutes" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                                <select name="intervalle_minutes" class="px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                                     <option value="15" {{ $jourTravail->intervalle_minutes == 15 ? 'selected' : '' }}>15 minutes</option>
                                                     <option value="30" {{ $jourTravail->intervalle_minutes == 30 ? 'selected' : '' }}>30 minutes</option>
                                                     <option value="45" {{ $jourTravail->intervalle_minutes == 45 ? 'selected' : '' }}>45 minutes</option>
@@ -121,7 +126,7 @@
                                                     <option value="120" {{ $jourTravail->intervalle_minutes == 120 ? 'selected' : '' }}>2 heures</option>
                                                 </select>
                                                 <button type="button" onclick="updateIntervalle({{ $jourTravail->id }})" 
-                                                        class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm">
+                                                        class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-3 py-2 rounded text-sm">
                                                     <i class="fas fa-save mr-1"></i>
                                                     Mettre à jour
                                                 </button>
@@ -138,24 +143,29 @@
                                                 <div>
                                                     <label class="block text-xs text-gray-500 mb-1">Début pause</label>
                                                     <input type="time" name="pause_debut" value="{{ $jourTravail->pause_debut ? \Carbon\Carbon::parse($jourTravail->pause_debut)->format('H:i') : '' }}" 
-                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                                 </div>
                                                 <div>
                                                     <label class="block text-xs text-gray-500 mb-1">Fin pause</label>
                                                     <input type="time" name="pause_fin" value="{{ $jourTravail->pause_fin ? \Carbon\Carbon::parse($jourTravail->pause_fin)->format('H:i') : '' }}" 
-                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     
                                     <div class="mt-4">
-                                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+                                        <button type="submit" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
                                             <i class="fas fa-save mr-2"></i>
                                             Mettre à jour
                                         </button>
                                     </div>
                                 </form>
+                                @else
+                                <div class="text-sm text-gray-500 italic text-center py-4">
+                                    <i class="fas fa-lock mr-2"></i>Lecture seule - Vous n'avez pas la permission de modifier les horaires
+                                </div>
+                                @enduserCan
                             </div>
                         @endif
                     </div>
@@ -186,7 +196,7 @@
                             </label>
                             <input type="date" id="date_exception" name="date_exception" required
                                    min="{{ date('Y-m-d', strtotime('+1 day')) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         </div>
 
                         <!-- Type d'exception -->
@@ -195,7 +205,7 @@
                                 Type d'exception <span class="text-red-500">*</span>
                             </label>
                             <select id="type" name="type" required onchange="toggleExceptionFields()"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                 <option value="">Sélectionnez un type</option>
                                 <option value="ferme">Centre fermé</option>
                                 <option value="capacite_reduite">Capacité réduite</option>
@@ -209,7 +219,7 @@
                                 Description (optionnel)
                             </label>
                             <textarea id="description" name="description" rows="3"
-                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500"
                                       placeholder="Décrivez la raison de cette exception..."></textarea>
                         </div>
 
@@ -223,14 +233,14 @@
                                         Heure d'ouverture
                                     </label>
                                     <input type="time" id="heure_debut" name="heure_debut"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                 </div>
                                 <div>
                                     <label for="heure_fin" class="block text-sm font-medium text-gray-700 mb-2">
                                         Heure de fermeture
                                     </label>
                                     <input type="time" id="heure_fin" name="heure_fin"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                 </div>
                             </div>
 
@@ -240,14 +250,14 @@
                                         Début de pause (optionnel)
                                     </label>
                                     <input type="time" id="pause_debut" name="pause_debut"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                 </div>
                                 <div>
                                     <label for="pause_fin" class="block text-sm font-medium text-gray-700 mb-2">
                                         Fin de pause (optionnel)
                                     </label>
                                     <input type="time" id="pause_fin" name="pause_fin"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                                 </div>
                             </div>
                         </div>
@@ -258,7 +268,7 @@
                                 Nouvelle capacité (1-20 personnes)
                             </label>
                             <input type="number" id="capacite_reduite" name="capacite_reduite" min="1" max="20"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         </div>
                     </div>
 
@@ -269,7 +279,7 @@
                             Annuler
                         </button>
                         <button type="submit"
-                                class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                                class="px-4 py-2 text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700 rounded-md">
                             <i class="fas fa-save mr-2"></i>
                             Créer l'exception
                         </button>
@@ -284,7 +294,7 @@
         <div class="p-6 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <h3 class="text-lg font-semibold text-gray-900">Exceptions existantes</h3>
-                <button onclick="refreshExceptionsList()" class="text-blue-600 hover:text-blue-800">
+                <button onclick="refreshExceptionsList()" class="text-mayelia-600 hover:text-mayelia-800">
                     <i class="fas fa-sync-alt mr-1"></i>
                     Actualiser
                 </button>
@@ -326,10 +336,11 @@ function toggleJour(jourTravailId, jourSemaine) {
         });
     } else {
         // Toggle un jour existant
-        fetch(`/creneaux/jours-travail/${jourTravailId}/toggle`, {
+        fetch(`/jours-travail/${jourTravailId}/toggle`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
             }
         })
@@ -349,10 +360,11 @@ function updateHoraires(event, jourTravailId) {
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData);
     
-    fetch(`/creneaux/jours-travail/${jourTravailId}/horaires`, {
+    fetch(`/jours-travail/${jourTravailId}/horaires`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
         body: JSON.stringify(data)
@@ -502,7 +514,7 @@ function showConfirmationModal(title, message, warnings, onConfirm) {
                         Annuler
                     </button>
                     <button onclick="confirmAction()" 
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                            class="px-4 py-2 text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700 rounded-md">
                         Continuer
                     </button>
                 </div>
@@ -595,8 +607,8 @@ function showErrorModalWithMigration(title, message, errors, warnings, onForceMi
                             </ul>
                         </div>
                     ` : ''}
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
-                        <p class="text-sm text-blue-800">
+                    <div class="bg-mayelia-50 border border-mayelia-200 rounded-lg p-3 mt-3">
+                        <p class="text-sm text-mayelia-800">
                             <i class="fas fa-info-circle mr-1"></i>
                             Vous pouvez forcer la migration pour supprimer les templates incompatibles.
                         </p>

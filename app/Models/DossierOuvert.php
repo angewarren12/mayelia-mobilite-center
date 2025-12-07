@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\LogsDossierActions;
 
 class DossierOuvert extends Model
 {
-    use HasFactory;
+    use HasFactory, LogsDossierActions;
 
     protected $table = 'dossier_ouvert';
 
@@ -21,7 +22,14 @@ class DossierOuvert extends Model
         'documents_manquants',
         'informations_client_verifiees',
         'paiement_verifie',
-        'notes'
+        'notes',
+        'code_barre',
+        'statut_oneci',
+        'transfer_id',
+        'date_envoi_oneci',
+        'date_reception_oneci',
+        'date_carte_prete',
+        'date_recuperation'
     ];
 
     protected $casts = [
@@ -31,6 +39,10 @@ class DossierOuvert extends Model
         'documents_manquants' => 'boolean',
         'informations_client_verifiees' => 'boolean',
         'paiement_verifie' => 'boolean',
+        'date_envoi_oneci' => 'datetime',
+        'date_reception_oneci' => 'datetime',
+        'date_carte_prete' => 'datetime',
+        'date_recuperation' => 'datetime',
     ];
 
     /**
@@ -50,9 +62,25 @@ class DossierOuvert extends Model
     }
 
     /**
+     * Vérifier si le dossier peut être géré par un utilisateur
+     */
+    public function canBeManagedBy(User $user)
+    {
+        return $this->agent_id === $user->id;
+    }
+
+    /**
      * Relation avec les vérifications de documents
      */
     public function documentVerifications()
+    {
+        return $this->hasMany(DocumentVerification::class);
+    }
+
+    /**
+     * Alias pour documentVerifications (compatibilité)
+     */
+    public function documents()
     {
         return $this->hasMany(DocumentVerification::class);
     }
@@ -66,11 +94,19 @@ class DossierOuvert extends Model
     }
 
     /**
-     * Vérifier si le dossier peut être géré par un agent
+     * Relation avec le transfert ONECI
      */
-    public function canBeManagedBy(User $agent)
+    public function oneciTransfer()
     {
-        return $this->agent_id === $agent->id;
+        return $this->belongsTo(DossierOneciTransfer::class, 'transfer_id');
+    }
+
+    /**
+     * Relation avec l'item ONECI
+     */
+    public function oneciItem()
+    {
+        return $this->hasOne(DossierOneciItem::class, 'dossier_ouvert_id');
     }
 
     /**

@@ -8,25 +8,59 @@
     <meta name="description" content="@yield('description', 'Mayelia Mobilité vous accompagne dans vos démarches de mobilité : visa, transport VIP, assistance aéroport et formalités administratives. Service professionnel et fiable en Côte d\'Ivoire.')">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Styles -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Custom Styles -->
+    <style>
+        /* Mayelia Colors */
+        :root {
+            --mayelia-turquoise: #11B49A;
+            --mayelia-sky-blue: #1DA0DB;
+        }
+    </style>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mayelia': {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#11B49A',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
     <!-- Additional Styles -->
     @stack('styles')
 </head>
 <body class="font-inter antialiased">
-    <!-- Navigation -->
-    <nav class="bg-white/95 backdrop-blur-md shadow-lg fixed w-full top-0 z-50 transition-all duration-300 border-b border-turquoise-100" id="navbar">
+    <!-- Header with White Background -->
+    <header class="bg-white shadow-lg fixed w-full top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-20">
                 <!-- Logo -->
@@ -37,55 +71,54 @@
                                  alt="Mayelia Mobilité" 
                                  class="h-12 w-auto transition-transform duration-300 group-hover:scale-105">
                         </div>
-                        <div class="hidden sm:block">
-                            <div class="text-xl font-bold text-gray-900 group-hover:text-turquoise-600 transition-colors">
-                                Mayelia Mobilité
-                            </div>
-                            <div class="text-xs text-gray-500">Centre de mobilité</div>
-                        </div>
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
-                <div class="hidden lg:flex items-center space-x-8">
-                    <a href="{{ route('home') }}" class="text-gray-700 hover:text-turquoise-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-turquoise-50">Accueil</a>
-                    <a href="/about" class="text-gray-700 hover:text-turquoise-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-turquoise-50">À propos</a>
-                    <a href="/services" class="text-gray-700 hover:text-turquoise-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-turquoise-50">Services</a>
-                    <a href="/contact" class="text-gray-700 hover:text-turquoise-600 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:bg-turquoise-50">Contact</a>
-                    <a href="{{ route('booking.wizard') }}" class="cta-button text-sm px-6 py-2">
-                        <i class="fas fa-calendar-alt mr-2"></i>
-                        Prendre RDV
-                    </a>
-                </div>
-
-                <!-- Mobile menu button -->
-                <div class="lg:hidden">
-                    <button type="button" class="text-gray-700 hover:text-turquoise-600 focus:outline-none focus:text-turquoise-600 transition-colors p-2" id="mobile-menu-button">
-                        <i class="fas fa-bars text-xl"></i>
+                <!-- Right Side - Account and Notifications -->
+                <div class="flex items-center space-x-4">
+                    <!-- Account Icon -->
+                    <button class="relative p-3 text-gray-600 hover:text-turquoise-600 hover:bg-turquoise-50 rounded-full transition-all duration-300 group">
+                        <i class="fas fa-user text-xl"></i>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-turquoise-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </button>
+
+                    <!-- Notifications Icon -->
+                    <button class="relative p-3 text-gray-600 hover:text-turquoise-600 hover:bg-turquoise-50 rounded-full transition-all duration-300 group">
+                        <i class="fas fa-bell text-xl"></i>
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full">
+                            <span class="absolute inset-0 bg-red-500 rounded-full animate-ping"></span>
+                        </div>
+                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-white text-xs flex items-center justify-center font-bold">3</span>
+                    </button>
+
+                    <!-- Mobile menu button -->
+                    <div class="lg:hidden">
+                        <button type="button" class="text-gray-700 hover:text-turquoise-600 focus:outline-none focus:text-turquoise-600 transition-colors p-2" id="mobile-menu-button">
+                            <i class="fas fa-bars text-xl"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Mobile menu -->
-        <div class="lg:hidden hidden bg-white/95 backdrop-blur-md shadow-lg border-t border-turquoise-100" id="mobile-menu">
+        <div class="lg:hidden hidden bg-white shadow-lg border-t border-gray-100" id="mobile-menu">
             <div class="px-4 pt-4 pb-6 space-y-2">
                 <a href="{{ route('home') }}" class="text-gray-700 hover:text-turquoise-600 block px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 hover:bg-turquoise-50">Accueil</a>
                 <a href="/about" class="text-gray-700 hover:text-turquoise-600 block px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 hover:bg-turquoise-50">À propos</a>
                 <a href="/services" class="text-gray-700 hover:text-turquoise-600 block px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 hover:bg-turquoise-50">Services</a>
                 <a href="/contact" class="text-gray-700 hover:text-turquoise-600 block px-4 py-3 rounded-lg text-base font-medium transition-all duration-300 hover:bg-turquoise-50">Contact</a>
                 <div class="pt-4">
-                    <a href="{{ route('booking.wizard') }}" class="cta-button text-sm px-6 py-3 w-full text-center block">
-                        <i class="fas fa-calendar-alt mr-2"></i>
+                    <a href="{{ route('booking.wizard') }}" class="bg-turquoise-500 hover:bg-turquoise-600 text-white text-sm px-6 py-3 w-full text-center block rounded-lg transition-all duration-300">
                         Prendre RDV
                     </a>
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
 
     <!-- Main Content -->
-    <main class="pt-16">
+    <main class="pt-20">
         @yield('content')
     </main>
 

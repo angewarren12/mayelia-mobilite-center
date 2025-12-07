@@ -17,7 +17,11 @@ class DocumentVerification extends Model
         'present',
         'commentaire',
         'verifie_par',
-        'date_verification'
+        'date_verification',
+        'nom_fichier',
+        'chemin_fichier',
+        'taille_fichier',
+        'type_mime'
     ];
 
     protected $casts = [

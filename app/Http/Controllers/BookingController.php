@@ -10,32 +10,351 @@ use App\Models\Formule;
 use App\Models\Client;
 use App\Models\RendezVous;
 use App\Services\DisponibiliteService;
+use App\Services\OneciVerificationService;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class BookingController extends Controller
 {
     protected $disponibiliteService;
+    protected $oneciService;
+    protected $carteResidentService;
+    protected $oneciCniService;
 
-    public function __construct(DisponibiliteService $disponibiliteService)
-    {
+    public function __construct(
+        DisponibiliteService $disponibiliteService,
+        OneciVerificationService $oneciService,
+        \App\Services\CarteResidentVerificationService $carteResidentService,
+        \App\Services\OneciCniVerificationService $oneciCniService
+    ) {
         $this->disponibiliteService = $disponibiliteService;
+        $this->oneciService = $oneciService;
+        $this->carteResidentService = $carteResidentService;
+        $this->oneciCniService = $oneciCniService;
     }
 
     /**
-     * Étape 1: Page d'accueil - Sélection du pays
+     * Étape 0: Page de vérification ONECI (nouvelle première étape)
+     */
+    public function showVerification()
+    {
+        return view('booking.verification');
+    }
+
+    /**
+     * Effacer la session ONECI (quand l'utilisateur revient à l'étape service)
+     */
+    public function clearOneciSession()
+    {
+        session()->forget([
+            'oneci_verified', 'oneci_data', 'oneci_token',
+            'carte_resident_verified', 'carte_resident_data', 'verification_type'
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Session ONECI effacée'
+        ]);
+    }
+
+    /**
+     * Vérifier le numéro de pré-enrôlement ONECI
+     */
+    public function verifyPreEnrollment(Request $request)
+    {
+        $request->validate([
+            'numero_pre_enrolement' => 'required|string'
+        ]);
+
+        try {
+            $result = $this->oneciService->verifyPreEnrollmentNumber(
+                $request->numero_pre_enrolement
+            );
+
+            if (!$result['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message']
+                ], 404);
+            }
+
+            // Vérifier le statut
+            if ($result['statut'] !== 'valide') {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message'],
+                    'statut' => $result['statut'],
+                    'data' => $result['data']
+                ], 403);
+            }
+
+            // Stocker les informations en session
+            session([
+                'oneci_verified' => true,
+                'oneci_data' => $result['data']
+            ]);
+
+            Log::info('Vérification ONECI réussie', [
+                'numero' => $request->numero_pre_enrolement,
+                'statut' => $result['statut']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => $result['data'],
+                'redirect_url' => route('booking.wizard')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la vérification ONECI', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la vérification'
+            ], 500);
+        }
+    }
+
+    /**
+     * Vérifier le numéro de dossier carte de résident
+     */
+    public function verifyCarteResident(Request $request)
+    {
+        $request->validate([
+            'numero_dossier' => 'required|string'
+        ]);
+
+        try {
+            $result = $this->carteResidentService->verifyNumeroDossier(
+                $request->numero_dossier
+            );
+
+            if (!$result['success']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $result['message']
+                ], 404);
+            }
+
+            // Vérifier le statut
+            if (!$this->carteResidentService->isStatutValide($result['statut'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Votre dossier n\'est pas encore traité. Statut: ' . $result['statut'],
+                    'statut' => $result['statut'],
+                    'data' => $result['data']
+                ], 403);
+            }
+
+            // Stocker les informations en session
+            session([
+                'carte_resident_verified' => true,
+                'carte_resident_data' => $result['data'],
+                'verification_type' => 'carte_resident'
+            ]);
+
+            Log::info('Vérification carte de résident réussie', [
+                'numero_dossier' => $request->numero_dossier,
+                'statut' => $result['statut']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => $result['data'],
+                'redirect_url' => route('booking.wizard')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la vérification carte de résident', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la vérification'
+            ], 500);
+        }
+    }
+
+    /**
+     * Vérifier le numéro de dossier CNI (Pré-enrôlement)
+     */
+    public function verifyPreEnrollmentCni(Request $request)
+    {
+        $request->validate([
+            'numero_dossier' => 'required|string'
+        ]);
+
+        try {
+            // Utiliser le service CNI dédié
+            $result = $this->oneciCniService->verifyNumeroDossier(
+                $request->numero_dossier
+            );
+
+            if (!$result['success']) {
+                // Retourner l'erreur avec le statut si disponible (pour affichage précis)
+                $data = [
+                    'success' => false,
+                    'message' => $result['message']
+                ];
+                if (isset($result['statut_label'])) {
+                    $data['statut'] = $result['statut_label'];
+                }
+                
+                return response()->json($data, 404);
+            }
+
+            // Si succès, le statut est forcément FPD (vérifié dans le service)
+            
+            // Stocker les informations en session
+            session([
+                'oneci_cni_verified' => true,
+                'oneci_data' => $result['data'],
+                'verification_type' => 'cni'
+            ]);
+
+            Log::info('Vérification CNI réussie', [
+                'numero_dossier' => $request->numero_dossier,
+                'statut' => $result['statut_label']
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => $result['data'],
+                'statut' => $result['statut_label'],
+                'redirect_url' => route('booking.wizard')
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la vérification CNI', [
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Une erreur est survenue lors de la vérification'
+            ], 500);
+        }
+    }
+
+    /**
+     * Vérifier et valider un token d'accès unique (envoyé par ONECI)
+     */
+    public function verifyToken($token)
+    {
+        try {
+            $data = $this->oneciService->validateToken($token);
+
+            if (!$data) {
+                return redirect()->route('booking.verification')
+                    ->with('error', 'Lien invalide ou expiré. Veuillez vérifier votre numéro de pré-enrôlement.');
+            }
+
+            // Stocker les informations en session
+            session([
+                'oneci_verified' => true,
+                'oneci_data' => $data['donnees_oneci'],
+                'oneci_token' => $token
+            ]);
+
+            Log::info('Accès via token ONECI validé', [
+                'numero' => $data['numero_pre_enrolement']
+            ]);
+
+            return redirect()->route('booking.wizard')
+                ->with('success', 'Vérification réussie ! Vous pouvez maintenant prendre rendez-vous.');
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la validation du token ONECI', [
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->route('booking.verification')
+                ->with('error', 'Une erreur est survenue lors de la vérification.');
+        }
+    }
+
+    /**
+     * Redirige vers la plateforme de pré-enrôlement ONECI avec un identifiant unique Mayelia
+     */
+    public function redirectToOneciPreEnrollment()
+    {
+        // Générer un identifiant unique pour Mayelia
+        $mayeliaId = 'MAYELIA' . strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 6));
+        
+        // Stocker l'ID en session pour référence future
+        session(['mayelia_oneci_id' => $mayeliaId]);
+        
+        Log::info('Redirection vers ONECI pré-enrôlement', [
+            'mayelia_id' => $mayeliaId
+        ]);
+        
+        // Construire l'URL ONECI avec l'identifiant Mayelia
+        $oneciUrl = "https://pre-enrolement-cni.oneci.ci/formulaire/{$mayeliaId}";
+        
+        return redirect()->away($oneciUrl);
+    }
+
+    /**
+     * Étape 1: Page d'accueil - Sélection du Service (Nouveau Workflow)
      */
     public function index()
     {
-        // Pour l'instant, on assume qu'on est en Côte d'Ivoire
-        // Plus tard, on pourra ajouter une table pays
-        $pays = [
-            'id' => 1,
-            'nom' => 'Côte d\'Ivoire',
-            'code' => 'CI'
-        ];
+        // Récupérer tous les services actifs avec leurs formules
+        $services = Service::where('statut', 'actif')->with('formules')->get();
+        
+        return view('booking.index', compact('services'));
+    }
 
-        return view('booking.index', compact('pays'));
+    /**
+     * Étape 3: Récupérer les pays/villes disponibles pour un service (AJAX)
+     */
+    public function getLocationsForService($serviceId)
+    {
+        // Récupérer les centres qui proposent ce service
+        $centres = Centre::whereHas('services', function($query) use ($serviceId) {
+            $query->where('services.id', $serviceId)
+                  ->where('centre_services.actif', true);
+        })->with('ville')->get();
+
+        // Organiser par pays (pour l'instant on suppose CI, mais structure prête pour multi-pays)
+        $locations = [
+            'pays' => [
+                'id' => 1,
+                'nom' => 'Côte d\'Ivoire',
+                'code' => 'CI',
+                'villes' => $centres->pluck('ville')->unique('id')->values()
+            ]
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'locations' => [$locations]
+        ]);
+    }
+
+    /**
+     * Étape 3 (suite): Récupérer les centres d'une ville pour un service donné (AJAX)
+     */
+    public function getCentresForService($villeId, $serviceId)
+    {
+        $centres = Centre::where('ville_id', $villeId)
+                        ->whereHas('services', function($query) use ($serviceId) {
+                            $query->where('services.id', $serviceId)
+                                  ->where('centre_services.actif', true);
+                        })
+                        ->get();
+        
+        return response()->json([
+            'success' => true,
+            'centres' => $centres
+        ]);
     }
 
     /**
@@ -111,35 +430,88 @@ class BookingController extends Controller
                 'centre_id' => 'required|exists:centres,id',
                 'service_id' => 'required|exists:services,id',
                 'formule_id' => 'required|exists:formules,id',
-                'client_id' => 'required|exists:clients,id',
+                // 'client_id' => 'required|exists:clients,id', // On rend client_id optionnel car on peut stocker les infos directement
                 'date_rendez_vous' => 'required|date',
                 'tranche_horaire' => 'required|string',
-                'notes' => 'nullable|string|max:1000'
+                'notes' => 'nullable|string|max:1000',
+                
+                // Infos client
+                'nom' => 'required|string',
+                'email' => 'required|email',
+                'telephone' => 'required|string',
+                'prenom' => 'nullable|string',
+                'date_naissance' => 'nullable|date',
+                'lieu_naissance' => 'nullable|string',
+                'sexe' => 'nullable|string',
+                'adresse' => 'nullable|string',
+                
+                // Infos ONECI
+                'oneci_data' => 'nullable|array'
             ]);
 
             // Générer un numéro de suivi unique
             $numeroSuivi = 'RDV-' . date('Y') . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
+
+            // Extraire les données ONECI si présentes
+            $oneciData = $request->oneci_data;
+            $statutOneci = null;
+            $tokenVerification = null;
+            $numeroPreEnrolement = null;
+            $verifiedAt = null;
+
+            if ($oneciData) {
+                $statutOneci = 'valide';
+                $verifiedAt = now();
+                // Essayer de trouver le numéro dans différentes clés
+                $numeroPreEnrolement = $oneciData['numero_pre_enrolement'] 
+                    ?? $oneciData['numero_dossier'] 
+                    ?? null;
+                // Générer un token pour lier
+                $tokenVerification = md5($numeroSuivi . ($numeroPreEnrolement ?? uniqid()));
+            }
 
             // Créer le rendez-vous
             $rendezVous = RendezVous::create([
                 'centre_id' => $request->centre_id,
                 'service_id' => $request->service_id,
                 'formule_id' => $request->formule_id,
-                'client_id' => $request->client_id,
+                'client_id' => $request->client_id ?? null, // Peut être null si on n'a pas créé de client en base séparée
+                
+                // Infos client directes
+                'client_nom' => $request->nom,
+                'client_prenom' => $request->prenom,
+                'client_email' => $request->email,
+                'client_telephone' => $request->telephone,
+                'date_naissance' => $request->date_naissance,
+                'lieu_naissance' => $request->lieu_naissance,
+                'sexe' => $request->sexe,
+                'adresse' => $request->adresse,
+                
                 'date_rendez_vous' => $request->date_rendez_vous,
                 'tranche_horaire' => $request->tranche_horaire,
                 'statut' => 'confirme',
                 'numero_suivi' => $numeroSuivi,
-                'notes' => $request->notes
+                'notes' => $request->notes,
+                
+                // Champs ONECI
+                'numero_pre_enrolement' => $numeroPreEnrolement,
+                'token_verification' => $tokenVerification,
+                'statut_oneci' => $statutOneci,
+                'donnees_oneci' => $oneciData,
+                'verified_at' => $verifiedAt
             ]);
 
-            // Charger les relations pour la réponse
-            $rendezVous->load(['centre', 'service', 'formule', 'client']);
+            // Charger les relations pour la réponse (client peut être vide)
+            $relationships = ['centre', 'service', 'formule'];
+            if ($rendezVous->client_id) {
+                $relationships[] = 'client';
+            }
+            $rendezVous->load($relationships);
 
             \Log::info('Rendez-vous créé avec succès', [
                 'rendez_vous_id' => $rendezVous->id,
                 'numero_suivi' => $numeroSuivi,
-                'client' => $rendezVous->client->nom . ' ' . $rendezVous->client->prenom,
+                'client' => $rendezVous->client_nom . ' ' . $rendezVous->client_prenom,
                 'centre' => $rendezVous->centre->nom,
                 'date' => $rendezVous->date_rendez_vous
             ]);

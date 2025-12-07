@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Modifier la formule')
 @section('subtitle', 'Modifiez les informations de la formule: ' . $formule->nom)
@@ -19,7 +19,7 @@
                            id="nom" 
                            name="nom" 
                            value="{{ old('nom', $formule->nom) }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nom') border-red-500 @enderror"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('nom') border-red-500 @enderror"
                            placeholder="Ex: Standard, VIP, VVIP"
                            required>
                     @error('nom')
@@ -37,7 +37,7 @@
                            value="{{ old('prix', $formule->prix) }}"
                            step="0.01"
                            min="0"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('prix') border-red-500 @enderror"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('prix') border-red-500 @enderror"
                            placeholder="0.00"
                            required>
                     @error('prix')
@@ -58,7 +58,7 @@
                         <input type="text" 
                                id="couleur_text" 
                                value="{{ old('couleur', $formule->couleur) }}"
-                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('couleur') border-red-500 @enderror"
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('couleur') border-red-500 @enderror"
                                placeholder="#007bff"
                                readonly>
                     </div>
@@ -74,7 +74,7 @@
                     </label>
                     <select id="statut" 
                             name="statut"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('statut') border-red-500 @enderror"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('statut') border-red-500 @enderror"
                             required>
                         <option value="actif" {{ old('statut', $formule->statut) == 'actif' ? 'selected' : '' }}>Actif</option>
                         <option value="inactif" {{ old('statut', $formule->statut) == 'inactif' ? 'selected' : '' }}>Inactif</option>
@@ -91,7 +91,7 @@
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                        class="px-6 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white rounded-lg transition-colors">
                     Mettre à jour
                 </button>
             </div>

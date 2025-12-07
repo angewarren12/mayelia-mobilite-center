@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Sélection du service')
 
@@ -15,7 +15,7 @@
     <!-- Service Selection -->
     <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="text-center mb-8">
-            <i class="fas fa-clipboard-list text-6xl text-blue-600 mb-4"></i>
+            <i class="fas fa-clipboard-list text-6xl text-mayelia-600 mb-4"></i>
             <h3 class="text-2xl font-semibold text-gray-900 mb-2">
                 Services disponibles
             </h3>
@@ -27,7 +27,7 @@
         <div id="services-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Les services seront chargés via AJAX -->
             <div class="col-span-full text-center py-8">
-                <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-4"></i>
+                <i class="fas fa-spinner fa-spin text-3xl text-mayelia-600 mb-4"></i>
                 <p class="text-gray-600">Chargement des services...</p>
             </div>
         </div>
@@ -87,7 +87,7 @@
         }
 
         container.innerHTML = services.map(service => `
-            <div class="border-2 border-blue-200 rounded-lg p-6 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer service-card"
+            <div class="border-2 border-mayelia-200 rounded-lg p-6 hover:border-mayelia-400 hover:shadow-md transition-all cursor-pointer service-card"
                  data-service-id="${service.id}"
                  data-service-nom="${service.nom}">
                 <div class="text-center">
@@ -104,7 +104,7 @@
                         <i class="fas fa-tags mr-1"></i>
                         ${service.formules ? service.formules.length : 0} formule(s) disponible(s)
                     </div>
-                    <div class="flex items-center justify-center text-sm text-blue-600">
+                    <div class="flex items-center justify-center text-sm text-mayelia-600">
                         <i class="fas fa-arrow-right mr-2"></i>
                         Continuer
                     </div>

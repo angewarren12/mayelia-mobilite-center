@@ -5,12 +5,24 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\JourTravail;
 use App\Models\Centre;
+use App\Services\AuthService;
+use App\Http\Controllers\Concerns\ChecksPermissions;
 
 class JourTravailController extends Controller
 {
+    use ChecksPermissions;
+
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
     public function index()
     {
-        $user = auth()->user();
+        $this->checkPermission('creneaux', 'jours-travail.view');
+        
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre) {
@@ -124,17 +136,60 @@ class JourTravailController extends Controller
         return redirect()->route('jours-travail.index')->with('success', 'Jour de travail supprimé avec succès.');
     }
 
-    public function toggle(JourTravail $jourTravail)
+    public function toggle(Request $request, JourTravail $jourTravail)
     {
-        $user = auth()->user();
+        $this->checkPermission('creneaux', 'jours-travail.update');
+        
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre || $jourTravail->centre_id !== $centre->id) {
-            return redirect()->route('jours-travail.index')->with('error', 'Jour de travail non trouvé.');
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => 'Jour de travail non trouvé.'], 404)
+                : redirect()->route('jours-travail.index')->with('error', 'Jour de travail non trouvé.');
         }
 
         $jourTravail->update(['actif' => !$jourTravail->actif]);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'jour' => $jourTravail->fresh()
+            ]);
+        }
+
         return redirect()->route('jours-travail.index')->with('success', 'Statut du jour de travail mis à jour.');
+    }
+
+    public function updateHoraires(Request $request, JourTravail $jourTravail)
+    {
+        $this->checkPermission('creneaux', 'jours-travail.update');
+        
+        $data = $request->validate([
+            'heure_debut' => 'required|date_format:H:i',
+            'heure_fin' => 'required|date_format:H:i|after:heure_debut',
+            'pause_debut' => 'nullable|date_format:H:i',
+            'pause_fin' => 'nullable|date_format:H:i|after:pause_debut',
+        ]);
+
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
+
+        if (!$centre || $jourTravail->centre_id !== $centre->id) {
+            return $request->expectsJson()
+                ? response()->json(['success' => false, 'message' => 'Jour de travail non trouvé.'], 404)
+                : redirect()->route('jours-travail.index')->with('error', 'Jour de travail non trouvé.');
+        }
+
+        $jourTravail->update($data);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'jour' => $jourTravail->fresh()
+            ]);
+        }
+
+        return redirect()->route('jours-travail.index')->with('success', 'Horaires mis à jour.');
     }
 }

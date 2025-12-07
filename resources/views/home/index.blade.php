@@ -3,379 +3,343 @@
 @section('title', 'Mayelia Mobilité - Votre partenaire mobilité en Côte d\'Ivoire')
 @section('description', 'Mayelia Mobilité vous accompagne dans vos démarches de mobilité : visa, transport VIP, assistance aéroport et formalités administratives. Service professionnel et fiable en Côte d\'Ivoire.')
 
+@push('styles')
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+<style>
+    /* Custom animations */
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+    }
+    
+    @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(17, 180, 154, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(17, 180, 154, 0.6); }
+    }
+    
+    @keyframes slideInLeft {
+        from { transform: translateX(-100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes fadeInUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    .animate-slide-in-left { animation: slideInLeft 0.8s ease-out; }
+    .animate-slide-in-right { animation: slideInRight 0.8s ease-out; }
+    .animate-fade-in-up { animation: fadeInUp 0.8s ease-out; }
+    
+    /* Hero section styles */
+    .hero-slide {
+        position: relative;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(17, 180, 154, 0.9), rgba(29, 160, 219, 0.9));
+        z-index: 1;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Service cards */
+    .service-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(17, 180, 154, 0.1);
+    }
+    
+    .service-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(17, 180, 154, 0.2);
+        border-color: rgba(17, 180, 154, 0.3);
+    }
+    
+    /* Statistics */
+    .stat-item {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .stat-item:hover::before {
+        left: 100%;
+    }
+    
+    /* Testimonial cards */
+    .testimonial-card {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .testimonial-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(17, 180, 154, 0.05), rgba(29, 160, 219, 0.05));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .testimonial-card:hover::after {
+        opacity: 1;
+    }
+    
+    /* Process steps */
+    .process-step {
+        position: relative;
+    }
+    
+    .process-step::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -50px;
+        width: 100px;
+        height: 2px;
+        background: linear-gradient(90deg, #11B49A, #1DA0DB);
+        transform: translateY(-50%);
+    }
+    
+    .process-step:last-child::before {
+        display: none;
+    }
+    
+    /* CTA section */
+    .cta-section {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .cta-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="4"/></g></svg>');
+        animation: float 20s linear infinite;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 768px) {
+        .hero-slide {
+            background-attachment: scroll;
+        }
+        
+        .process-step::before {
+            display: none;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
-<!-- Hero Section with Slider -->
-<section class="relative py-20 lg:py-32 bg-gradient-to-br from-turquoise-50 via-sky-blue-50 to-white overflow-hidden">
+<!-- Hero Section with Enhanced Slider -->
+<section class="hero-section">
+    <x-hero-slider />
+</section>
+
+<!-- Services Section -->
+<section id="services" class="py-24 bg-white relative overflow-hidden">
     <!-- Background Pattern -->
     <div class="absolute inset-0 opacity-5">
         <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%2311B49A" fill-opacity="0.1"><circle cx="30" cy="30" r="4"/></g></svg>');"></div>
     </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <!-- Hero Slider -->
-        <div class="hero-slider-container">
-            <!-- Slide 1: Visa -->
-            <div class="hero-slide active">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <!-- Content -->
-                    <div class="text-center lg:text-left">
-                        <!-- Logo -->
-                        <div class="mb-8 animate-fade-in-up">
-                            <img src="{{ asset('img/logo.png') }}" 
-                                 alt="Mayelia Mobilité" 
-                                 class="h-16 lg:h-20 mx-auto lg:mx-0 mb-6 animate-float">
-                        </div>
-                        
-                        <!-- Main Title -->
-                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6 animate-fade-in-up animation-delay-200">
-                            <span class="block text-gray-900">Votre partenaire</span>
-                            <span class="block bg-gradient-to-r from-turquoise-600 to-sky-blue-600 bg-clip-text text-transparent">
-                                visa
-                            </span>
-                            <span class="block text-gray-900">de confiance</span>
-                        </h1>
-                        
-                        <!-- Subtitle -->
-                        <p class="text-lg sm:text-xl lg:text-2xl mb-8 text-gray-600 animate-fade-in-up animation-delay-400 leading-relaxed">
-                            Obtenez votre visa rapidement et en toute sécurité avec notre expertise et notre réseau de partenaires internationaux
-                        </p>
-                        
-                        <!-- CTA Buttons -->
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center animate-fade-in-up animation-delay-600">
-                            <a href="{{ route('booking.wizard') }}" 
-                               class="cta-button text-lg px-8 py-4 inline-flex items-center group">
-                                <i class="fas fa-calendar-alt mr-3 text-xl"></i>
-                                Demander un visa
-                                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                            <a href="#services" 
-                               class="cta-button-secondary text-lg px-8 py-4 inline-flex items-center group">
-                                <i class="fas fa-info-circle mr-3"></i>
-                                En savoir plus
-                                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Images -->
-                    <div class="relative animate-fade-in-up animation-delay-400">
-                        <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="Visa et passeport" 
-                             class="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-2xl">
-                        <div class="absolute inset-0 bg-gradient-to-t from-turquoise-900/20 to-transparent rounded-2xl"></div>
-                        
-                        <!-- Floating Card -->
-                        <div class="absolute -top-6 -right-6 bg-white rounded-xl shadow-lg p-4 animate-float">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-passport text-white text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="font-semibold text-gray-900">Visa Express</div>
-                                    <div class="text-sm text-gray-600">48h de traitement</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 2: Transport -->
-            <div class="hero-slide">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <!-- Content -->
-                    <div class="text-center lg:text-left">
-                        <!-- Logo -->
-                        <div class="mb-8">
-                            <img src="{{ asset('img/logo.png') }}" 
-                                 alt="Mayelia Mobilité" 
-                                 class="h-16 lg:h-20 mx-auto lg:mx-0 mb-6">
-                        </div>
-                        
-                        <!-- Main Title -->
-                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
-                            <span class="block text-gray-900">Transport</span>
-                            <span class="block bg-gradient-to-r from-sky-blue-600 to-turquoise-600 bg-clip-text text-transparent">
-                                VIP
-                            </span>
-                            <span class="block text-gray-900">de luxe</span>
-                        </h1>
-                        
-                        <!-- Subtitle -->
-                        <p class="text-lg sm:text-xl lg:text-2xl mb-8 text-gray-600 leading-relaxed">
-                            Déplacements sécurisés et confortables avec nos véhicules haut de gamme et chauffeurs professionnels
-                        </p>
-                        
-                        <!-- CTA Buttons -->
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
-                            <a href="{{ route('booking.wizard') }}" 
-                               class="cta-button text-lg px-8 py-4 inline-flex items-center group">
-                                <i class="fas fa-car mr-3 text-xl"></i>
-                                Réserver un transport
-                                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                            <a href="#services" 
-                               class="cta-button-secondary text-lg px-8 py-4 inline-flex items-center group">
-                                <i class="fas fa-info-circle mr-3"></i>
-                                Nos véhicules
-                                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Images -->
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="Transport VIP" 
-                             class="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-2xl">
-                        <div class="absolute inset-0 bg-gradient-to-t from-sky-blue-900/20 to-transparent rounded-2xl"></div>
-                        
-                        <!-- Floating Card -->
-                        <div class="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-lg p-4 animate-float">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 bg-gradient-to-r from-sky-blue-500 to-turquoise-500 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-car text-white text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="font-semibold text-gray-900">Luxe & Confort</div>
-                                    <div class="text-sm text-gray-600">24h/7j disponible</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Slide 3: Assistance Aéroport -->
-            <div class="hero-slide">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-                    <!-- Content -->
-                    <div class="text-center lg:text-left">
-                        <!-- Logo -->
-                        <div class="mb-8">
-                            <img src="{{ asset('img/logo.png') }}" 
-                                 alt="Mayelia Mobilité" 
-                                 class="h-16 lg:h-20 mx-auto lg:mx-0 mb-6">
-                        </div>
-                        
-                        <!-- Main Title -->
-                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
-                            <span class="block text-gray-900">Assistance</span>
-                            <span class="block bg-gradient-to-r from-turquoise-600 to-sky-blue-600 bg-clip-text text-transparent">
-                                Aéroport
-                            </span>
-                            <span class="block text-gray-900">complète</span>
-                        </h1>
-                        
-                        <!-- Subtitle -->
-                        <p class="text-lg sm:text-xl lg:text-2xl mb-8 text-gray-600 leading-relaxed">
-                            Accompagnement VIP pour vos formalités aéroportuaires avec accès fast track et assistance bagages
-                        </p>
-                        
-                        <!-- CTA Buttons -->
-                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center">
-                            <a href="{{ route('booking.wizard') }}" 
-                               class="cta-button text-lg px-8 py-4 inline-flex items-center group">
-                                <i class="fas fa-plane mr-3 text-xl"></i>
-                                Assistance aéroport
-                                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                            <a href="#services" 
-                               class="cta-button-secondary text-lg px-8 py-4 inline-flex items-center group">
-                                <i class="fas fa-info-circle mr-3"></i>
-                                Nos services
-                                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Images -->
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                             alt="Aéroport international" 
-                             class="w-full h-80 lg:h-96 object-cover rounded-2xl shadow-2xl">
-                        <div class="absolute inset-0 bg-gradient-to-t from-turquoise-900/20 to-transparent rounded-2xl"></div>
-                        
-                        <!-- Floating Card -->
-                        <div class="absolute -top-6 -right-6 bg-white rounded-xl shadow-lg p-4 animate-float">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 rounded-lg flex items-center justify-center">
-                                    <i class="fas fa-plane text-white text-xl"></i>
-                                </div>
-                                <div>
-                                    <div class="font-semibold text-gray-900">Fast Track</div>
-                                    <div class="text-sm text-gray-600">Passage prioritaire</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Slider Navigation -->
-        <div class="flex justify-center mt-12 space-x-3">
-            <button class="slider-dot active w-3 h-3 rounded-full bg-turquoise-600 transition-all duration-300"></button>
-            <button class="slider-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-turquoise-400 transition-all duration-300"></button>
-            <button class="slider-dot w-3 h-3 rounded-full bg-gray-300 hover:bg-turquoise-400 transition-all duration-300"></button>
-        </div>
-    </div>
-
-    <!-- Scroll Indicator -->
-    <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <div class="flex flex-col items-center text-turquoise-600">
-            <span class="text-sm mb-2 font-medium">Découvrir</span>
-            <i class="fas fa-chevron-down text-xl"></i>
-        </div>
-    </div>
-</section>
-
-<!-- Services Section -->
-<section id="services" class="py-24 bg-gradient-to-br from-gray-50 to-blue-50 relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-5">
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23000000" fill-opacity="0.1"><circle cx="30" cy="30" r="4"/></g></svg>');"></div>
-    </div>
     
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="text-center mb-20">
-            <div class="inline-block px-6 py-2 bg-gradient-to-r from-turquoise-100 to-sky-blue-100 text-turquoise-600 rounded-full text-sm font-semibold mb-4 animate-fade-in-up">
-                Nos Services
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-block px-8 py-3 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 text-white rounded-full text-sm font-bold uppercase tracking-wider mb-6 shadow-lg" style="color: white !important;">
+                NOS SERVICES
             </div>
-            <h2 class="text-4xl sm:text-5xl font-bold text-gray-900 mb-6 animate-fade-in-up animation-delay-200">
-                Solutions <span class="bg-gradient-to-r from-turquoise-600 to-sky-blue-600 bg-clip-text text-transparent">complètes</span>
+            <h2 class="text-5xl sm:text-6xl font-black text-gray-900 mb-8" style="color: #1f2937 !important;">
+                Solutions de <span class="text-turquoise-600" style="color: #11B49A !important;">mobilité</span>
             </h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-400">
-                Des services professionnels pour tous vos besoins de mobilité, 
-                de la demande de visa à l'assistance aéroportuaire
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed" style="color: #4b5563 !important;">
+                Découvrez notre gamme complète de services pour faciliter vos déplacements et démarches administratives
             </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             @foreach($data['services'] as $index => $service)
-            <div class="service-card group cursor-pointer animate-fade-in-up animation-delay-{{ ($index + 1) * 200 }}">
-                <!-- Service Image -->
-                <div class="relative h-48 mb-6 overflow-hidden rounded-xl">
-                    @if($index == 0)
-                        <img src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Service Visa" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @elseif($index == 1)
-                        <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Service Transport" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @elseif($index == 2)
-                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Service Aéroport" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @else
-                        <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Service Administrative" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @endif
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+            <div class="group relative" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+                <!-- Card -->
+                <div class="service-card bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 border border-gray-100 relative overflow-hidden">
+                    <!-- Background Gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-turquoise-50/50 to-sky-blue-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     
-                    <!-- Colored Icon Overlay -->
-                    <div class="absolute top-4 right-4 w-12 h-12 rounded-xl flex items-center justify-center shadow-lg
-                        @if($service['color'] == 'turquoise') bg-gradient-to-r from-turquoise-500 to-turquoise-600
-                        @else bg-gradient-to-r from-sky-blue-500 to-sky-blue-600 @endif">
-                        <i class="{{ $service['icon'] }} text-white text-xl"></i>
-                    </div>
-                </div>
-
-                <div class="p-6 text-center relative">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4 group-hover:text-{{ $service['color'] }}-600 transition-colors">
-                        {{ $service['title'] }}
-                    </h3>
-                    
-                    <p class="text-gray-600 mb-6 leading-relaxed">{{ $service['description'] }}</p>
-                    
-                    <!-- Features with animated checkmarks -->
-                    <div class="space-y-3 mb-8">
-                        @foreach($service['features'] as $feature)
-                        <div class="flex items-center justify-center text-sm text-gray-600">
-                            <div class="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center mr-3 group-hover:bg-green-500 transition-colors">
-                                <i class="fas fa-check text-green-600 text-xs group-hover:text-white transition-colors"></i>
-                            </div>
-                            {{ $feature }}
+                    <!-- Icon -->
+                    <div class="relative z-10">
+                        <div class="w-20 h-20 bg-white border-2 {{ $service['color'] == 'turquoise' ? 'border-turquoise-500' : 'border-sky-blue-500' }} rounded-3xl flex items-center justify-center mb-8 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <i class="{{ $service['icon'] }} text-3xl {{ $service['color'] == 'turquoise' ? 'text-turquoise-500' : 'text-sky-blue-500' }}" style="color: {{ $service['color'] == 'turquoise' ? '#11B49A' : '#1DA0DB' }} !important;"></i>
                         </div>
-                        @endforeach
+                        
+                        <!-- Title -->
+                        <h3 class="text-2xl font-black text-gray-900 mb-4 group-hover:text-turquoise-600 transition-colors duration-300" style="color: #1f2937 !important;">{{ $service['title'] }}</h3>
+                        
+                        <!-- Description -->
+                        <p class="text-gray-600 mb-8 leading-relaxed text-lg" style="color: #4b5563 !important;">{{ $service['description'] }}</p>
+                        
+                        <!-- Features -->
+                        <ul class="space-y-3 mb-10">
+                            @foreach($service['features'] as $feature)
+                            <li class="flex items-center text-gray-600" style="color: #4b5563 !important;">
+                                <div class="w-6 h-6 bg-white border-2 border-turquoise-500 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                    <i class="fas fa-check text-xs" style="color: #11B49A !important;"></i>
+                                </div>
+                                <span class="font-medium" style="color: #4b5563 !important;">{{ $feature }}</span>
+                            </li>
+                            @endforeach
+                        </ul>
+                        
+                        <!-- CTA Button -->
+                        <a href="{{ $service['link'] }}" class="w-full bg-white border-2 {{ $service['color'] == 'turquoise' ? 'border-turquoise-500 hover:bg-turquoise-50' : 'border-sky-blue-500 hover:bg-sky-blue-50' }} font-bold py-4 px-6 rounded-2xl transition-all duration-300 text-center block transform hover:scale-105 shadow-lg hover:shadow-xl">
+                            <span class="flex items-center justify-center {{ $service['color'] == 'turquoise' ? 'text-turquoise-500' : 'text-sky-blue-500' }}" style="color: {{ $service['color'] == 'turquoise' ? '#11B49A' : '#1DA0DB' }} !important;">
+                                Découvrir
+                                <i class="fas fa-arrow-right ml-2" style="color: {{ $service['color'] == 'turquoise' ? '#11B49A' : '#1DA0DB' }} !important;"></i>
+                            </span>
+                        </a>
                     </div>
                     
-                    <!-- CTA Button -->
-                    <a href="{{ $service['link'] }}" 
-                       class="inline-flex items-center text-{{ $service['color'] }}-600 font-semibold hover:text-{{ $service['color'] }}-700 transition-all duration-300 group-hover:translate-x-1">
-                        En savoir plus
-                        <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                    </a>
+                    <!-- Decorative Elements -->
+                    <div class="absolute top-4 right-4 w-16 h-16 bg-gradient-to-r from-turquoise-100 to-sky-blue-100 rounded-full opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
+                    <div class="absolute bottom-4 left-4 w-8 h-8 bg-gradient-to-r from-sky-blue-100 to-turquoise-100 rounded-full opacity-30 group-hover:opacity-60 transition-opacity duration-300"></div>
                 </div>
             </div>
             @endforeach
         </div>
+        
+        <!-- Call to Action -->
+        <div class="text-center mt-16" data-aos="fade-up" data-aos-delay="400">
+            <div class="inline-flex items-center space-x-4 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 text-white px-8 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <i class="fas fa-phone text-2xl"></i>
+                <div class="text-left">
+                    <div class="text-sm font-medium opacity-90">Besoin d'aide ?</div>
+                    <div class="text-lg font-bold">+225 XX XX XX XX XX</div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
-<!-- Why Choose Us Section -->
-<section class="py-20 bg-white">
+<!-- About Section -->
+<section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Pourquoi choisir Mayelia Mobilité ?
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div data-aos="fade-right">
+                <div class="inline-block px-6 py-2 bg-gradient-to-r from-turquoise-100 to-sky-blue-100 text-turquoise-600 rounded-full text-sm font-semibold mb-4">
+                    À PROPOS
+                </div>
+                <h2 class="text-4xl sm:text-5xl font-black text-gray-900 mb-6">
+                    Votre partenaire <span class="bg-gradient-to-r from-turquoise-600 to-sky-blue-600 bg-clip-text text-transparent">mobilité</span>
+                </h2>
+                <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                    Mayelia Mobilité est votre partenaire de confiance pour tous vos besoins de mobilité. Avec plus de 5 ans d'expérience, nous vous accompagnons dans vos démarches administratives et vos déplacements.
+                </p>
+                
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-award text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Expertise reconnue</h3>
+                            <p class="text-gray-600">Plus de 5 ans d'expérience</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gradient-to-r from-sky-blue-500 to-turquoise-500 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-gray-900">Équipe qualifiée</h3>
+                            <p class="text-gray-600">Professionnels certifiés</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div data-aos="fade-left">
+                <div class="relative">
+                    <img src="https://images.unsplash.com/photo-1560472354-b33ff0c44a43?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                         alt="Équipe Mayelia Mobilité" 
+                         class="rounded-3xl shadow-2xl">
+                    <div class="absolute -bottom-6 -right-6 bg-white rounded-2xl p-6 shadow-xl">
+                        <div class="text-center">
+                            <div class="text-3xl font-black text-turquoise-600 mb-2" data-countup="10000">0</div>
+                            <div class="text-sm font-bold text-gray-600 uppercase tracking-wider">Clients satisfaits</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-24 bg-gradient-to-br from-sky-blue-600 via-sky-blue-500 to-turquoise-600 text-white relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.1"><circle cx="30" cy="30" r="4"/></g></svg>');"></div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="text-center mb-20" data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl font-black text-white mb-6" style="color: white !important;">
+                Nos <span class="text-white" style="color: white !important;">chiffres</span>
             </h2>
-            <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                Plus qu'un simple prestataire, nous sommes votre partenaire de confiance 
-                pour tous vos projets de mobilité
+            <p class="text-xl text-white/90 max-w-3xl mx-auto" style="color: rgba(255,255,255,0.9) !important;">
+                Des résultats qui témoignent de notre expertise et de notre engagement
             </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            @foreach($data['advantages'] as $index => $advantage)
-            <div class="text-center group animate-fade-in-up animation-delay-{{ ($index + 1) * 200 }}">
-                <!-- Advantage Image -->
-                <div class="relative h-48 mb-6 overflow-hidden rounded-xl">
-                    @if($index == 0)
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Rapidité" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @elseif($index == 1)
-                        <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Sécurité" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @elseif($index == 2)
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Expertise" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @else
-                        <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-                             alt="Couverture" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                    @endif
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                    
-                    <!-- Icon Overlay -->
-                    <div class="absolute top-4 right-4 w-12 h-12 rounded-xl bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:bg-white transition-all duration-300">
-                        <i class="{{ $advantage['icon'] }} text-turquoise-600 text-xl group-hover:scale-110 transition-transform duration-300"></i>
-                    </div>
+            @foreach($data['stats'] as $index => $stat)
+            <div class="stat-item text-center bg-white/20 backdrop-blur-sm rounded-3xl p-8 border border-white/30" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+                <div class="w-20 h-20 bg-white/30 backdrop-blur-sm rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/40">
+                    <i class="{{ $stat['icon'] }} text-white text-3xl" style="color: white !important;"></i>
                 </div>
                 
-                <h3 class="text-xl font-bold text-gray-900 mb-4 group-hover:text-turquoise-600 transition-colors duration-300">{{ $advantage['title'] }}</h3>
-                <p class="text-gray-600 leading-relaxed">{{ $advantage['description'] }}</p>
-            </div>
-            @endforeach
-        </div>
-    </div>
-</section>
-
-<!-- Stats Section -->
-<section class="py-20 bg-gradient-to-r from-turquoise-600 to-sky-blue-600 relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.3"><circle cx="30" cy="30" r="4"/></g></svg>');"></div>
-    </div>
-    
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            @foreach($data['stats'] as $index => $stat)
-            <div class="text-center text-white animate-fade-in-up animation-delay-{{ ($index + 1) * 200 }}">
-                <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center shadow-lg group-hover:bg-white/30 transition-all duration-300">
-                    <i class="{{ $stat['icon'] }} text-3xl group-hover:scale-110 transition-transform duration-300"></i>
+                <div class="text-6xl font-black text-white mb-4" style="color: white !important;">
+                    <span data-countup="{{ $stat['number'] }}" class="counter-number">0</span>{{ $stat['suffix'] }}
                 </div>
-                <div class="text-4xl sm:text-5xl font-bold mb-2 counter stats-counter" data-target="{{ $stat['number'] }}">
-                    0
-                </div>
-                <div class="text-lg text-white/90">{{ $stat['label'] }}</div>
+                
+                <div class="text-xl font-bold text-white/90" style="color: rgba(255,255,255,0.9) !important;">{{ $stat['label'] }}</div>
             </div>
             @endforeach
         </div>
@@ -383,33 +347,38 @@
 </section>
 
 <!-- Testimonials Section -->
-<section class="py-20 bg-gray-50">
+<section class="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Ce que disent nos clients
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-block px-6 py-2 bg-gradient-to-r from-turquoise-100 to-sky-blue-100 text-turquoise-600 rounded-full text-sm font-semibold mb-4">
+                TÉMOIGNAGES
+            </div>
+            <h2 class="text-4xl sm:text-5xl font-black text-gray-900 mb-6" style="color: #1f2937 !important;">
+                Ce que disent nos <span class="text-turquoise-600" style="color: #11B49A !important;">clients</span>
             </h2>
-            <p class="text-xl text-gray-600">
-                Des milliers de clients nous font confiance pour leurs projets de mobilité
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto" style="color: #4b5563 !important;">
+                Découvrez les expériences de nos clients satisfaits
             </p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            @foreach($data['testimonials'] as $testimonial)
-            <div class="bg-white rounded-xl shadow-lg p-8 hover:shadow-2xl transition-shadow duration-300">
-                <div class="flex items-center mb-4">
+            @foreach($data['testimonials'] as $index => $testimonial)
+            <div class="testimonial-card bg-white rounded-2xl p-8 shadow-lg" data-aos="fade-up" data-aos-delay="{{ $index * 100 }}">
+                <div class="flex items-center mb-6">
                     @for($i = 1; $i <= 5; $i++)
-                    <i class="fas fa-star text-yellow-400 {{ $i <= $testimonial['rating'] ? '' : 'text-gray-300' }}"></i>
+                    <i class="fas fa-star text-yellow-400 text-lg"></i>
                     @endfor
                 </div>
-                <p class="text-gray-600 mb-6 italic">"{{ $testimonial['comment'] }}"</p>
+                
+                <blockquote class="text-gray-700 mb-6 leading-relaxed">
+                    "{{ $testimonial['comment'] }}"
+                </blockquote>
+                
                 <div class="flex items-center">
-                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
-                        <i class="fas fa-user text-blue-600"></i>
-                    </div>
+                    <img src="{{ $testimonial['avatar'] }}" alt="{{ $testimonial['name'] }}" class="w-12 h-12 rounded-full mr-4">
                     <div>
                         <div class="font-semibold text-gray-900">{{ $testimonial['name'] }}</div>
-                        <div class="text-sm text-gray-500">{{ $testimonial['service'] }}</div>
+                        <div class="text-sm text-turquoise-600">{{ $testimonial['service'] }}</div>
                     </div>
                 </div>
             </div>
@@ -418,289 +387,247 @@
     </div>
 </section>
 
-<!-- Alerts Section -->
-@if(!empty($data['alerts']))
-<section class="py-16 bg-orange-50">
+<!-- Process Section -->
+<section class="py-24 bg-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">
-                Actualités & Alertes
+        <div class="text-center mb-20" data-aos="fade-up">
+            <div class="inline-block px-6 py-2 bg-gradient-to-r from-turquoise-100 to-sky-blue-100 text-turquoise-600 rounded-full text-sm font-semibold mb-4">
+                NOTRE PROCESSUS
+            </div>
+            <h2 class="text-4xl sm:text-5xl font-black text-gray-900 mb-6" style="color: #1f2937 !important;">
+                Comment ça <span class="text-turquoise-600" style="color: #11B49A !important;">fonctionne</span>
             </h2>
-            <p class="text-xl text-gray-600">
-                Restez informé des dernières actualités et changements réglementaires
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto" style="color: #4b5563 !important;">
+                Un processus simple et efficace en 4 étapes
             </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            @foreach($data['alerts'] as $alert)
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-{{ $alert['type'] === 'warning' ? 'orange' : 'blue' }}-500">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-{{ $alert['type'] === 'warning' ? 'exclamation-triangle' : 'info-circle' }} text-{{ $alert['type'] === 'warning' ? 'orange' : 'blue' }}-500 text-xl"></i>
-                    </div>
-                    <div class="ml-4">
-                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $alert['title'] }}</h3>
-                        <p class="text-gray-600 mb-2">{{ $alert['message'] }}</p>
-                        <div class="text-sm text-gray-500">
-                            <i class="fas fa-clock mr-1"></i>
-                            {{ \Carbon\Carbon::parse($alert['date'])->locale('fr')->isoFormat('DD MMMM YYYY') }}
-                        </div>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div class="process-step text-center" data-aos="fade-up" data-aos-delay="0">
+                <div class="w-20 h-20 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">1</span>
                 </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Demande</h3>
+                <p class="text-gray-600">Remplissez notre formulaire en ligne</p>
             </div>
-            @endforeach
+            
+            <div class="process-step text-center" data-aos="fade-up" data-aos-delay="100">
+                <div class="w-20 h-20 bg-gradient-to-r from-sky-blue-500 to-turquoise-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">2</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Validation</h3>
+                <p class="text-gray-600">Vérification de vos documents</p>
+            </div>
+            
+            <div class="process-step text-center" data-aos="fade-up" data-aos-delay="200">
+                <div class="w-20 h-20 bg-gradient-to-r from-turquoise-500 to-sky-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">3</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Traitement</h3>
+                <p class="text-gray-600">Prise en charge de votre dossier</p>
+            </div>
+            
+            <div class="process-step text-center" data-aos="fade-up" data-aos-delay="300">
+                <div class="w-20 h-20 bg-gradient-to-r from-sky-blue-500 to-turquoise-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <span class="text-2xl font-bold text-white">4</span>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Livraison</h3>
+                <p class="text-gray-600">Récupération de vos documents</p>
+            </div>
         </div>
     </div>
 </section>
-@endif
 
 <!-- CTA Section -->
-<section class="py-20 bg-gradient-to-r from-turquoise-600 via-sky-blue-600 to-turquoise-700 relative overflow-hidden">
-    <!-- Background Pattern -->
-    <div class="absolute inset-0 opacity-10">
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,<svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g fill="none" fill-rule="evenodd"><g fill="%23ffffff" fill-opacity="0.3"><circle cx="30" cy="30" r="4"/></g></svg>');"></div>
-    </div>
-    
-    <div class="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 relative">
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6 animate-fade-in-up">
-            Prêt à commencer votre projet de mobilité ?
-        </h2>
-        <p class="text-xl text-white/90 mb-8 animate-fade-in-up animation-delay-200 max-w-2xl mx-auto">
-            Contactez-nous dès aujourd'hui pour un accompagnement personnalisé et professionnel
-        </p>
-        <div class="flex flex-col sm:flex-row gap-6 justify-center animate-fade-in-up animation-delay-400">
-            <a href="{{ route('booking.wizard') }}" 
-               class="cta-button text-lg px-10 py-4 inline-flex items-center justify-center group">
-                <i class="fas fa-calendar-alt mr-3 text-xl"></i>
-                Prendre un rendez-vous
-                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-            </a>
-            <a href="/contact" 
-               class="cta-button-secondary text-lg px-10 py-4 inline-flex items-center justify-center group">
-                <i class="fas fa-envelope mr-3"></i>
-                Nous contacter
-                <i class="fas fa-arrow-right ml-3 group-hover:translate-x-1 transition-transform"></i>
-            </a>
+<section class="cta-section py-24 bg-gradient-to-r from-turquoise-600 to-sky-blue-600 text-white relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div data-aos="fade-up">
+            <h2 class="text-4xl sm:text-5xl font-black text-white mb-6" style="color: white !important;">
+                Prêt à commencer votre <span class="text-white" style="color: white !important;">voyage</span> ?
+            </h2>
+            <p class="text-xl text-white/90 mb-12 max-w-3xl mx-auto" style="color: rgba(255,255,255,0.9) !important;">
+                Contactez-nous dès maintenant pour obtenir un devis personnalisé et commencer vos démarches
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+                <a href="{{ route('booking.wizard') }}" class="bg-white text-turquoise-600 font-bold px-10 py-5 rounded-2xl hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                    <i class="fas fa-calendar-alt mr-4"></i>
+                    Prendre rendez-vous
+                </a>
+                <a href="/contact" class="border-2 border-white text-white font-bold px-10 py-5 rounded-2xl hover:bg-white hover:text-turquoise-600 transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-phone mr-4"></i>
+                    Nous contacter
+                </a>
+            </div>
         </div>
     </div>
 </section>
-@endsection
-
-@push('styles')
-<style>
-    @keyframes fade-in-up {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-fade-in-up {
-        animation: fade-in-up 0.8s ease-out forwards;
-        opacity: 0;
-    }
-
-    .animation-delay-200 {
-        animation-delay: 0.2s;
-    }
-
-    .animation-delay-400 {
-        animation-delay: 0.4s;
-    }
-
-    .counter {
-        transition: all 0.3s ease;
-    }
-</style>
-@endpush
 
 @push('scripts')
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.min.js"></script>
+
 <script>
-    // Hero Slider
-    class HeroSlider {
-        constructor() {
-            this.slides = document.querySelectorAll('.hero-slide');
-            this.dots = document.querySelectorAll('.slider-dot');
-            this.currentSlide = 0;
-            this.slideInterval = null;
-            this.slideDuration = 5000; // 5 seconds per slide
-            
-            this.init();
-        }
-        
-        init() {
-            if (this.slides.length === 0) return;
-            
-            // Add click events to dots
-            this.dots.forEach((dot, index) => {
-                dot.addEventListener('click', () => {
-                    this.goToSlide(index);
-                });
-            });
-            
-            // Start auto-slide
-            this.startAutoSlide();
-            
-            // Pause on hover
-            const sliderContainer = document.querySelector('.hero-slider-container');
-            if (sliderContainer) {
-                sliderContainer.addEventListener('mouseenter', () => this.stopAutoSlide());
-                sliderContainer.addEventListener('mouseleave', () => this.startAutoSlide());
-            }
-        }
-        
-        goToSlide(index) {
-            // Remove active class from current slide and dot
-            this.slides[this.currentSlide].classList.remove('active');
-            this.dots[this.currentSlide].classList.remove('active');
-            
-            // Update current slide
-            this.currentSlide = index;
-            
-            // Add active class to new slide and dot
-            this.slides[this.currentSlide].classList.add('active');
-            this.dots[this.currentSlide].classList.add('active');
-            
-            // Reset auto-slide timer
-            this.startAutoSlide();
-        }
-        
-        nextSlide() {
-            const nextIndex = (this.currentSlide + 1) % this.slides.length;
-            this.goToSlide(nextIndex);
-        }
-        
-        startAutoSlide() {
-            this.stopAutoSlide();
-            this.slideInterval = setInterval(() => {
-                this.nextSlide();
-            }, this.slideDuration);
-        }
-        
-        stopAutoSlide() {
-            if (this.slideInterval) {
-                clearInterval(this.slideInterval);
-                this.slideInterval = null;
-            }
-        }
-    }
-
-    // Counter Animation
-    function animateCounters() {
-        const counters = document.querySelectorAll('.counter');
-        
-        counters.forEach(counter => {
-            const target = parseInt(counter.getAttribute('data-target'));
-            const duration = 2000;
-            const increment = target / (duration / 16);
-            let current = 0;
-            
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    current = target;
-                    clearInterval(timer);
-                }
-                counter.textContent = Math.floor(current);
-            }, 16);
-        });
-    }
-
-    // Intersection Observer for animations
-    const observerOptions = {
-        threshold: 0.3,
-        rootMargin: '0px 0px -100px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animate-in');
-                
-                if (entry.target.classList.contains('counter')) {
-                    animateCounters();
-                    observer.unobserve(entry.target);
-                }
-            }
-        });
-    }, observerOptions);
-
-    // Smooth scrolling for anchor links
-    function initSmoothScrolling() {
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
-            });
-        });
-    }
-
-    // Initialize everything when DOM is loaded
-    document.addEventListener('DOMContentLoaded', () => {
-        // Initialize hero slider
-        new HeroSlider();
-        
-        // Initialize animations
-        const animatedElements = document.querySelectorAll('.animate-fade-in-up, .animate-slide-in-left, .animate-slide-in-right, .animate-scale-in, .counter');
-        animatedElements.forEach(element => {
-            observer.observe(element);
-        });
-        
-        // Initialize smooth scrolling
-        initSmoothScrolling();
-        
-        // Add loading animation
-        document.body.classList.add('loaded');
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize AOS
+    AOS.init({
+        duration: 1000,
+        once: true,
+        offset: 100
     });
 
-    // Add CSS for animate-in class and slider
-    const style = document.createElement('style');
-    style.textContent = `
-        .hero-slide {
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+    // Initialize Enhanced Swiper
+    const swiper = new Swiper('.hero-swiper', {
+        loop: true,
+        autoplay: {
+            delay: 8000,
+            disableOnInteraction: false,
+        },
+        navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+        },
+        pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+        },
+        effect: 'fade',
+        fadeEffect: {
+            crossFade: true
+        },
+        speed: 1500,
+        on: {
+            slideChange: function() {
+                // Reset progress bar
+                const progressBar = document.querySelector('.swiper-progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = '0%';
+                    setTimeout(() => {
+                        progressBar.style.width = '100%';
+                    }, 100);
+                }
+                
+                // Ensure content is visible on slide change
+                const activeSlide = document.querySelector('.swiper-slide-active .hero-content');
+                if (activeSlide) {
+                    activeSlide.style.opacity = '1';
+                    activeSlide.style.visibility = 'visible';
+                }
+            },
+            init: function() {
+                // Start progress bar
+                const progressBar = document.querySelector('.swiper-progress-bar');
+                if (progressBar) {
+                    progressBar.style.width = '100%';
+                }
+                
+                // Ensure first slide content is visible
+                const firstSlide = document.querySelector('.swiper-slide-active .hero-content');
+                if (firstSlide) {
+                    firstSlide.style.opacity = '1';
+                    firstSlide.style.visibility = 'visible';
+                }
+            }
         }
+    });
+
+    // Progress bar animation
+    let progressInterval;
+    function startProgress() {
+        const progressBar = document.querySelector('.swiper-progress-bar');
+        if (progressBar) {
+            progressBar.style.width = '0%';
+            let width = 0;
+            progressInterval = setInterval(() => {
+                width += 100 / (8000 / 50); // 8000ms / 50ms intervals
+                progressBar.style.width = width + '%';
+                if (width >= 100) {
+                    clearInterval(progressInterval);
+                }
+            }, 50);
+        }
+    }
+
+    // Start progress on slide change
+    swiper.on('slideChange', () => {
+        clearInterval(progressInterval);
+        startProgress();
+    });
+
+    // Start initial progress
+    startProgress();
+
+    // Initialize CountUp with enhanced animation
+    const countUpElements = document.querySelectorAll('[data-countup]');
+    const countUpObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const element = entry.target;
+                const target = parseInt(element.getAttribute('data-countup'));
+                
+                // Add animation class
+                element.classList.add('animate-pulse');
+                
+                const countUp = new CountUp(element, target, {
+                    duration: 3,
+                    useEasing: true,
+                    useGrouping: true,
+                    separator: ' ',
+                    decimal: ',',
+                    prefix: '',
+                    suffix: '',
+                    onComplete: () => {
+                        element.classList.remove('animate-pulse');
+                        element.style.transform = 'scale(1.1)';
+                        setTimeout(() => {
+                            element.style.transform = 'scale(1)';
+                        }, 200);
+                    }
+                });
+                
+                if (!countUp.error) {
+                    countUp.start();
+                } else {
+                    console.error(countUp.error);
+                }
+                
+                countUpObserver.unobserve(element);
+            }
+        });
+    }, {
+        threshold: 0.3
+    });
+
+    countUpElements.forEach(element => {
+        countUpObserver.observe(element);
+    });
+
+    // Smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Parallax effect for floating elements
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const parallaxElements = document.querySelectorAll('.animate-float');
         
-        .hero-slide.active {
-            opacity: 1;
-            transform: translateX(0);
-            position: relative;
-        }
-        
-        .hero-slider-container {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .slider-dot.active {
-            background-color: #11B49A !important;
-            transform: scale(1.2);
-        }
-        
-        .animate-in {
-            opacity: 1 !important;
-            transform: translateY(0) !important;
-        }
-        .loaded {
-            overflow-x: hidden;
-        }
-    `;
-    document.head.appendChild(style);
+        parallaxElements.forEach((element, index) => {
+            const speed = 0.5 + (index * 0.1);
+            element.style.transform = `translateY(${scrolled * speed}px)`;
+        });
+    });
+});
 </script>
 @endpush
+@endsection

@@ -1,11 +1,11 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Templates de créneaux')
 @section('subtitle', 'Gérez les templates de créneaux pour générer automatiquement les disponibilités')
 
 @section('header-actions')
 <div class="flex space-x-2">
-    <a href="{{ route('templates.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+    <a href="{{ route('templates.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
         <i class="fas fa-plus"></i>
         <span>Nouveau template</span>
     </a>
@@ -24,7 +24,7 @@
     <!-- Informations du centre -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center mb-4">
-            <i class="fas fa-building text-blue-600 text-xl mr-3"></i>
+            <i class="fas fa-building text-mayelia-600 text-xl mr-3"></i>
             <h3 class="text-lg font-semibold text-gray-900">Centre: {{ $centre->nom }}</h3>
         </div>
         <p class="text-gray-600">{{ $centre->adresse }}</p>
@@ -72,7 +72,7 @@
                                         {{ $template->statut === 'actif' ? 'Actif' : 'Inactif' }}
                                     </span>
                                     
-                                    <a href="{{ route('templates.edit', $template) }}" class="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <a href="{{ route('templates.edit', $template) }}" class="p-2 text-gray-400 hover:text-mayelia-600 transition-colors">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
@@ -93,7 +93,7 @@
                     <i class="fas fa-calendar-alt text-gray-300 text-4xl mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun template configuré</h3>
                     <p class="text-gray-600 mb-6">Commencez par créer des templates pour générer automatiquement les créneaux.</p>
-                    <a href="{{ route('templates.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
+                    <a href="{{ route('templates.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
                         <i class="fas fa-plus"></i>
                         <span>Créer un template</span>
                     </a>
@@ -103,12 +103,12 @@
     </div>
 
     <!-- Instructions -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+    <div class="bg-mayelia-50 border border-mayelia-200 rounded-lg p-6">
         <div class="flex items-start space-x-3">
-            <i class="fas fa-info-circle text-blue-600 text-xl mt-1"></i>
+            <i class="fas fa-info-circle text-mayelia-600 text-xl mt-1"></i>
             <div>
-                <h4 class="text-lg font-medium text-blue-900 mb-2">Comment ça marche ?</h4>
-                <ul class="text-sm text-blue-800 space-y-1">
+                <h4 class="text-lg font-medium text-mayelia-900 mb-2">Comment ça marche ?</h4>
+                <ul class="text-sm text-mayelia-800 space-y-1">
                     <li>• Créez des templates pour chaque combinaison service/formule/jour</li>
                     <li>• Définissez les tranches horaires et la capacité pour chaque template</li>
                     <li>• Utilisez "Générer créneaux" pour créer automatiquement les créneaux pour 6 mois</li>

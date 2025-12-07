@@ -1,4 +1,4 @@
-@extends('creneaux.layout')
+﻿@extends('creneaux.layout')
 
 @section('title', 'Calendrier des Créneaux')
 @section('subtitle', 'Visualisez et gérez la disponibilité des créneaux')
@@ -190,15 +190,15 @@ function generateCalendarDays(year, month) {
         if (!isCurrentMonth) {
             dayElement.className += ' text-gray-300';
         } else {
-            dayElement.className += ' text-gray-900 hover:bg-blue-50';
+            dayElement.className += ' text-gray-900 hover:bg-mayelia-50';
         }
         
         if (isToday) {
-            dayElement.className += ' bg-blue-100 font-semibold';
+            dayElement.className += ' bg-mayelia-100 font-semibold';
         }
         
         if (isSelected) {
-            dayElement.className += ' bg-blue-500 text-white';
+            dayElement.className += ' bg-mayelia-500 text-white';
         }
         
         // Ajouter un identifiant unique pour chaque jour
@@ -362,7 +362,7 @@ async function loadAvailabilityForDate(date) {
     console.log('Date ISO pour l\'API:', date.toISOString().split('T')[0]);
     
     const card = document.getElementById('availabilityCard');
-    card.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i><p class="mt-2">Chargement...</p></div>';
+    card.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-mayelia-500"></i><p class="mt-2">Chargement...</p></div>';
     
     try {
         const url = `/api/disponibilite/${window.centreId}/${date.toISOString().split('T')[0]}`;
@@ -393,7 +393,7 @@ function displayAvailability(data, date) {
     const card = document.getElementById('availabilityCard');
     
     // Afficher un indicateur de chargement
-    card.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i><p class="mt-2">Chargement des créneaux...</p></div>';
+    card.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-mayelia-500"></i><p class="mt-2">Chargement des créneaux...</p></div>';
     
     // Utiliser requestAnimationFrame pour différer le rendu lourd
     requestAnimationFrame(() => {
@@ -453,12 +453,12 @@ function renderAvailabilityContent(data, date, card) {
         
         if (heureDebut && heureFin) {
             html += `
-                <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-                    <h5 class="text-sm font-medium text-blue-900 mb-2">
+                <div class="mb-4 p-3 bg-mayelia-50 rounded-lg">
+                    <h5 class="text-sm font-medium text-mayelia-900 mb-2">
                         <i class="fas fa-clock mr-1"></i>
                         Horaires de travail
                     </h5>
-                    <div class="text-sm text-blue-800">
+                    <div class="text-sm text-mayelia-800">
                         <div class="flex items-center justify-between">
                             <span>Ouverture :</span>
                             <span class="font-medium">${heureDebut}</span>
@@ -471,7 +471,7 @@ function renderAvailabilityContent(data, date, card) {
             
             if (pauseDebut && pauseFin) {
                 html += `
-                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-blue-200">
+                        <div class="flex items-center justify-between mt-2 pt-2 border-t border-mayelia-200">
                             <span class="text-orange-700">
                                 <i class="fas fa-pause mr-1"></i>
                                 Pause :
@@ -511,7 +511,7 @@ function renderAvailabilityContent(data, date, card) {
             html += `
                 <button onclick="switchServiceTab('${serviceIds[index]}')" 
                         id="tab-${serviceIds[index]}"
-                        class="py-2 px-1 border-b-2 font-medium text-sm ${isActive ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}">
+                        class="py-2 px-1 border-b-2 font-medium text-sm ${isActive ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}">
                     ${service.nom}
                 </button>
             `;
@@ -617,7 +617,7 @@ function renderAvailabilityContent(data, date, card) {
                     html += `
                         <div class="text-center mt-3">
                             <button onclick="loadMoreCreneaux('${serviceId}', '${formuleId}', 1)" 
-                                    class="text-sm text-blue-600 hover:text-blue-800 font-medium">
+                                    class="text-sm text-mayelia-600 hover:text-mayelia-800 font-medium">
                                 Voir plus (${creneaux.length - creneauxPerPage} autres créneaux)
                             </button>
                         </div>
@@ -669,7 +669,7 @@ function switchServiceTab(serviceId) {
     
     // Désactiver tous les onglets
     document.querySelectorAll('[id^="tab-"]').forEach(tab => {
-        tab.classList.remove('border-blue-500', 'text-blue-600');
+        tab.classList.remove('border-mayelia-500', 'text-mayelia-600');
         tab.classList.add('border-transparent', 'text-gray-500');
     });
     
@@ -683,7 +683,7 @@ function switchServiceTab(serviceId) {
     const tab = document.getElementById('tab-' + serviceId);
     if (tab) {
         tab.classList.remove('border-transparent', 'text-gray-500');
-        tab.classList.add('border-blue-500', 'text-blue-600');
+        tab.classList.add('border-mayelia-500', 'text-mayelia-600');
     }
 }
 </script>

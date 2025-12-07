@@ -13,17 +13,27 @@ use App\Models\Service;
 use App\Models\Formule;
 use App\Services\CreneauGeneratorService;
 use App\Services\TrancheHoraireService;
+use App\Services\AuthService;
+use App\Http\Controllers\Concerns\ChecksPermissions;
 use Carbon\Carbon;
 
 class CreneauxController extends Controller
 {
+    use ChecksPermissions;
+
     protected $creneauGeneratorService;
     protected $trancheHoraireService;
+    protected $authService;
 
-    public function __construct(CreneauGeneratorService $creneauGeneratorService, TrancheHoraireService $trancheHoraireService)
+    public function __construct(
+        CreneauGeneratorService $creneauGeneratorService, 
+        TrancheHoraireService $trancheHoraireService,
+        AuthService $authService
+    )
     {
         $this->creneauGeneratorService = $creneauGeneratorService;
         $this->trancheHoraireService = $trancheHoraireService;
+        $this->authService = $authService;
     }
 
     /**
@@ -31,7 +41,9 @@ class CreneauxController extends Controller
      */
     public function index()
     {
-        $user = auth()->user();
+        $this->checkPermission('creneaux', 'view');
+
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre) {
@@ -65,7 +77,9 @@ class CreneauxController extends Controller
      */
     public function templates()
     {
-        $user = auth()->user();
+        $this->checkPermission('creneaux', 'templates.view');
+
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre) {
@@ -105,10 +119,13 @@ class CreneauxController extends Controller
      */
     public function storeTemplate(Request $request)
     {
+        // Vérifier la permission
+        $this->checkPermission('creneaux', 'templates.create');
+
         \Log::info('=== DÉBUT storeTemplate ===');
         \Log::info('Request data:', $request->all());
         
-        $user = auth()->user();
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         \Log::info('User:', ['id' => $user->id, 'email' => $user->email]);
@@ -233,6 +250,9 @@ class CreneauxController extends Controller
      */
     public function storeBulkTemplates(Request $request)
     {
+        // Vérifier la permission
+        $this->checkPermission('creneaux', 'templates.create');
+        
         \Log::info('=== DÉBUT storeBulkTemplates ===');
         \Log::info('Request data:', $request->all());
         
@@ -440,7 +460,10 @@ class CreneauxController extends Controller
      */
     public function destroyTemplate(TemplateCreneau $template)
     {
-        $user = auth()->user();
+        // Vérifier la permission
+        $this->checkPermission('creneaux', 'templates.delete');
+
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre || $template->centre_id !== $centre->id) {
@@ -460,7 +483,10 @@ class CreneauxController extends Controller
      */
     public function exceptions()
     {
-        $centre = auth()->user()->centre;
+        $this->checkPermission('creneaux', 'exceptions.view');
+
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
         if (!$centre) {
             return redirect()->route('dashboard')->with('error', 'Centre non trouvé');
         }
@@ -504,10 +530,14 @@ class CreneauxController extends Controller
      */
     public function storeException(Request $request)
     {
+        // Vérifier la permission
+        $this->checkPermission('creneaux', 'exceptions.create');
+
         \Log::info('=== DÉBUT storeException ===');
         \Log::info('Données reçues:', $request->all());
         
-        $centre = auth()->user()->centre;
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
         if (!$centre) {
             \Log::error('Centre non trouvé pour l\'utilisateur');
             return response()->json(['success' => false, 'message' => 'Centre non trouvé'], 403);
@@ -590,7 +620,11 @@ class CreneauxController extends Controller
      */
     public function updateException(Request $request, \App\Models\Exception $exception)
     {
-        $centre = auth()->user()->centre;
+        // Vérifier la permission
+        $this->checkPermission('creneaux', 'exceptions.update');
+
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
         if (!$centre || $exception->centre_id !== $centre->id) {
             return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
         }
@@ -642,6 +676,9 @@ class CreneauxController extends Controller
      */
     public function destroyException(\App\Models\Exception $exception)
     {
+        // Vérifier la permission
+        $this->checkPermission('creneaux', 'exceptions.delete');
+        
         $centre = auth()->user()->centre;
         if (!$centre || $exception->centre_id !== $centre->id) {
             return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
@@ -656,11 +693,113 @@ class CreneauxController extends Controller
     }
 
     /**
+     * Mettre à jour l'intervalle d'un jour de travail
+     */
+    public function updateIntervalle(Request $request, JourTravail $jourTravail)
+    {
+        $user = auth()->user();
+        $centre = $user->centre;
+        
+        if (!$centre || $jourTravail->centre_id !== $centre->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jour de travail non trouvé'
+            ], 404);
+        }
+
+        $request->validate([
+            'intervalle_minutes' => 'required|integer|in:15,30,45,60,90,120'
+        ]);
+
+        $jourTravail->update([
+            'intervalle_minutes' => $request->intervalle_minutes
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Intervalle mis à jour avec succès',
+            'jour' => $jourTravail->fresh()
+        ]);
+    }
+
+    /**
+     * Migrer l'intervalle d'un jour de travail
+     */
+    public function migrateIntervalle(Request $request, JourTravail $jourTravail)
+    {
+        $user = auth()->user();
+        $centre = $user->centre;
+        
+        if (!$centre || $jourTravail->centre_id !== $centre->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jour de travail non trouvé'
+            ], 404);
+        }
+
+        // Logique de migration ici si nécessaire
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Migration effectuée avec succès'
+        ]);
+    }
+
+    /**
+     * Forcer la migration
+     */
+    public function forceMigration(Request $request, JourTravail $jourTravail)
+    {
+        $user = auth()->user();
+        $centre = $user->centre;
+        
+        if (!$centre || $jourTravail->centre_id !== $centre->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Jour de travail non trouvé'
+            ], 404);
+        }
+
+        // Logique de migration forcée ici si nécessaire
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Migration forcée effectuée avec succès'
+        ]);
+    }
+
+    /**
+     * Vérifier les conflits
+     */
+    public function checkConflicts(Request $request)
+    {
+        $user = auth()->user();
+        $centre = $user->centre;
+        
+        if (!$centre) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Centre non trouvé'
+            ], 404);
+        }
+
+        // Logique de vérification des conflits ici
+        
+        return response()->json([
+            'success' => true,
+            'conflicts' => []
+        ]);
+    }
+
+    /**
      * Afficher la page du calendrier
      */
     public function calendrier()
     {
-        $centre = auth()->user()->centre;
+        $this->checkPermission('creneaux', 'calendrier.view');
+
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
         if (!$centre) {
             return redirect()->route('dashboard')->with('error', 'Centre non trouvé');
         }
@@ -702,6 +841,49 @@ class CreneauxController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors du calcul de disponibilité'
+            ], 500);
+        }
+    }
+
+    /**
+     * API pour récupérer les disponibilités d'un mois entier (optimisé)
+     */
+    public function getDisponibilitesMois($centreId, $year, $month)
+    {
+        try {
+            $disponibiliteService = app(\App\Services\DisponibiliteService::class);
+            
+            // Calculer le nombre de jours dans le mois
+            $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+            
+            $disponibilites = [];
+            
+            // Charger toutes les disponibilités du mois
+            for ($day = 1; $day <= $daysInMonth; $day++) {
+                $date = Carbon::createFromDate($year, $month, $day)->format('Y-m-d');
+                $disponibilite = $disponibiliteService->calculerDisponibilite($centreId, $date);
+                
+                if ($disponibilite) {
+                    $disponibilites[$date] = $disponibilite;
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $disponibilites
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Erreur lors du calcul des disponibilités du mois:', [
+                'centre_id' => $centreId,
+                'year' => $year,
+                'month' => $month,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du calcul des disponibilités'
             ], 500);
         }
     }

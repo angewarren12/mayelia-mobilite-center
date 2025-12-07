@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Documents Requis')
 @section('subtitle', 'Gestion des documents requis par service')
@@ -11,10 +11,12 @@
             <h1 class="text-2xl font-bold text-gray-900">Documents Requis</h1>
             <p class="text-gray-600">Gérez les documents requis pour chaque service</p>
         </div>
+        @isAdmin
         <button onclick="openCreateModal()" 
-                class="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                class="w-full sm:w-auto bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
             <i class="fas fa-plus mr-2"></i>Ajouter un document
         </button>
+        @endisAdmin
     </div>
 
     <!-- Système d'onglets par service -->
@@ -23,7 +25,7 @@
     <div class="border-b border-gray-200">
             <nav class="flex overflow-x-auto" aria-label="Tabs">
             <button onclick="switchTab('all')" 
-                        class="tab-button active flex-shrink-0 py-4 px-6 border-b-2 border-blue-500 font-medium text-sm text-blue-600 whitespace-nowrap">
+                        class="tab-button active flex-shrink-0 py-4 px-6 border-b-2 border-mayelia-500 font-medium text-sm text-mayelia-600 whitespace-nowrap">
                     <i class="fas fa-list mr-2"></i>Tous les services
                 </button>
                 @foreach($services as $service)
@@ -42,7 +44,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Type de demande</label>
-                        <select id="filterTypeDemande" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filterTypeDemande" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             <option value="">Tous les types</option>
                             @foreach($typesDemande as $key => $label)
                                 <option value="{{ $key }}">{{ $key }}</option>
@@ -52,7 +54,7 @@
                     
             <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                        <select id="filterStatut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="filterStatut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous</option>
                     <option value="1">Obligatoire</option>
                             <option value="0">Facultatif</option>
@@ -94,7 +96,7 @@
                                 </td>
                                             <td class="px-4 py-4 whitespace-nowrap">
                                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                    @if($document->type_demande === 'Première demande') bg-blue-100 text-blue-800
+                                                    @if($document->type_demande === 'Première demande') bg-mayelia-100 text-mayelia-800
                                                     @elseif($document->type_demande === 'Renouvellement') bg-green-100 text-green-800
                                                     @elseif($document->type_demande === 'Modification') bg-yellow-100 text-yellow-800
                                                     @else bg-purple-100 text-purple-800
@@ -125,9 +127,10 @@
                                             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                                     <a href="{{ route('document-requis.show', $document) }}" 
-                                                       class="text-blue-600 hover:text-blue-900">
+                                                       class="text-mayelia-600 hover:text-mayelia-900">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
+                                                    @isAdmin
                                                     <button onclick="openEditModal({{ $document->id }})" 
                                                             class="text-indigo-600 hover:text-indigo-900">
                                             <i class="fas fa-edit"></i>
@@ -141,6 +144,7 @@
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                                    @endisAdmin
                                     </div>
                                 </td>
                             </tr>
@@ -157,9 +161,10 @@
                                         <h3 class="text-sm font-medium text-gray-900">{{ $document->nom_document }}</h3>
                                         <div class="flex space-x-2">
                                             <a href="{{ route('document-requis.show', $document) }}" 
-                                               class="text-blue-600 hover:text-blue-900">
+                                               class="text-mayelia-600 hover:text-mayelia-900">
                                                 <i class="fas fa-eye"></i>
                                             </a>
+                                            @isAdmin
                                             <button onclick="openEditModal({{ $document->id }})" 
                                                     class="text-indigo-600 hover:text-indigo-900">
                                                 <i class="fas fa-edit"></i>
@@ -173,6 +178,7 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
+                                            @endisAdmin
                                         </div>
                                     </div>
                                     
@@ -184,7 +190,7 @@
                                         <div class="flex justify-between">
                                             <span class="font-medium">Type:</span>
                                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                @if($document->type_demande === 'Première demande') bg-blue-100 text-blue-800
+                                                @if($document->type_demande === 'Première demande') bg-mayelia-100 text-mayelia-800
                                                 @elseif($document->type_demande === 'Renouvellement') bg-green-100 text-green-800
                                                 @elseif($document->type_demande === 'Modification') bg-yellow-100 text-yellow-800
                                                 @else bg-purple-100 text-purple-800
@@ -224,7 +230,7 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun document requis</h3>
                             <p class="text-gray-500 mb-4">Commencez par ajouter des documents requis pour vos services.</p>
                             <button onclick="openCreateModal()" 
-                                    class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                    class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
                                 <i class="fas fa-plus mr-2"></i>Ajouter le premier document
                             </button>
                         </div>
@@ -279,7 +285,7 @@
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-plus text-blue-600 mr-2"></i>
+                        <i class="fas fa-plus text-mayelia-600 mr-2"></i>
                         Ajouter un Document Requis
                     </h3>
                     <button onclick="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
@@ -296,7 +302,7 @@
                                 Service <span class="text-red-500">*</span>
                             </label>
                             <select name="service_id" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                 <option value="">Sélectionner un service</option>
                                 @foreach($services as $service)
                                     <option value="{{ $service->id }}">{{ $service->nom }}</option>
@@ -309,7 +315,7 @@
                                 Type de demande <span class="text-red-500">*</span>
                             </label>
                             <select name="type_demande" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                 <option value="">Sélectionner un type</option>
                                 @foreach($typesDemande as $key => $label)
                                     <option value="{{ $key }}">{{ $key }}</option>
@@ -324,7 +330,7 @@
                         </label>
                         <input type="text" name="nom_document" required
                                placeholder="Ex: Pièce d'identité, Justificatif de domicile..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     
                     <div>
@@ -333,7 +339,7 @@
                         </label>
                         <textarea name="description" rows="3"
                                   placeholder="Description détaillée du document requis..."
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500"></textarea>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -344,7 +350,7 @@
                             <div class="space-y-2">
                                 <label class="flex items-center">
                                     <input type="radio" name="obligatoire" value="1" checked
-                                           class="mr-2 text-blue-600 focus:ring-blue-500">
+                                           class="mr-2 text-mayelia-600 focus:ring-mayelia-500">
                                     <span class="text-sm text-gray-700">
                                         <i class="fas fa-exclamation-circle text-red-500 mr-1"></i>
                                         Obligatoire
@@ -352,7 +358,7 @@
                                 </label>
                                 <label class="flex items-center">
                                     <input type="radio" name="obligatoire" value="0"
-                                           class="mr-2 text-blue-600 focus:ring-blue-500">
+                                           class="mr-2 text-mayelia-600 focus:ring-mayelia-500">
                                     <span class="text-sm text-gray-700">
                                         <i class="fas fa-info-circle text-gray-500 mr-1"></i>
                                         Facultatif
@@ -366,7 +372,7 @@
                                 Ordre d'affichage <span class="text-red-500">*</span>
                             </label>
                             <input type="number" name="ordre" required min="0" value="0"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         </div>
     </div>
 
@@ -376,7 +382,7 @@
                             Annuler
                         </button>
                         <button type="submit" 
-                                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                class="px-6 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700">
                             <i class="fas fa-save mr-2"></i>Enregistrer
                         </button>
                     </div>
@@ -411,7 +417,7 @@
                                 Service <span class="text-red-500">*</span>
                             </label>
                             <select name="service_id" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                 <option value="">Sélectionner un service</option>
                                 @foreach($services as $service)
                                     <option value="{{ $service->id }}">{{ $service->nom }}</option>
@@ -424,7 +430,7 @@
                                 Type de demande <span class="text-red-500">*</span>
                             </label>
                             <select name="type_demande" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                 <option value="">Sélectionner un type</option>
                                 @foreach($typesDemande as $key => $label)
                                     <option value="{{ $key }}">{{ $key }}</option>
@@ -439,7 +445,7 @@
                         </label>
                         <input type="text" name="nom_document" required
                                placeholder="Ex: Pièce d'identité, Justificatif de domicile..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     
                     <div>
@@ -448,7 +454,7 @@
                         </label>
                         <textarea name="description" rows="3"
                                   placeholder="Description détaillée du document requis..."
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500"></textarea>
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -459,7 +465,7 @@
                             <div class="space-y-2">
                                 <label class="flex items-center">
                                     <input type="radio" name="obligatoire" value="1"
-                                           class="mr-2 text-blue-600 focus:ring-blue-500">
+                                           class="mr-2 text-mayelia-600 focus:ring-mayelia-500">
                                     <span class="text-sm text-gray-700">
                                         <i class="fas fa-exclamation-circle text-red-500 mr-1"></i>
                                         Obligatoire
@@ -467,7 +473,7 @@
                                 </label>
                                 <label class="flex items-center">
                                     <input type="radio" name="obligatoire" value="0"
-                                           class="mr-2 text-blue-600 focus:ring-blue-500">
+                                           class="mr-2 text-mayelia-600 focus:ring-mayelia-500">
                                     <span class="text-sm text-gray-700">
                                         <i class="fas fa-info-circle text-gray-500 mr-1"></i>
                                         Facultatif
@@ -481,7 +487,7 @@
                                 Ordre d'affichage <span class="text-red-500">*</span>
                             </label>
                             <input type="number" name="ordre" required min="0"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         </div>
                     </div>
                     
@@ -502,6 +508,12 @@
 </div>
 
 <script>
+@php
+    $authService = app(\App\Services\AuthService::class);
+    $isAdmin = $authService->isAdmin();
+@endphp
+window.isAdmin = @json($isAdmin);
+
 // Auto-hide toasts
 setTimeout(() => {
     const successToast = document.getElementById('success-toast');
@@ -520,14 +532,14 @@ function switchTab(serviceId) {
     
     // Désactiver tous les boutons d'onglets
     document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active', 'border-blue-500', 'text-blue-600');
+        button.classList.remove('active', 'border-mayelia-500', 'text-mayelia-600');
         button.classList.add('border-transparent', 'text-gray-500');
     });
     
     // Activer l'onglet sélectionné
     const activeButton = document.querySelector(`[onclick="switchTab('${serviceId}')"]`);
     if (activeButton) {
-        activeButton.classList.add('active', 'border-blue-500', 'text-blue-600');
+        activeButton.classList.add('active', 'border-mayelia-500', 'text-mayelia-600');
         activeButton.classList.remove('border-transparent', 'text-gray-500');
     }
     
@@ -565,7 +577,7 @@ function loadServiceDocuments(serviceId) {
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun document requis</h3>
                         <p class="text-gray-500 mb-4">Aucun document requis pour ce service.</p>
                         <button onclick="openCreateModal()" 
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
                             <i class="fas fa-plus mr-2"></i>Ajouter un document
                         </button>
                     </div>
@@ -596,7 +608,7 @@ function loadServiceDocuments(serviceId) {
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                    ${doc.type_demande === 'Première demande' ? 'bg-blue-100 text-blue-800' :
+                                    ${doc.type_demande === 'Première demande' ? 'bg-mayelia-100 text-mayelia-800' :
                                       doc.type_demande === 'Renouvellement' ? 'bg-green-100 text-green-800' :
                                       doc.type_demande === 'Modification' ? 'bg-yellow-100 text-yellow-800' :
                                       'bg-purple-100 text-purple-800'}">
@@ -614,9 +626,10 @@ function loadServiceDocuments(serviceId) {
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${doc.ordre}</td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex space-x-2">
-                                    <a href="/document-requis/${doc.id}" class="text-blue-600 hover:text-blue-900">
+                                    <a href="/document-requis/${doc.id}" class="text-mayelia-600 hover:text-mayelia-900">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    ${window.isAdmin ? `
                                     <button onclick="openEditModal(${doc.id})" class="text-indigo-600 hover:text-indigo-900">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -627,6 +640,7 @@ function loadServiceDocuments(serviceId) {
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    ` : ''}
                                 </div>
                             </td>
                         </tr>
@@ -648,9 +662,10 @@ function loadServiceDocuments(serviceId) {
                             <div class="flex justify-between items-start mb-3">
                                 <h3 class="text-sm font-medium text-gray-900">${doc.nom_document}</h3>
                                 <div class="flex space-x-2">
-                                    <a href="/document-requis/${doc.id}" class="text-blue-600 hover:text-blue-900">
+                                    <a href="/document-requis/${doc.id}" class="text-mayelia-600 hover:text-mayelia-900">
                                         <i class="fas fa-eye"></i>
                                     </a>
+                                    ${window.isAdmin ? `
                                     <button onclick="openEditModal(${doc.id})" class="text-indigo-600 hover:text-indigo-900">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -661,6 +676,7 @@ function loadServiceDocuments(serviceId) {
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    ` : ''}
                                 </div>
                             </div>
                             
@@ -668,7 +684,7 @@ function loadServiceDocuments(serviceId) {
                                 <div class="flex justify-between">
                                     <span class="font-medium">Type:</span>
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                        ${doc.type_demande === 'Première demande' ? 'bg-blue-100 text-blue-800' :
+                                        ${doc.type_demande === 'Première demande' ? 'bg-mayelia-100 text-mayelia-800' :
                                           doc.type_demande === 'Renouvellement' ? 'bg-green-100 text-green-800' :
                                           doc.type_demande === 'Modification' ? 'bg-yellow-100 text-yellow-800' :
                                           'bg-purple-100 text-purple-800'}">

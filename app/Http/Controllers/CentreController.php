@@ -8,15 +8,28 @@ use App\Models\Service;
 use App\Models\Formule;
 use App\Models\CentreService;
 use App\Models\CentreFormule;
+use App\Services\AuthService;
+use App\Http\Controllers\Concerns\ChecksPermissions;
 
 class CentreController extends Controller
 {
+    use ChecksPermissions;
+
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $user = auth()->user();
+        // Vérifier la permission de lecture
+        $this->checkPermission('centres', 'view');
+
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre) {
@@ -43,7 +56,12 @@ class CentreController extends Controller
      */
     public function toggleService(Request $request, Service $service)
     {
-        $user = auth()->user();
+        // Bloquer pour les agents (admin uniquement)
+        if (!$this->authService->isAdmin()) {
+            abort(403, 'Seuls les administrateurs peuvent modifier les services du centre.');
+        }
+
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre) {
@@ -72,7 +90,12 @@ class CentreController extends Controller
      */
     public function toggleFormule(Request $request, Formule $formule)
     {
-        $user = auth()->user();
+        // Bloquer pour les agents (admin uniquement)
+        if (!$this->authService->isAdmin()) {
+            abort(403, 'Seuls les administrateurs peuvent modifier les formules du centre.');
+        }
+
+        $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
         
         if (!$centre) {
@@ -94,5 +117,21 @@ class CentreController extends Controller
         }
 
         return redirect()->route('centres.index')->with('success', $message);
+    }
+    /**
+     * API pour récupérer les services actifs d'un centre
+     */
+    public function getServicesByCentre(Centre $centre)
+    {
+        try {
+            $services = $centre->services()
+                             ->wherePivot('actif', true)
+                             ->where('statut', 'actif')
+                             ->get(['services.id', 'services.nom']);
+
+            return response()->json($services);
+        } catch (\Exception $e) {
+            return response()->json([], 500);
+        }
     }
 }

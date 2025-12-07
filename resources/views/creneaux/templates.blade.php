@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion des créneaux')
 @section('subtitle', 'Configurez les créneaux de rendez-vous pour votre centre')
@@ -10,22 +10,22 @@
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
                 <a href="{{ route('creneaux.index') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.index') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.index') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-calendar-day mr-2"></i>
                     Jours ouvrables
                 </a>
                 <a href="{{ route('creneaux.templates') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.templates') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.templates') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-calendar-alt mr-2"></i>
                     Templates
                 </a>
                 <a href="{{ route('creneaux.exceptions') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.exceptions') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.exceptions') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
                     Exceptions
                 </a>
                 <a href="{{ route('creneaux.calendrier') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.calendrier') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.calendrier') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-calendar mr-2"></i>
                     Calendrier
                 </a>
@@ -42,7 +42,7 @@
                     <p class="text-sm text-gray-600 mt-1">Configurez les templates pour générer automatiquement les créneaux</p>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="{{ route('templates.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    <a href="{{ route('templates.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
                         <i class="fas fa-plus"></i>
                         <span>Nouveau template</span>
                     </a>
@@ -92,7 +92,7 @@
                                         {{ $template->statut === 'actif' ? 'Actif' : 'Inactif' }}
                                     </span>
                                     
-                                    <a href="{{ route('templates.edit', $template) }}" class="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                    <a href="{{ route('templates.edit', $template) }}" class="p-2 text-gray-400 hover:text-mayelia-600 transition-colors">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
@@ -113,7 +113,7 @@
                     <i class="fas fa-calendar-alt text-gray-300 text-4xl mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun template configuré</h3>
                     <p class="text-gray-600 mb-6">Commencez par créer des templates pour générer automatiquement les créneaux.</p>
-                    <a href="{{ route('templates.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
+                    <a href="{{ route('templates.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
                         <i class="fas fa-plus"></i>
                         <span>Créer un template</span>
                     </a>

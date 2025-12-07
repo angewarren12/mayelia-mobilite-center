@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion des Dossiers')
 @section('subtitle', 'Liste des dossiers clients')
@@ -11,10 +11,12 @@
             <h2 class="text-2xl font-bold text-gray-900">Dossiers</h2>
             <p class="text-gray-600">Gérez les dossiers des clients</p>
         </div>
-        <a href="{{ route('dossiers.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+        @userCan('dossiers', 'create')
+        <a href="{{ route('dossiers.create-walkin') }}" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 flex items-center">
             <i class="fas fa-plus mr-2"></i>
             Nouveau Dossier
         </a>
+        @enduserCan
     </div>
 
     <!-- Filtres et recherche -->
@@ -27,20 +29,20 @@
                        name="search" 
                        value="{{ request('search') }}"
                        placeholder="Nom client, email, numéro de dossier..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div class="min-w-48">
                 <label for="statut" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                <select id="statut" name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="statut" name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les statuts</option>
+                    <option value="ouvert" {{ request('statut') === 'ouvert' ? 'selected' : '' }}>Ouvert</option>
                     <option value="en_cours" {{ request('statut') === 'en_cours' ? 'selected' : '' }}>En cours</option>
-                    <option value="complet" {{ request('statut') === 'complet' ? 'selected' : '' }}>Complet</option>
-                    <option value="rejete" {{ request('statut') === 'rejete' ? 'selected' : '' }}>Rejeté</option>
+                    <option value="finalise" {{ request('statut') === 'finalise' ? 'selected' : '' }}>Finalisé</option>
                 </select>
             </div>
             <div class="min-w-48">
                 <label for="rendez_vous_id" class="block text-sm font-medium text-gray-700 mb-1">Rendez-vous</label>
-                <select id="rendez_vous_id" name="rendez_vous_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="rendez_vous_id" name="rendez_vous_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les rendez-vous</option>
                     @foreach(\App\Models\RendezVous::with('client')->get() as $rdv)
                     <option value="{{ $rdv->id }}" {{ request('rendez_vous_id') == $rdv->id ? 'selected' : '' }}>
@@ -50,7 +52,7 @@
                 </select>
             </div>
             <div class="flex items-end">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button type="submit" class="px-4 py-2 bg-mayelia-600 text-white rounded-md hover:bg-mayelia-700">
                     <i class="fas fa-search mr-2"></i>
                     Filtrer
                 </button>
@@ -69,7 +71,7 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Numéro</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">N° Dossier</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date RDV</th>
@@ -82,8 +84,8 @@
                         @foreach($dossiers as $dossier)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $dossier->numero_dossier }}</div>
-                                    <div class="text-sm text-gray-500">{{ $dossier->created_at->format('d/m/Y') }}</div>
+                                    <div class="text-sm font-medium text-gray-900">DOS-{{ str_pad($dossier->id, 6, '0', STR_PAD_LEFT) }}</div>
+                                    <div class="text-sm text-gray-500">{{ $dossier->date_ouverture->format('d/m/Y') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center">
@@ -94,61 +96,69 @@
                                         </div>
                                         <div class="ml-4">
                                             <div class="text-sm font-medium text-gray-900">
-                                                {{ $dossier->rendezVous->client->nom_complet ?? 'Client supprimé' }}
+                                                {{ $dossier->rendezVous?->client->nom_complet ?? 'Rendez-vous supprimé' }}
                                             </div>
-                                            <div class="text-sm text-gray-500">{{ $dossier->rendezVous->client->email ?? 'N/A' }}</div>
+                                            <div class="text-sm text-gray-500">{{ $dossier->rendezVous?->client->email ?? 'N/A' }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $dossier->rendezVous->service->nom ?? 'N/A' }}</div>
-                                    <div class="text-sm text-gray-500">{{ $dossier->rendezVous->formule->nom ?? 'N/A' }}</div>
+                                    <div class="text-sm text-gray-900">{{ $dossier->rendezVous?->service->nom ?? 'N/A' }}</div>
+                                    <div class="text-sm text-gray-500">{{ $dossier->rendezVous?->formule->nom ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ $dossier->rendezVous->date_rendez_vous->format('d/m/Y') }}</div>
-                                    <div class="text-sm text-gray-500">{{ $dossier->rendezVous->tranche_horaire }}</div>
+                                    <div class="text-sm text-gray-900">{{ $dossier->rendezVous?->date_rendez_vous?->format('d/m/Y') ?? 'N/A' }}</div>
+                                    <div class="text-sm text-gray-500">{{ $dossier->rendezVous?->tranche_horaire ?? 'N/A' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        @if($dossier->statut === 'complet') bg-green-100 text-green-800
-                                        @elseif($dossier->statut === 'rejete') bg-red-100 text-red-800
-                                        @else bg-yellow-100 text-yellow-800 @endif">
-                                        {{ ucfirst(str_replace('_', ' ', $dossier->statut)) }}
+                                    @php
+                                        $statutColors = [
+                                            'ouvert' => 'bg-mayelia-100 text-mayelia-800',
+                                            'en_cours' => 'bg-yellow-100 text-yellow-800',
+                                            'finalise' => 'bg-green-100 text-green-800'
+                                        ];
+                                        $color = $statutColors[$dossier->statut] ?? 'bg-gray-100 text-gray-800';
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $color }}">
+                                        {{ $dossier->statut_formate }}
                                     </span>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        Progression: {{ $dossier->progression }}%
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">
-                                        @if($dossier->statut_paiement)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                                @if($dossier->statut_paiement === 'paye') bg-green-100 text-green-800
-                                                @elseif($dossier->statut_paiement === 'en_attente') bg-yellow-100 text-yellow-800
-                                                @elseif($dossier->statut_paiement === 'partiel') bg-blue-100 text-blue-800
-                                                @else bg-red-100 text-red-800 @endif">
-                                                {{ ucfirst(str_replace('_', ' ', $dossier->statut_paiement)) }}
+                                    @if($dossier->paiementVerification)
+                                        <div class="text-sm text-gray-900">
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                Vérifié
                                             </span>
-                                        @else
-                                            <span class="text-gray-400">Non défini</span>
-                                        @endif
-                                    </div>
-                                    @if($dossier->montant_paye)
-                                        <div class="text-sm text-gray-500">{{ number_format($dossier->montant_paye, 0, ',', ' ') }} FCFA</div>
+                                        </div>
+                                        <div class="text-sm text-gray-500 mt-1">
+                                            {{ number_format($dossier->paiementVerification->montant_paye, 0, ',', ' ') }} FCFA
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400 text-sm">Non vérifié</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <a href="{{ route('dossiers.show', $dossier) }}" class="text-blue-600 hover:text-blue-900" title="Voir détails">
+                                        <a href="{{ route('dossier.workflow', $dossier) }}" class="text-mayelia-600 hover:text-mayelia-900" title="Voir workflow">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{{ route('dossiers.edit', $dossier) }}" class="text-indigo-600 hover:text-indigo-900" title="Modifier">
-                                            <i class="fas fa-edit"></i>
+                                        @if($dossier->statut === 'finalise')
+                                        <a href="{{ route('dossier.imprimer-recu', $dossier) }}" 
+                                           target="_blank"
+                                           class="text-green-600 hover:text-green-900" 
+                                           title="Imprimer le reçu">
+                                            <i class="fas fa-print"></i>
                                         </a>
-                                        <form method="POST" action="{{ route('dossiers.destroy', $dossier) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce dossier ?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Supprimer">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
+                                        <a href="{{ route('dossiers.imprimer-etiquette', $dossier) }}" 
+                                           target="_blank"
+                                           class="text-purple-600 hover:text-purple-900" 
+                                           title="Imprimer l'étiquette">
+                                            <i class="fas fa-tag"></i>
+                                        </a>
+                                        @endif
                                     </div>
                                 </td>
                             </tr>
@@ -166,10 +176,12 @@
                 <i class="fas fa-folder-open text-4xl text-gray-400 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun dossier trouvé</h3>
                 <p class="text-gray-500 mb-4">Commencez par créer votre premier dossier.</p>
-                <a href="{{ route('dossiers.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                @userCan('dossiers', 'create')
+                <a href="{{ route('dossiers.create') }}" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700">
                     <i class="fas fa-plus mr-2"></i>
                     Créer un dossier
                 </a>
+                @enduserCan
             </div>
         @endif
     </div>

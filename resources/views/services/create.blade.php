@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Nouveau service')
 @section('subtitle', 'Créez un nouveau service pour votre centre')
@@ -18,7 +18,7 @@
                            id="nom" 
                            name="nom" 
                            value="{{ old('nom') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nom') border-red-500 @enderror"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('nom') border-red-500 @enderror"
                            placeholder="Ex: Carte Nationale d'Identité"
                            required>
                     @error('nom')
@@ -33,7 +33,7 @@
                     <textarea id="description" 
                               name="description" 
                               rows="3"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('description') border-red-500 @enderror"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('description') border-red-500 @enderror"
                               placeholder="Description du service...">{{ old('description') }}</textarea>
                     @error('description')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -46,7 +46,7 @@
                     </label>
                     <select id="duree_rdv" 
                             name="duree_rdv"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('duree_rdv') border-red-500 @enderror"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('duree_rdv') border-red-500 @enderror"
                             required>
                         <option value="">Sélectionnez une durée</option>
                         <option value="15" {{ old('duree_rdv') == '15' ? 'selected' : '' }}>15 minutes</option>
@@ -68,7 +68,7 @@
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                        class="px-6 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white rounded-lg transition-colors">
                     Créer le service
                 </button>
             </div>

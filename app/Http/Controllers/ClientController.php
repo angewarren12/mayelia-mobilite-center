@@ -7,14 +7,26 @@ use App\Models\RendezVous;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use App\Services\AuthService;
+use App\Http\Controllers\Concerns\ChecksPermissions;
 
 class ClientController extends Controller
 {
+    use ChecksPermissions;
+
+    protected $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
     /**
      * Afficher la liste des clients
      */
     public function index(Request $request)
     {
+        $this->checkPermission('clients', 'view');
+
         $query = Client::query();
 
         // Recherche
@@ -37,6 +49,8 @@ class ClientController extends Controller
      */
     public function create()
     {
+        $this->checkPermission('clients', 'create');
+
         return view('clients.create');
     }
 
@@ -45,6 +59,8 @@ class ClientController extends Controller
      */
     public function store(Request $request)
     {
+        $this->checkPermission('clients', 'create');
+
         $validator = Validator::make($request->all(), [
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
@@ -121,6 +137,8 @@ class ClientController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $this->checkPermission('clients', 'update');
+
         $client = Client::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
@@ -174,6 +192,8 @@ class ClientController extends Controller
      */
     public function destroy($id)
     {
+        $this->checkPermission('clients', 'delete');
+
         try {
             $client = Client::findOrFail($id);
             
@@ -240,6 +260,8 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
+        $this->checkPermission('clients', 'update');
+
         return view('clients.edit', compact('client'));
     }
 

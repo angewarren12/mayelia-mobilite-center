@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Informations client')
 
@@ -36,7 +36,7 @@
                             Nom <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="nom" name="nom" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
 
                     <!-- Prénom -->
@@ -45,7 +45,7 @@
                             Prénom <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="prenom" name="prenom" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
 
                     <!-- Email -->
@@ -54,7 +54,7 @@
                             Email <span class="text-red-500">*</span>
                         </label>
                         <input type="email" id="email" name="email" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
 
                     <!-- Téléphone -->
@@ -63,7 +63,7 @@
                             Téléphone <span class="text-red-500">*</span>
                         </label>
                         <input type="tel" id="telephone" name="telephone" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
 
                     <!-- Date de naissance -->
@@ -72,7 +72,7 @@
                             Date de naissance
                         </label>
                         <input type="date" id="date_naissance" name="date_naissance"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
 
                     <!-- Sexe -->
@@ -81,7 +81,7 @@
                             Sexe
                         </label>
                         <select id="sexe" name="sexe"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                             <option value="">Sélectionner</option>
                             <option value="M">Masculin</option>
                             <option value="F">Féminin</option>
@@ -94,7 +94,7 @@
                             Adresse
                         </label>
                         <textarea id="adresse" name="adresse" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500"></textarea>
                     </div>
 
                     <!-- Notes -->
@@ -103,7 +103,7 @@
                             Notes (optionnel)
                         </label>
                         <textarea id="notes" name="notes" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500"
                                   placeholder="Informations supplémentaires..."></textarea>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
                         Annuler
                     </button>
                     <button type="submit"
-                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm">
+                            class="px-6 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white font-medium rounded-md shadow-sm">
                         <i class="fas fa-credit-card mr-2"></i>
                         Procéder au paiement
                     </button>
@@ -179,12 +179,12 @@ function processPayment(bookingData) {
     modal.innerHTML = `
         <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                    <i class="fas fa-credit-card text-blue-600 text-xl"></i>
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-mayelia-100 mb-4">
+                    <i class="fas fa-credit-card text-mayelia-600 text-xl"></i>
                 </div>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Simulation de paiement</h3>
                 <p class="text-sm text-gray-500 mb-4">Montant: ${bookingData.formulePrix} FCFA</p>
-                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-mayelia-600 mx-auto mb-4"></div>
                 <p class="text-sm text-gray-600">Traitement en cours...</p>
             </div>
         </div>

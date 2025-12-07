@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Détails du Rendez-vous')
 @section('subtitle', 'Informations complètes du rendez-vous')
@@ -12,14 +12,18 @@
             <p class="text-gray-600">Numéro de suivi: {{ $rendezVous->numero_suivi }}</p>
         </div>
         <div class="flex space-x-3">
-            <a href="{{ route('rendez-vous.edit', $rendezVous) }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+            @userCan('rendez-vous', 'update')
+            <a href="{{ route('rendez-vous.edit', $rendezVous) }}" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 flex items-center">
                 <i class="fas fa-edit mr-2"></i>
                 Modifier
             </a>
+            @enduserCan
+            @userCan('dossiers', 'create')
             <a href="{{ route('dossiers.create', ['rendez_vous_id' => $rendezVous->id]) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
                 <i class="fas fa-folder-plus mr-2"></i>
                 Créer Dossier
             </a>
+            @enduserCan
             <a href="{{ route('rendez-vous.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i>
                 Retour
@@ -33,7 +37,7 @@
         <div class="lg:col-span-2">
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                    <i class="fas fa-calendar-alt mr-2 text-blue-600"></i>
+                    <i class="fas fa-calendar-alt mr-2 text-mayelia-600"></i>
                     Informations du Rendez-vous
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -50,7 +54,7 @@
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                             @if($rendezVous->statut === 'confirme') bg-green-100 text-green-800
                             @elseif($rendezVous->statut === 'annule') bg-red-100 text-red-800
-                            @else bg-blue-100 text-blue-800 @endif">
+                            @else bg-mayelia-100 text-mayelia-800 @endif">
                             {{ $rendezVous->statut_formate }}
                         </span>
                     </div>
@@ -137,7 +141,6 @@
             @if($rendezVous->formule)
             <div class="space-y-3">
                 <div>
-                    <label class="text-sm font-medium text-gray-500">Nom de la formule</label>
                     <p class="text-gray-900 font-medium">{{ $rendezVous->formule->nom }}</p>
                 </div>
                 <div>
@@ -192,10 +195,12 @@
                 <i class="fas fa-folder mr-2 text-orange-600"></i>
                 Dossiers Associés
             </h3>
+            @userCan('dossiers', 'create')
             <a href="{{ route('dossiers.create', ['rendez_vous_id' => $rendezVous->id]) }}" class="bg-orange-600 text-white px-3 py-2 rounded-lg hover:bg-orange-700 text-sm">
                 <i class="fas fa-plus mr-1"></i>
                 Nouveau Dossier
             </a>
+            @enduserCan
         </div>
         
         @if($rendezVous->dossiers && $rendezVous->dossiers->count() > 0)
@@ -211,12 +216,14 @@
                         @endif
                     </div>
                     <div class="flex space-x-2">
-                        <a href="{{ route('dossiers.show', $dossier) }}" class="text-blue-600 hover:text-blue-800">
+                        <a href="{{ route('dossiers.show', $dossier) }}" class="text-mayelia-600 hover:text-mayelia-800">
                             <i class="fas fa-eye"></i>
                         </a>
+                        @userCan('dossiers', 'update')
                         <a href="{{ route('dossiers.edit', $dossier) }}" class="text-green-600 hover:text-green-800">
                             <i class="fas fa-edit"></i>
                         </a>
+                        @enduserCan
                     </div>
                 </div>
             </div>
@@ -226,9 +233,11 @@
         <div class="text-center py-8">
             <i class="fas fa-folder-open text-4xl text-gray-300 mb-4"></i>
             <p class="text-gray-500">Aucun dossier associé à ce rendez-vous</p>
+            @userCan('dossiers', 'create')
             <a href="{{ route('dossiers.create', ['rendez_vous_id' => $rendezVous->id]) }}" class="text-orange-600 hover:text-orange-800 font-medium">
                 Créer le premier dossier
             </a>
+            @enduserCan
         </div>
         @endif
     </div>

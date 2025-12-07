@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Détails du Dossier')
 @section('subtitle', 'Informations complètes du dossier')
@@ -28,7 +28,7 @@
         <!-- Informations du client -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <i class="fas fa-user mr-2 text-blue-600"></i>
+                <i class="fas fa-user mr-2 text-mayelia-600"></i>
                 Informations Client
             </h3>
             <div class="space-y-3">
@@ -103,7 +103,7 @@
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                             @if($dossier->statut_paiement === 'paye') bg-green-100 text-green-800
                             @elseif($dossier->statut_paiement === 'en_attente') bg-yellow-100 text-yellow-800
-                            @elseif($dossier->statut_paiement === 'partiel') bg-blue-100 text-blue-800
+                            @elseif($dossier->statut_paiement === 'partiel') bg-mayelia-100 text-mayelia-800
                             @else bg-red-100 text-red-800 @endif">
                             {{ ucfirst(str_replace('_', ' ', $dossier->statut_paiement)) }}
                                                 </span>
@@ -165,7 +165,7 @@
                                 @endif
                             </div>
                             @if($document)
-                                <a href="{{ Storage::url($document->chemin_fichier) }}" target="_blank" class="text-blue-600 hover:text-blue-800 ml-2">
+                                <a href="{{ Storage::url($document->chemin_fichier) }}" target="_blank" class="text-mayelia-600 hover:text-mayelia-800 ml-2">
                                     <i class="fas fa-download"></i>
                                 </a>
                             @endif
@@ -201,6 +201,7 @@
             Actions
         </h3>
         <div class="flex flex-wrap gap-3">
+            @userCan('dossiers', 'update')
             <button onclick="updateDocuments()" class="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center">
                 <i class="fas fa-upload mr-2"></i>
                 Mettre à jour les documents
@@ -209,6 +210,8 @@
                 <i class="fas fa-credit-card mr-2"></i>
                 Gérer le paiement
             </button>
+            @enduserCan
+            @userCan('dossiers', 'delete')
             <form method="POST" action="{{ route('dossiers.destroy', $dossier) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce dossier ?')">
                 @csrf
                 @method('DELETE')
@@ -217,6 +220,7 @@
                     Supprimer le dossier
                                 </button>
                             </form>
+            @enduserCan
         </div>
                         </div>
                     </div>
@@ -246,7 +250,7 @@
                                 <input type="file" 
                                        name="documents[{{ $loop->index }}][fichier]" 
                                        accept=".pdf,.jpg,.jpeg,.png"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                 <input type="hidden" name="documents[{{ $loop->index }}][document_requis_id]" value="{{ $docRequis->id }}">
                             </div>
                         @endforeach
@@ -277,7 +281,7 @@
                 <div class="p-6 space-y-4">
                     <div>
                         <label for="statut_paiement" class="block text-sm font-medium text-gray-700 mb-2">Statut de paiement *</label>
-                        <select id="statut_paiement" name="statut_paiement" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="statut_paiement" name="statut_paiement" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             <option value="en_attente" {{ $dossier->statut_paiement === 'en_attente' ? 'selected' : '' }}>En attente</option>
                             <option value="paye" {{ $dossier->statut_paiement === 'paye' ? 'selected' : '' }}>Payé</option>
                             <option value="partiel" {{ $dossier->statut_paiement === 'partiel' ? 'selected' : '' }}>Partiel</option>
@@ -287,24 +291,24 @@
                     <div>
                         <label for="montant_paye" class="block text-sm font-medium text-gray-700 mb-2">Montant payé (FCFA)</label>
                         <input type="number" id="montant_paye" name="montant_paye" value="{{ $dossier->montant_paye }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                         </div>
                     <div>
                         <label for="date_paiement" class="block text-sm font-medium text-gray-700 mb-2">Date de paiement</label>
                         <input type="date" id="date_paiement" name="date_paiement" value="{{ $dossier->date_paiement ? \Carbon\Carbon::parse($dossier->date_paiement)->format('Y-m-d') : '' }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="mode_paiement" class="block text-sm font-medium text-gray-700 mb-2">Mode de paiement</label>
                         <input type="text" id="mode_paiement" name="mode_paiement" value="{{ $dossier->mode_paiement }}" 
                                placeholder="Ex: Espèces, Virement, Carte bancaire..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             </div>
                     <div>
                         <label for="reference_paiement" class="block text-sm font-medium text-gray-700 mb-2">Référence de paiement</label>
                         <input type="text" id="reference_paiement" name="reference_paiement" value="{{ $dossier->reference_paiement }}" 
                                placeholder="Numéro de transaction, référence..."
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                 </div>
                 <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
@@ -318,6 +322,9 @@
             </form>
         </div>
     </div>
+
+    <!-- Timeline des actions -->
+    <x-dossier-timeline :dossier="$dossier" />
 </div>
 
 <script>

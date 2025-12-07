@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion des Rendez-vous')
 @section('subtitle', 'Liste des rendez-vous du centre')
@@ -16,10 +16,12 @@
                 <i class="fas fa-download mr-2"></i>
                 Exporter
             </button>
-            <a href="{{ route('rendez-vous.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+            @userCan('rendez-vous', 'create')
+            <a href="{{ route('rendez-vous.create') }}" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 flex items-center">
                 <i class="fas fa-plus mr-2"></i>
                 Nouveau Rendez-vous
             </a>
+            @enduserCan
         </div>
     </div>
 
@@ -33,11 +35,11 @@
                        name="search" 
                        value="{{ request('search') }}"
                        placeholder="Nom client, email, numéro de suivi..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div class="min-w-48">
                 <label for="centre_id" class="block text-sm font-medium text-gray-700 mb-1">Centre</label>
-                <select id="centre_id" name="centre_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="centre_id" name="centre_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les centres</option>
                     @foreach($centres as $centre)
                     <option value="{{ $centre->id }}" {{ request('centre_id') == $centre->id ? 'selected' : '' }}>
@@ -48,7 +50,7 @@
             </div>
             <div class="min-w-48">
                 <label for="statut" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                <select id="statut" name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="statut" name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les statuts</option>
                     <option value="confirme" {{ request('statut') === 'confirme' ? 'selected' : '' }}>Confirmé</option>
                     <option value="annule" {{ request('statut') === 'annule' ? 'selected' : '' }}>Annulé</option>
@@ -57,10 +59,10 @@
             </div>
             <div class="min-w-48">
                 <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                <input type="date" id="date" name="date" value="{{ request('date') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <input type="date" id="date" name="date" value="{{ request('date') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div class="flex items-end">
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                <button type="submit" class="px-4 py-2 bg-mayelia-600 text-white rounded-md hover:bg-mayelia-700">
                     <i class="fas fa-search mr-2"></i>
                     Filtrer
                 </button>
@@ -121,7 +123,7 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                         @if($rdv->statut === 'confirme') bg-green-100 text-green-800
                                         @elseif($rdv->statut === 'annule') bg-red-100 text-red-800
-                                        @else bg-blue-100 text-blue-800 @endif">
+                                        @else bg-mayelia-100 text-mayelia-800 @endif">
                                         {{ $rdv->statut_formate }}
                                     </span>
                         </td>
@@ -135,7 +137,7 @@
                                         @elseif($rdv->dossierOuvert)
                                             @if($rdv->dossierOuvert->canBeManagedBy(Auth::user()))
                                                 <a href="{{ route('dossier.workflow', $rdv->dossierOuvert) }}" 
-                                                   class="text-blue-600 hover:text-blue-900" title="Gérer le dossier">
+                                                   class="text-mayelia-600 hover:text-mayelia-900" title="Gérer le dossier">
                                                     <i class="fas fa-cogs"></i>
                                                 </a>
                                             @else
@@ -145,15 +147,18 @@
                                             @endif
                                         @endif
                                         
-                                        <a href="{{ route('rendez-vous.show', $rdv) }}" class="text-blue-600 hover:text-blue-900" title="Voir détails">
+                                        <a href="{{ route('rendez-vous.show', $rdv) }}" class="text-mayelia-600 hover:text-mayelia-900" title="Voir détails">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                        @userCan('rendez-vous', 'update')
                                         <a href="{{ route('rendez-vous.edit', $rdv) }}" class="text-indigo-600 hover:text-indigo-900" title="Modifier">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                        @enduserCan
                                         <a href="{{ route('dossiers.index', ['rendez_vous_id' => $rdv->id]) }}" class="text-orange-600 hover:text-orange-900" title="Gérer dossiers">
                                             <i class="fas fa-folder"></i>
                                         </a>
+                                        @userCan('rendez-vous', 'delete')
                                         <form method="POST" action="{{ route('rendez-vous.destroy', $rdv) }}" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce rendez-vous ?')">
                                             @csrf
                                             @method('DELETE')
@@ -161,6 +166,7 @@
                                                 <i class="fas fa-trash"></i>
                                     </button>
                                         </form>
+                                        @enduserCan
                             </div>
                         </td>
                     </tr>
@@ -178,10 +184,12 @@
                 <i class="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun rendez-vous trouvé</h3>
                 <p class="text-gray-500 mb-4">Commencez par créer votre premier rendez-vous.</p>
-                <a href="{{ route('rendez-vous.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                @userCan('rendez-vous', 'create')
+                <a href="{{ route('rendez-vous.create') }}" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700">
                     <i class="fas fa-plus mr-2"></i>
                     Créer un rendez-vous
                 </a>
+                @enduserCan
             </div>
         @endif
     </div>
@@ -203,7 +211,7 @@
                 </p>
                 <div class="mb-4">
                     <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes (optionnel)</label>
-                    <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Notes sur l'ouverture du dossier..."></textarea>
+                    <textarea id="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Notes sur l'ouverture du dossier..."></textarea>
                 </div>
             </div>
             <div class="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3">
@@ -402,41 +410,62 @@ function handleExport() {
     })
     .then(response => {
         console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
+        console.log('Response content-type:', response.headers.get('content-type'));
         
-        if (response.ok) {
-            // Si c'est un PDF, déclencher le téléchargement
-            const contentDisposition = response.headers.get('content-disposition');
-            if (contentDisposition && contentDisposition.includes('attachment')) {
-                return response.blob().then(blob => {
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = getFilenameFromContentDisposition(contentDisposition);
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    showSuccessToast('Export PDF téléchargé avec succès !');
-                    closeExportModal();
-                });
-            } else {
-                return response.text().then(text => {
-                    console.log('Response text:', text);
-                    showErrorToast('Erreur lors de l\'export');
-                });
-            }
-        } else {
+        if (!response.ok) {
+            // Gérer les erreurs HTTP
             return response.text().then(text => {
-                console.error('Erreur serveur:', text);
-                showErrorToast('Erreur lors de l\'export: ' + response.status);
+                let errorMessage = 'Erreur lors de l\'export: ' + response.status;
+                try {
+                    const data = JSON.parse(text);
+                    if (data.error) {
+                        errorMessage = data.error;
+                    }
+                } catch (e) {
+                    console.error('Erreur parse JSON:', e);
+                }
+                throw new Error(errorMessage);
             });
         }
+        
+        const contentType = response.headers.get('content-type');
+        
+        // Si c'est un JSON, c'est probablement une erreur
+        if (contentType && contentType.includes('application/json')) {
+            return response.json().then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                throw new Error('Réponse inattendue du serveur');
+            });
+        }
+        
+        // Si c'est un PDF (application/pdf ou octet-stream), télécharger
+        if (contentType && (contentType.includes('application/pdf') || contentType.includes('octet-stream'))) {
+            return response.blob().then(blob => {
+                const contentDisposition = response.headers.get('content-disposition');
+                const filename = getFilenameFromContentDisposition(contentDisposition);
+                
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                showSuccessToast('Export PDF téléchargé avec succès !');
+                closeExportModal();
+            });
+        }
+        
+        // Si on arrive ici, on ne sait pas quoi faire
+        throw new Error('Format de réponse non reconnu');
     })
     .catch(error => {
-        console.error('Erreur fetch:', error);
-        showErrorToast('Erreur lors de l\'export');
+        console.error('Erreur export:', error);
+        showErrorToast(error.message || 'Erreur lors de l\'export');
     })
     .finally(() => {
         submitButton.innerHTML = originalText;
@@ -461,7 +490,7 @@ function getFilenameFromContentDisposition(contentDisposition) {
             <div class="p-6">
                 <div class="flex items-center justify-between mb-6">
                     <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-download text-blue-600 mr-2"></i>
+                        <i class="fas fa-download text-mayelia-600 mr-2"></i>
                         Exporter les rendez-vous
                     </h3>
                     <button onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">
@@ -481,7 +510,7 @@ function getFilenameFromContentDisposition(contentDisposition) {
                             <label class="flex items-center">
                                 <input type="radio" name="type_export" value="aujourdhui" class="mr-3" checked>
                                 <span class="text-sm text-gray-700">
-                                    <i class="fas fa-calendar-day text-blue-500 mr-2"></i>
+                                    <i class="fas fa-calendar-day text-mayelia-500 mr-2"></i>
                                     Aujourd'hui
                                 </span>
                             </label>
@@ -510,7 +539,7 @@ function getFilenameFromContentDisposition(contentDisposition) {
                             Date
                         </label>
                         <input type="date" name="date" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     
                     <!-- Plage de dates -->
@@ -521,14 +550,14 @@ function getFilenameFromContentDisposition(contentDisposition) {
                                     Date début
                                 </label>
                                 <input type="date" name="date_debut" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Date fin
                                 </label>
                                 <input type="date" name="date_fin" 
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             </div>
                         </div>
                     </div>
@@ -542,7 +571,7 @@ function getFilenameFromContentDisposition(contentDisposition) {
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Statut
                                 </label>
-                                <select name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <select name="statut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                     <option value="">Tous les statuts</option>
                                     <option value="confirme">Confirmé</option>
                                     <option value="dossier_ouvert">Dossier ouvert</option>
@@ -565,7 +594,7 @@ function getFilenameFromContentDisposition(contentDisposition) {
                             Annuler
                         </button>
                         <button type="submit" 
-                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700">
                             <i class="fas fa-download mr-2"></i>Exporter
                         </button>
                     </div>

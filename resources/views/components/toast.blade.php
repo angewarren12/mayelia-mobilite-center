@@ -1,4 +1,4 @@
-<!-- Toast Container -->
+﻿<!-- Toast Container -->
 <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2">
     <!-- Toast notifications will be inserted here -->
 </div>
@@ -29,9 +29,9 @@ function showToast(message, type = 'success', duration = 5000) {
         iconColor = 'text-yellow-400';
         icon = 'fas fa-exclamation-triangle';
     } else if (type === 'info') {
-        bgColor = 'bg-blue-50';
-        textColor = 'text-blue-800';
-        iconColor = 'text-blue-400';
+        bgColor = 'bg-mayelia-50';
+        textColor = 'text-mayelia-800';
+        iconColor = 'text-mayelia-400';
         icon = 'fas fa-info-circle';
     }
     

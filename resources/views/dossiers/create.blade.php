@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Nouveau Dossier')
 @section('subtitle', 'Créer un nouveau dossier client')
@@ -26,7 +26,7 @@
                 <!-- Rendez-vous -->
                 <div class="lg:col-span-2">
                     <label for="rendez_vous_id" class="block text-sm font-medium text-gray-700 mb-2">Rendez-vous *</label>
-                    <select id="rendez_vous_id" name="rendez_vous_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="rendez_vous_id" name="rendez_vous_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="">Sélectionner un rendez-vous</option>
                         @foreach($rendezVousList as $rdv)
                         <option value="{{ $rdv->id }}" {{ old('rendez_vous_id', $rendezVous?->id) == $rdv->id ? 'selected' : '' }}>
@@ -42,7 +42,7 @@
                 <!-- Statut -->
                 <div>
                     <label for="statut" class="block text-sm font-medium text-gray-700 mb-2">Statut du dossier *</label>
-                    <select id="statut" name="statut" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="statut" name="statut" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="en_cours" {{ old('statut', 'en_cours') == 'en_cours' ? 'selected' : '' }}>En cours</option>
                         <option value="complet" {{ old('statut') == 'complet' ? 'selected' : '' }}>Complet</option>
                         <option value="rejete" {{ old('statut') == 'rejete' ? 'selected' : '' }}>Rejeté</option>
@@ -57,7 +57,7 @@
             <div class="mt-6">
                 <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea id="notes" name="notes" rows="4" 
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500"
                           placeholder="Notes additionnelles sur le dossier...">{{ old('notes') }}</textarea>
                 @error('notes')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -114,7 +114,7 @@
                 <a href="{{ route('dossiers.index') }}" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
                     Annuler
                 </a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
+                <button type="submit" class="px-6 py-2 bg-mayelia-600 text-white rounded-md hover:bg-mayelia-700 flex items-center">
                     <i class="fas fa-save mr-2"></i>
                     Créer le dossier
                 </button>

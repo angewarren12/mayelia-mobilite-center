@@ -1,113 +1,201 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Créer un Agent')
+@section('subtitle', 'Ajoutez un nouvel agent à votre centre')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Créer un Nouvel Agent</h3>
-                    <a href="{{ route('agents.index') }}" class="btn btn-secondary float-end">
-                        <i class="fas fa-arrow-left"></i> Retour
-                    </a>
-                </div>
-                <div class="card-body">
-                    @if($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <form action="{{ route('agents.store') }}" method="POST">
-                        @csrf
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="nom" class="form-label">Nom *</label>
-                                    <input type="text" class="form-control" id="nom" name="nom" 
-                                           value="{{ old('nom') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="prenom" class="form-label">Prénom *</label>
-                                    <input type="text" class="form-control" id="prenom" name="prenom" 
-                                           value="{{ old('prenom') }}" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email *</label>
-                                    <input type="email" class="form-control" id="email" name="email" 
-                                           value="{{ old('email') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="telephone" class="form-label">Téléphone *</label>
-                                    <input type="text" class="form-control" id="telephone" name="telephone" 
-                                           value="{{ old('telephone') }}" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="centre_id" class="form-label">Centre *</label>
-                                    <select class="form-select" id="centre_id" name="centre_id" required>
-                                        <option value="">Sélectionner un centre</option>
-                                        @foreach($centres as $centre)
-                                            <option value="{{ $centre->id }}" 
-                                                    {{ old('centre_id') == $centre->id ? 'selected' : '' }}>
-                                                {{ $centre->nom }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="form-check mt-4">
-                                        <input class="form-check-input" type="checkbox" id="actif" name="actif" 
-                                               {{ old('actif') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="actif">
-                                            Agent actif
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i>
-                            <strong>Note :</strong> Le mot de passe par défaut sera "password123". 
-                            L'agent devra le changer lors de sa première connexion.
-                        </div>
-
-                        <div class="d-flex justify-content-end">
-                            <a href="{{ route('agents.index') }}" class="btn btn-secondary me-2">
-                                Annuler
-                            </a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save"></i> Créer l'Agent
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+<div class="max-w-2xl mx-auto">
+    <!-- En-tête -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Créer un Agent</h2>
+            <p class="text-gray-600 mt-1">Ajoutez un nouvel agent à votre centre</p>
         </div>
+        <a href="{{ route('agents.index') }}" 
+           class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Retour
+        </a>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="bg-white rounded-lg shadow p-6">
+        @if($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                    <h4 class="text-sm font-medium text-red-800">Erreurs de validation</h4>
+                </div>
+                <ul class="mt-2 list-disc list-inside text-sm text-red-700">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('agents.store') }}">
+            @csrf
+            
+            <div class="space-y-6">
+                <!-- Nom et Prénom -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="nom" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nom *
+                        </label>
+                        <input type="text" 
+                               id="nom" 
+                               name="nom" 
+                               value="{{ old('nom') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('nom') border-red-500 @enderror"
+                               placeholder="Ex: KOUASSI"
+                               required>
+                        @error('nom')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="prenom" class="block text-sm font-medium text-gray-700 mb-2">
+                            Prénom *
+                        </label>
+                        <input type="text" 
+                               id="prenom" 
+                               name="prenom" 
+                               value="{{ old('prenom') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('prenom') border-red-500 @enderror"
+                               placeholder="Ex: Jean"
+                               required>
+                        @error('prenom')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Email et Téléphone -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email *
+                        </label>
+                        <input type="email" 
+                               id="email" 
+                               name="email" 
+                               value="{{ old('email') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('email') border-red-500 @enderror"
+                               placeholder="Ex: jean.kouassi@example.com"
+                               required>
+                        @error('email')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div>
+                        <label for="telephone" class="block text-sm font-medium text-gray-700 mb-2">
+                            Téléphone *
+                        </label>
+                        <input type="text" 
+                               id="telephone" 
+                               name="telephone" 
+                               value="{{ old('telephone') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('telephone') border-red-500 @enderror"
+                               placeholder="Ex: +225 07 12 34 56 78"
+                               required>
+                        @error('telephone')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Centre (affichage en lecture seule) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Centre
+                    </label>
+                    <div class="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-gray-700 flex items-center">
+                        <i class="fas fa-building text-gray-400 mr-2"></i>
+                        <span>{{ auth()->user()->centre->nom ?? 'Non assigné' }}</span>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">
+                        L'agent sera automatiquement assigné à votre centre
+                    </p>
+                </div>
+
+                <!-- Mot de passe -->
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                        Mot de passe *
+                    </label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('password') border-red-500 @enderror"
+                           placeholder="Minimum 8 caractères"
+                           required>
+                    @error('password')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Le mot de passe doit contenir au moins 8 caractères</p>
+                </div>
+
+                <!-- Permissions -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-3">
+                        Permissions *
+                    </label>
+                    <p class="text-xs text-gray-500 mb-4">
+                        Sélectionnez les permissions que cet agent pourra utiliser. Les permissions déterminent les actions que l'agent peut effectuer dans le système.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        @foreach($permissions as $module => $modulePermissions)
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <h4 class="text-sm font-semibold text-gray-800 mb-3 capitalize">
+                                    <i class="fas fa-folder mr-2 text-mayelia-500"></i>
+                                    {{ ucfirst($module) }}
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    @foreach($modulePermissions as $permission)
+                                        <label class="flex items-start space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                            <input type="checkbox" 
+                                                   name="permissions[]" 
+                                                   value="{{ $permission->id }}"
+                                                   class="mt-1 h-4 w-4 text-mayelia-600 focus:ring-mayelia-500 border-gray-300 rounded"
+                                                   {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}>
+                                            <div class="flex-1">
+                                                <span class="text-sm font-medium text-gray-700">{{ $permission->name }}</span>
+                                                @if($permission->description)
+                                                    <p class="text-xs text-gray-500 mt-0.5">{{ $permission->description }}</p>
+                                                @endif
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                    
+                    @error('permissions')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+            </div>
+            
+            <!-- Boutons d'action -->
+            <div class="flex items-center justify-end space-x-4 mt-8 pt-6 border-t">
+                <a href="{{ route('agents.index') }}" 
+                   class="px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors">
+                    Annuler
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white rounded-lg transition-colors flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Créer l'Agent
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
-
-

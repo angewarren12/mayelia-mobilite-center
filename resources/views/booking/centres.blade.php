@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Sélection du centre')
 
@@ -19,7 +19,7 @@
     <!-- Centre Selection -->
     <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="text-center mb-8">
-            <i class="fas fa-building text-6xl text-blue-600 mb-4"></i>
+            <i class="fas fa-building text-6xl text-mayelia-600 mb-4"></i>
             <h3 class="text-2xl font-semibold text-gray-900 mb-2">
                 Centres disponibles
             </h3>
@@ -31,7 +31,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             @if($centres->count() > 0)
                 @foreach($centres as $centre)
-                    <div class="border-2 border-blue-200 rounded-lg p-6 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer centre-card"
+                    <div class="border-2 border-mayelia-200 rounded-lg p-6 hover:border-mayelia-400 hover:shadow-md transition-all cursor-pointer centre-card"
                          data-centre-id="{{ $centre->id }}"
                          data-centre-nom="{{ $centre->nom }}">
                         <div class="text-center">
@@ -49,7 +49,7 @@
                                 <i class="fas fa-clock mr-1"></i>
                                 Horaires: 08h00 - 15h00
                             </div>
-                            <div class="flex items-center justify-center text-sm text-blue-600">
+                            <div class="flex items-center justify-center text-sm text-mayelia-600">
                                 <i class="fas fa-arrow-right mr-2"></i>
                                 Continuer
                             </div>

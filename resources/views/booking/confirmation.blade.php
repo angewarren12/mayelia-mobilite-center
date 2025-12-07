@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Confirmation de réservation')
 
@@ -75,12 +75,12 @@
         </div>
 
         <!-- Instructions -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-            <h3 class="text-lg font-semibold text-blue-900 mb-3">
+        <div class="bg-mayelia-50 border border-mayelia-200 rounded-lg p-6 mb-6">
+            <h3 class="text-lg font-semibold text-mayelia-900 mb-3">
                 <i class="fas fa-info-circle mr-2"></i>
                 Instructions importantes
             </h3>
-            <ul class="text-sm text-blue-800 space-y-2">
+            <ul class="text-sm text-mayelia-800 space-y-2">
                 <li>• Présentez-vous 15 minutes avant votre rendez-vous</li>
                 <li>• Apportez une pièce d'identité valide</li>
                 <li>• Conservez ce numéro de suivi pour vos démarches</li>
@@ -104,7 +104,7 @@
                 </button>
                 
                 <button onclick="newBooking()" 
-                        class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm">
+                        class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white font-medium rounded-md shadow-sm">
                     <i class="fas fa-plus mr-2"></i>
                     Nouvelle réservation
                 </button>

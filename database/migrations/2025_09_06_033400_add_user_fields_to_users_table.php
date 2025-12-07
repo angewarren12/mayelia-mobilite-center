@@ -9,10 +9,16 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nom')->nullable()->after('id');
-            $table->string('prenom')->nullable()->after('nom');
-            $table->string('role')->default('agent')->after('prenom');
-            $table->boolean('actif')->default(true)->after('role');
+            if (!Schema::hasColumn('users', 'nom')) {
+                $table->string('nom')->nullable()->after('id');
+            }
+            if (!Schema::hasColumn('users', 'prenom')) {
+                $table->string('prenom')->nullable()->after('nom');
+            }
+            if (!Schema::hasColumn('users', 'role')) {
+                $table->string('role')->default('agent')->after('prenom');
+            }
+            // Note: 'actif' n'est plus utilisé, on utilise 'statut' à la place
         });
     }
 

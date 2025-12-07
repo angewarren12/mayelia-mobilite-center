@@ -20,11 +20,28 @@ class RendezVous extends Model
         'tranche_horaire',
         'statut',
         'numero_suivi',
-        'notes'
+        'notes',
+        // Informations Client (Directes)
+        'client_nom',
+        'client_prenom',
+        'client_email',
+        'client_telephone',
+        'date_naissance',
+        'lieu_naissance',
+        'sexe',
+        'adresse',
+        // Champs ONECI
+        'numero_pre_enrolement',
+        'token_verification',
+        'statut_oneci',
+        'donnees_oneci',
+        'verified_at'
     ];
 
     protected $casts = [
         'date_rendez_vous' => 'date',
+        'donnees_oneci' => 'array',
+        'verified_at' => 'datetime'
     ];
 
     /**
@@ -94,6 +111,32 @@ class RendezVous extends Model
     public function getActifAttribute()
     {
         return $this->statut === 'confirme';
+    }
+
+    /**
+     * Vérifie si le pré-enrôlement ONECI est validé
+     */
+    public function isOneciVerified(): bool
+    {
+        return $this->statut_oneci === 'valide' && $this->verified_at !== null;
+    }
+
+    /**
+     * Accessor pour le statut ONECI formaté
+     */
+    public function getStatutOneciFormateAttribute(): ?string
+    {
+        if (!$this->statut_oneci) {
+            return null;
+        }
+
+        $statuts = [
+            'en_attente' => 'En attente de validation',
+            'valide' => 'Validé',
+            'rejete' => 'Rejeté'
+        ];
+
+        return $statuts[$this->statut_oneci] ?? $this->statut_oneci;
     }
 }
 

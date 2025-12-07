@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Modifier le Rendez-vous')
 @section('subtitle', 'Modifier les informations du rendez-vous')
@@ -27,7 +27,7 @@
                 <!-- Client -->
                 <div>
                     <label for="client_id" class="block text-sm font-medium text-gray-700 mb-2">Client *</label>
-                    <select id="client_id" name="client_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="client_id" name="client_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="">Sélectionner un client</option>
                         @foreach($clients as $client)
                         <option value="{{ $client->id }}" {{ $rendezVous->client_id == $client->id ? 'selected' : '' }}>
@@ -43,7 +43,7 @@
                 <!-- Centre -->
                 <div>
                     <label for="centre_id" class="block text-sm font-medium text-gray-700 mb-2">Centre *</label>
-                    <select id="centre_id" name="centre_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="centre_id" name="centre_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="">Sélectionner un centre</option>
                         @foreach($centres as $centre)
                         <option value="{{ $centre->id }}" {{ $rendezVous->centre_id == $centre->id ? 'selected' : '' }}>
@@ -59,7 +59,7 @@
                 <!-- Service -->
                 <div>
                     <label for="service_id" class="block text-sm font-medium text-gray-700 mb-2">Service *</label>
-                    <select id="service_id" name="service_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="service_id" name="service_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="">Sélectionner un service</option>
                         @foreach($services as $service)
                         <option value="{{ $service->id }}" {{ $rendezVous->service_id == $service->id ? 'selected' : '' }}>
@@ -75,7 +75,7 @@
                 <!-- Formule -->
                 <div>
                     <label for="formule_id" class="block text-sm font-medium text-gray-700 mb-2">Formule *</label>
-                    <select id="formule_id" name="formule_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="formule_id" name="formule_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="">Sélectionner une formule</option>
                         @foreach($formules as $formule)
                         <option value="{{ $formule->id }}" {{ $rendezVous->formule_id == $formule->id ? 'selected' : '' }}>
@@ -93,7 +93,7 @@
                     <label for="date_rendez_vous" class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
                     <input type="date" id="date_rendez_vous" name="date_rendez_vous" 
                            value="{{ $rendezVous->date_rendez_vous->format('Y-m-d') }}" 
-                           required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     @error('date_rendez_vous')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -105,7 +105,7 @@
                     <input type="text" id="tranche_horaire" name="tranche_horaire" 
                            value="{{ $rendezVous->tranche_horaire }}" 
                            placeholder="Ex: 08:00 - 09:00" 
-                           required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                           required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     @error('tranche_horaire')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -114,7 +114,7 @@
                 <!-- Statut -->
                 <div>
                     <label for="statut" class="block text-sm font-medium text-gray-700 mb-2">Statut *</label>
-                    <select id="statut" name="statut" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select id="statut" name="statut" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                         <option value="confirme" {{ $rendezVous->statut == 'confirme' ? 'selected' : '' }}>Confirmé</option>
                         <option value="annule" {{ $rendezVous->statut == 'annule' ? 'selected' : '' }}>Annulé</option>
                         <option value="termine" {{ $rendezVous->statut == 'termine' ? 'selected' : '' }}>Terminé</option>
@@ -129,7 +129,7 @@
             <div class="mt-6">
                 <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea id="notes" name="notes" rows="4" 
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500"
                           placeholder="Notes additionnelles sur le rendez-vous...">{{ $rendezVous->notes }}</textarea>
                 @error('notes')
                     <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -141,7 +141,7 @@
                 <a href="{{ route('rendez-vous.show', $rendezVous) }}" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
                     Annuler
                 </a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 flex items-center">
+                <button type="submit" class="px-6 py-2 bg-mayelia-600 text-white rounded-md hover:bg-mayelia-700 flex items-center">
                     <i class="fas fa-save mr-2"></i>
                     Enregistrer les modifications
                 </button>

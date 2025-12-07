@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Modifier le jour de travail')
 @section('subtitle', 'Modifiez la configuration pour le ' . $jourTravail->nom_jour)
@@ -13,7 +13,7 @@
             <div class="space-y-6">
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <div class="flex items-center space-x-2">
-                        <i class="fas fa-calendar-day text-blue-600"></i>
+                        <i class="fas fa-calendar-day text-mayelia-600"></i>
                         <span class="font-medium text-gray-900">{{ $jourTravail->nom_jour }}</span>
                     </div>
                 </div>
@@ -24,7 +24,7 @@
                                name="actif" 
                                value="1"
                                {{ old('actif', $jourTravail->actif) ? 'checked' : '' }}
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                               class="h-4 w-4 text-mayelia-600 focus:ring-mayelia-500 border-gray-300 rounded">
                         <span class="ml-2 text-sm text-gray-700">Ce jour est un jour de travail</span>
                     </label>
                 </div>
@@ -38,7 +38,7 @@
                                id="heure_debut" 
                                name="heure_debut" 
                                value="{{ old('heure_debut', $jourTravail->heure_debut) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('heure_debut') border-red-500 @enderror"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('heure_debut') border-red-500 @enderror"
                                required>
                         @error('heure_debut')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -53,7 +53,7 @@
                                id="heure_fin" 
                                name="heure_fin" 
                                value="{{ old('heure_fin', $jourTravail->heure_fin) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('heure_fin') border-red-500 @enderror"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('heure_fin') border-red-500 @enderror"
                                required>
                         @error('heure_fin')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -73,7 +73,7 @@
                                    id="pause_debut" 
                                    name="pause_debut" 
                                    value="{{ old('pause_debut', $jourTravail->pause_debut) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pause_debut') border-red-500 @enderror">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('pause_debut') border-red-500 @enderror">
                             @error('pause_debut')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -87,7 +87,7 @@
                                    id="pause_fin" 
                                    name="pause_fin" 
                                    value="{{ old('pause_fin', $jourTravail->pause_fin) }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pause_fin') border-red-500 @enderror">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('pause_fin') border-red-500 @enderror">
                             @error('pause_fin')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -106,7 +106,7 @@
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                        class="px-6 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white rounded-lg transition-colors">
                     Mettre à jour
                 </button>
             </div>

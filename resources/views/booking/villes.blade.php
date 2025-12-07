@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Sélection de la ville')
 
@@ -19,7 +19,7 @@
     <!-- Ville Selection -->
     <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="text-center mb-8">
-            <i class="fas fa-map-marker-alt text-6xl text-blue-600 mb-4"></i>
+            <i class="fas fa-map-marker-alt text-6xl text-mayelia-600 mb-4"></i>
             <h3 class="text-2xl font-semibold text-gray-900 mb-2">
                 Villes disponibles
             </h3>
@@ -31,12 +31,12 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @if($villes->count() > 0)
                 @foreach($villes as $ville)
-                    <div class="border-2 border-blue-200 rounded-lg p-6 hover:border-blue-400 hover:shadow-md transition-all cursor-pointer ville-card"
+                    <div class="border-2 border-mayelia-200 rounded-lg p-6 hover:border-mayelia-400 hover:shadow-md transition-all cursor-pointer ville-card"
                          data-ville-id="{{ $ville->id }}"
                          data-ville-nom="{{ $ville->nom }}">
                         <div class="text-center">
-                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i class="fas fa-city text-2xl text-blue-600"></i>
+                            <div class="w-16 h-16 bg-mayelia-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="fas fa-city text-2xl text-mayelia-600"></i>
                             </div>
                             <h4 class="text-lg font-semibold text-gray-900 mb-2">
                                 {{ $ville->nom }}
@@ -44,7 +44,7 @@
                             <p class="text-sm text-gray-600 mb-4">
                                 {{ $ville->centres ? $ville->centres->count() : 0 }} centre(s) disponible(s)
                             </p>
-                            <div class="flex items-center justify-center text-sm text-blue-600">
+                            <div class="flex items-center justify-center text-sm text-mayelia-600">
                                 <i class="fas fa-arrow-right mr-2"></i>
                                 Continuer
                             </div>

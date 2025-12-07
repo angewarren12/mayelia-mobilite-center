@@ -1,4 +1,4 @@
-@extends('creneaux.layout')
+﻿@extends('creneaux.layout')
 
 @section('title', 'Templates de Créneaux')
 @section('subtitle', 'Configurez les templates de créneaux pour chaque service et formule')
@@ -7,6 +7,15 @@
 <!-- Données des formules pour JavaScript -->
 <script>
     window.formulesData = @json($formulesData);
+    @php
+        $authService = app(\App\Services\AuthService::class);
+        $isAdmin = $authService->isAdmin();
+        $canDeleteTemplate = $authService->hasPermission('creneaux', 'templates.delete');
+        $canUpdateTemplate = $authService->hasPermission('creneaux', 'templates.update');
+    @endphp
+    window.isAdmin = @json($isAdmin);
+    window.canDeleteTemplate = @json($canDeleteTemplate);
+    window.canUpdateTemplate = @json($canUpdateTemplate);
 </script>
 
 <!-- Contenu de l'onglet Templates -->
@@ -24,7 +33,8 @@
                         <i class="fas fa-eye-slash"></i>
                         <span>Masquer les templates</span>
                     </button>
-                    <button onclick="openBulkTemplateModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                    @userCan('creneaux', 'templates.create')
+                    <button onclick="openBulkTemplateModal()" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
                         <i class="fas fa-plus-circle"></i>
                         <span>Créer en masse</span>
                     </button>
@@ -35,6 +45,7 @@
                             <span>Générer créneaux</span>
                         </button>
                     </form>
+                    @enduserCan
                 </div>
             </div>
         </div>
@@ -48,8 +59,8 @@
                             <div class="p-4 border-b border-gray-200 bg-gray-50">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center space-x-4">
-                                        <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                                            <i class="fas fa-concierge-bell text-blue-600 text-xl"></i>
+                                        <div class="w-12 h-12 rounded-lg bg-mayelia-100 flex items-center justify-center">
+                                            <i class="fas fa-concierge-bell text-mayelia-600 text-xl"></i>
                                         </div>
                                         <div>
                                             <h4 class="text-lg font-medium text-gray-900">{{ $service->nom }}</h4>
@@ -91,18 +102,18 @@
                                             @endphp
                                             
                                             <button onclick="showDayTab('{{ $service->id }}', {{ $numero }})" 
-                                                    class="day-tab py-3 px-4 border-b-2 font-medium text-sm transition-all duration-200 {{ $loop->first ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50' }} {{ !$actif ? 'opacity-50' : '' }}"
+                                                    class="day-tab py-3 px-4 border-b-2 font-medium text-sm transition-all duration-200 {{ $loop->first ? 'border-mayelia-500 text-mayelia-600 bg-mayelia-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50' }} {{ !$actif ? 'opacity-50' : '' }}"
                                                     data-service="{{ $service->id }}"
                                                     data-jour="{{ $numero }}"
                                                     {{ !$actif ? 'disabled' : '' }}>
                                                 <div class="flex items-center space-x-3">
-                                                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold {{ $loop->first ? 'bg-blue-500 text-white' : ($actif ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500') }}">
+                                                    <div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold {{ $loop->first ? 'bg-mayelia-500 text-white' : ($actif ? 'bg-mayelia-100 text-mayelia-600' : 'bg-gray-200 text-gray-500') }}">
                                                         {{ $jour['lettre'] }}
                                                     </div>
                                                     <div class="flex flex-col items-start">
                                                         <span class="font-medium">{{ $jour['nom'] }}</span>
                                                         @if($loop->first)
-                                                            <span class="text-xs text-blue-600 font-semibold">ACTUEL</span>
+                                                            <span class="text-xs text-mayelia-600 font-semibold">ACTUEL</span>
                                                         @elseif(!$actif)
                                                             <span class="text-xs text-gray-400">(Fermé)</span>
                                                         @else
@@ -125,11 +136,11 @@
                                     
                                     <div id="day-{{ $service->id }}-{{ $numero }}" class="day-content {{ $loop->first ? '' : 'hidden' }}">
                                         @if($actif)
-                                            <div class="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                            <div class="mb-4 p-4 bg-mayelia-50 rounded-lg border-l-4 border-mayelia-500">
                                                 <div class="flex items-center justify-between">
                                                     <div class="flex items-center space-x-4 text-sm">
                                                         <div class="flex items-center space-x-2">
-                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-mayelia-100 text-mayelia-800">
                                                                 <i class="fas fa-calendar-day mr-1"></i>
                                                                 {{ $jour['nom'] }}
                                                             </span>
@@ -140,7 +151,7 @@
                                                                 </span>
                                                             @endif
                                                         </div>
-                                                        <span class="text-blue-600">
+                                                        <span class="text-mayelia-600">
                                                             <i class="fas fa-clock mr-1"></i>
                                                             Horaires: {{ $jourTravail->heure_debut }} - {{ $jourTravail->heure_fin }}
                                                         </span>
@@ -151,11 +162,13 @@
                                                             </span>
                                                         @endif
                                                     </div>
-                                                    <button onclick="addTemplate('{{ $service->id }}', {{ $numero }})" 
-                                                            class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
-                                                        <i class="fas fa-plus mr-1"></i>
-                                                        Ajouter template
-                                                    </button>
+                                                    <div class="relative">
+                                                        <button onclick="showTrancheSelector('{{ $service->id }}', {{ $numero }})" 
+                                                                class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-3 py-1 rounded text-sm">
+                                                            <i class="fas fa-plus mr-1"></i>
+                                                            Ajouter template
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                             
@@ -245,7 +258,7 @@
                                                                         @else
                                                                             <i class="fas fa-clock text-gray-400 mr-2"></i>
                                                                             {{ $tranche['tranche_horaire'] }}
-                                                                            <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                                                            <span class="ml-2 px-2 py-1 text-xs font-medium rounded-full bg-mayelia-100 text-mayelia-800">
                                                                                 {{ $tranche['duree_minutes'] }}min
                                                                             </span>
                                                                         @endif
@@ -280,23 +293,29 @@
                                                                     @if(!$tranche['est_pause'])
                                                                         @if($templatesTranche->isNotEmpty())
                                                                             <div class="flex space-x-2">
+                                                                                @userCan('creneaux', 'templates.update')
                                                                                 <button onclick="modifyTemplate('{{ $service->id }}', {{ $numero }}, '{{ $tranche['tranche_horaire'] }}')" 
-                                                                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                                                        class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-mayelia-700 bg-mayelia-100 border border-mayelia-300 rounded-md hover:bg-mayelia-200 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                                                                     <i class="fas fa-edit mr-1"></i>
                                                                                     Modifier
                                                                                 </button>
+                                                                                @enduserCan
+                                                                                @userCan('creneaux', 'templates.create')
                                                                                 <button onclick="addTemplate('{{ $service->id }}', {{ $numero }}, '{{ $tranche['tranche_horaire'] }}')" 
                                                                                         class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-green-700 bg-green-100 border border-green-300 rounded-md hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-green-500">
                                                                                     <i class="fas fa-plus mr-1"></i>
                                                                                     Ajouter
                                                                                 </button>
+                                                                                @enduserCan
                                                                             </div>
                                                                         @else
+                                                                            @userCan('creneaux', 'templates.create')
                                                                             <button onclick="addTemplate('{{ $service->id }}', {{ $numero }}, '{{ $tranche['tranche_horaire'] }}')" 
-                                                                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-100 border border-blue-300 rounded-md hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                                                    class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-mayelia-700 bg-mayelia-100 border border-mayelia-300 rounded-md hover:bg-mayelia-200 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                                                                                 <i class="fas fa-plus mr-1"></i>
                                                                                 Ajouter
                                                                             </button>
+                                                                            @enduserCan
                                                                         @endif
                                                                     @endif
                                                                 </td>
@@ -340,11 +359,11 @@
             </div>
             
             <!-- Affichage de la tranche horaire sélectionnée -->
-            <div id="selectedTrancheInfo" class="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200" style="display: none;">
+            <div id="selectedTrancheInfo" class="mb-4 p-3 bg-mayelia-50 rounded-lg border border-mayelia-200" style="display: none;">
                 <div class="flex items-center">
-                    <i class="fas fa-clock text-blue-600 mr-2"></i>
-                    <span class="text-sm font-medium text-blue-900">Tranche horaire sélectionnée :</span>
-                    <span id="selectedTrancheText" class="ml-2 text-sm text-blue-700 font-semibold"></span>
+                    <i class="fas fa-clock text-mayelia-600 mr-2"></i>
+                    <span class="text-sm font-medium text-mayelia-900">Tranche horaire sélectionnée :</span>
+                    <span id="selectedTrancheText" class="ml-2 text-sm text-mayelia-700 font-semibold"></span>
                 </div>
             </div>
             
@@ -363,7 +382,7 @@
                 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Formule</label>
-                    <select id="template_formule_id" name="formule_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                    <select id="template_formule_id" name="formule_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                         <option value="">Sélectionnez une formule</option>
                         <!-- Les options seront chargées dynamiquement via JavaScript -->
                     </select>
@@ -372,7 +391,7 @@
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Capacité</label>
                     <input type="number" id="template_capacite" name="capacite" min="1" value="1" 
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                 </div>
                 
                 <div class="flex items-center justify-end space-x-4">
@@ -381,7 +400,7 @@
                         Annuler
                     </button>
                     <button type="submit" id="templateSubmitBtn"
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700">
+                            class="px-4 py-2 text-sm font-medium text-white bg-mayelia-600 border border-transparent rounded-md hover:bg-mayelia-700">
                         Ajouter
                     </button>
                 </div>
@@ -408,7 +427,7 @@
                         <div class="flex items-center justify-between mb-2">
                             <label class="block text-sm font-medium text-gray-700">Jours de la semaine</label>
                             <div class="flex space-x-2">
-                                <button type="button" onclick="selectAllDays()" class="text-xs text-blue-600 hover:text-blue-800">Tout sélectionner</button>
+                                <button type="button" onclick="selectAllDays()" class="text-xs text-mayelia-600 hover:text-mayelia-800">Tout sélectionner</button>
                                 <button type="button" onclick="deselectAllDays()" class="text-xs text-gray-600 hover:text-gray-800">Tout désélectionner</button>
                             </div>
                         </div>
@@ -420,7 +439,7 @@
                             @foreach($joursLabels as $value => $label)
                                 @if(in_array($value, $joursActifs))
                                     <label class="flex items-center space-x-3">
-                                        <input type="checkbox" name="jours_semaine[]" value="{{ $value }}" class="day-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                        <input type="checkbox" name="jours_semaine[]" value="{{ $value }}" class="day-checkbox rounded border-gray-300 text-mayelia-600 focus:ring-mayelia-500">
                                         <span class="text-sm font-medium">{{ $label }}</span>
                                         <span class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded-full">Actif</span>
                                     </label>
@@ -439,7 +458,7 @@
                     <!-- Sélection du service -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Service</label>
-                        <select id="bulk_service_id" name="service_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" onchange="loadFormulesForBulk()">
+                        <select id="bulk_service_id" name="service_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500" onchange="loadFormulesForBulk()">
                             <option value="">Sélectionnez un service</option>
                             @foreach($servicesActives as $service)
                                 <option value="{{ $service->id }}">{{ $service->nom }}</option>
@@ -458,7 +477,7 @@
                     <!-- Capacité par défaut -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Capacité par défaut</label>
-                        <input type="number" id="bulk_capacite" name="capacite" value="1" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                        <input type="number" id="bulk_capacite" name="capacite" value="1" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
                 </div>
                 
@@ -466,7 +485,7 @@
                     <button type="button" onclick="closeBulkTemplateModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md">
                         Annuler
                     </button>
-                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md">
+                    <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-mayelia-600 hover:bg-mayelia-700 rounded-md">
                         <i class="fas fa-plus mr-1"></i>
                         Créer les templates
                     </button>
@@ -481,11 +500,11 @@ function showDayTab(serviceId, jourSemaine) {
     // Masquer tous les contenus de jours pour ce service
     document.querySelectorAll(`[data-service="${serviceId}"]`).forEach(tab => {
         // Retirer les classes actives
-        tab.classList.remove('border-blue-500', 'text-blue-600', 'bg-blue-50');
+        tab.classList.remove('border-mayelia-500', 'text-mayelia-600', 'bg-mayelia-50');
         tab.classList.add('border-transparent', 'text-gray-500');
         
         // Mettre à jour l'indicateur "ACTUEL"
-        const currentIndicator = tab.querySelector('.text-blue-600.font-semibold');
+        const currentIndicator = tab.querySelector('.text-mayelia-600.font-semibold');
         const clickIndicator = tab.querySelector('.text-gray-500');
         if (currentIndicator) {
             currentIndicator.textContent = 'Cliquez pour voir';
@@ -498,8 +517,8 @@ function showDayTab(serviceId, jourSemaine) {
         // Mettre à jour le cercle de l'onglet
         const circle = tab.querySelector('.w-7.h-7');
         if (circle) {
-            circle.classList.remove('bg-blue-500', 'text-white');
-            circle.classList.add('bg-blue-100', 'text-blue-600');
+            circle.classList.remove('bg-mayelia-500', 'text-white');
+            circle.classList.add('bg-mayelia-100', 'text-mayelia-600');
         }
     });
     
@@ -520,20 +539,20 @@ function showDayTab(serviceId, jourSemaine) {
     if (selectedTab && selectedContent) {
         // Appliquer les classes actives
         selectedTab.classList.remove('border-transparent', 'text-gray-500');
-        selectedTab.classList.add('border-blue-500', 'text-blue-600', 'bg-blue-50');
+        selectedTab.classList.add('border-mayelia-500', 'text-mayelia-600', 'bg-mayelia-50');
         
         // Mettre à jour l'indicateur "ACTUEL"
         const currentIndicator = selectedTab.querySelector('.text-gray-500');
         if (currentIndicator) {
             currentIndicator.textContent = 'ACTUEL';
-            currentIndicator.className = 'text-xs text-blue-600 font-semibold';
+            currentIndicator.className = 'text-xs text-mayelia-600 font-semibold';
         }
         
         // Mettre à jour le cercle de l'onglet actif
         const circle = selectedTab.querySelector('.w-7.h-7');
         if (circle) {
-            circle.classList.remove('bg-blue-100', 'text-blue-600');
-            circle.classList.add('bg-blue-500', 'text-white');
+            circle.classList.remove('bg-mayelia-100', 'text-mayelia-600');
+            circle.classList.add('bg-mayelia-500', 'text-white');
         }
         
         // Afficher l'indicateur "ACTUEL" dans le contenu
@@ -546,23 +565,104 @@ function showDayTab(serviceId, jourSemaine) {
     }
 }
 
+function showTrancheSelector(serviceId, jourSemaine) {
+    // Récupérer toutes les tranches horaires disponibles pour ce jour
+    const dayContent = document.getElementById(`day-${serviceId}-${jourSemaine}`);
+    if (!dayContent) {
+        alert('Impossible de trouver les tranches horaires pour ce jour');
+        return;
+    }
+    
+    // Extraire les tranches horaires depuis le tableau
+    const tranches = [];
+    const rows = dayContent.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const trancheCell = row.querySelector('td:first-child');
+        if (trancheCell) {
+            const trancheText = trancheCell.textContent.trim();
+            // Ignorer les pauses
+            if (!trancheText.includes('Pause') && trancheText.includes(':')) {
+                // Extraire la tranche horaire (format: "08:00:00 - 09:00:00")
+                const match = trancheText.match(/(\d{2}:\d{2}:\d{2})\s*-\s*(\d{2}:\d{2}:\d{2})/);
+                if (match) {
+                    tranches.push(match[0]); // "08:00:00 - 09:00:00"
+                }
+            }
+        }
+    });
+    
+    if (tranches.length === 0) {
+        alert('Aucune tranche horaire disponible pour ce jour');
+        return;
+    }
+    
+    // Si une seule tranche, l'utiliser directement
+    if (tranches.length === 1) {
+        addTemplate(serviceId, jourSemaine, tranches[0]);
+        return;
+    }
+    
+    // Créer un modal de sélection
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Sélectionnez une tranche horaire</h3>
+                <div class="space-y-2 max-h-96 overflow-y-auto">
+                    ${tranches.map((t, i) => `
+                        <button onclick="selectTrancheAndClose('${serviceId}', ${jourSemaine}, '${t}')" 
+                                class="w-full text-left px-4 py-2 bg-mayelia-50 hover:bg-mayelia-100 border border-mayelia-200 rounded-md text-sm">
+                            ${t}
+                        </button>
+                    `).join('')}
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="closeTrancheSelector()" 
+                            class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600">
+                        Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // Fonction pour sélectionner et fermer
+    window.selectTrancheAndClose = function(sId, jSemaine, tranche) {
+        closeTrancheSelector();
+        addTemplate(sId, jSemaine, tranche);
+    };
+    
+    // Fonction pour fermer le modal
+    window.closeTrancheSelector = function() {
+        if (modal.parentNode) {
+            document.body.removeChild(modal);
+        }
+        delete window.selectTrancheAndClose;
+        delete window.closeTrancheSelector;
+    };
+}
+
 function addTemplate(serviceId, jourSemaine, trancheHoraire = null) {
     console.log('=== DÉBUT addTemplate ===');
     console.log('serviceId:', serviceId);
     console.log('jourSemaine:', jourSemaine);
     console.log('trancheHoraire:', trancheHoraire);
     
+    // Vérifier que trancheHoraire est fourni
+    if (!trancheHoraire) {
+        alert('Veuillez sélectionner une tranche horaire');
+        return;
+    }
+    
     document.getElementById('template_service_id').value = serviceId;
     document.getElementById('template_jour_semaine').value = jourSemaine;
-    document.getElementById('template_tranche_horaire').value = trancheHoraire || '';
+    document.getElementById('template_tranche_horaire').value = trancheHoraire;
     
     // Afficher la tranche horaire sélectionnée
-    if (trancheHoraire) {
-        document.getElementById('selectedTrancheText').textContent = trancheHoraire;
-        document.getElementById('selectedTrancheInfo').style.display = 'block';
-    } else {
-        document.getElementById('selectedTrancheInfo').style.display = 'none';
-    }
+    document.getElementById('selectedTrancheText').textContent = trancheHoraire;
+    document.getElementById('selectedTrancheInfo').style.display = 'block';
     
     // Charger les formules du service sélectionné
     loadFormulesForService(serviceId);
@@ -575,7 +675,7 @@ function addTemplate(serviceId, jourSemaine, trancheHoraire = null) {
     
     // Changer le texte du bouton
     document.getElementById('templateSubmitBtn').textContent = 'Ajouter';
-    document.getElementById('templateSubmitBtn').className = 'px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700';
+    document.getElementById('templateSubmitBtn').className = 'px-4 py-2 text-sm font-medium text-white bg-mayelia-600 border border-transparent rounded-md hover:bg-mayelia-700';
     
     // Réinitialiser le formulaire
     document.getElementById('template_formule_id').value = '';
@@ -665,11 +765,13 @@ function loadExistingTemplates(serviceId, jourSemaine, trancheHoraire) {
                             <span>Capacité: ${template.capacite}</span>
                         </div>
                     </div>
+                    ${window.canDeleteTemplate ? `
                     <button onclick="deleteTemplate(${template.id})" 
                             class="inline-flex items-center px-2 py-1 text-sm text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors">
                         <i class="fas fa-trash mr-1"></i>
                         Supprimer
                     </button>
+                    ` : ''}
                 </div>
             `).join('');
         } else {
@@ -782,7 +884,7 @@ function loadFormulesForBulk() {
     
     container.innerHTML = formules.map(formule => `
         <label class="flex items-center space-x-3 p-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-            <input type="checkbox" name="formule_ids[]" value="${formule.id}" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+            <input type="checkbox" name="formule_ids[]" value="${formule.id}" class="rounded border-gray-300 text-mayelia-600 focus:ring-mayelia-500">
             <div class="flex-1">
                 <span class="text-sm font-medium" style="color: ${formule.couleur}">${formule.nom}</span>
                 <span class="text-xs text-gray-500 ml-2">${new Intl.NumberFormat('fr-FR').format(formule.prix)} FCFA</span>
@@ -838,6 +940,12 @@ document.getElementById('templateForm').addEventListener('submit', function(e) {
     if (!formuleId) {
         console.log('Erreur: Aucune formule sélectionnée');
         alert('Veuillez sélectionner une formule');
+        return;
+    }
+    
+    if (!trancheHoraire) {
+        console.log('Erreur: Aucune tranche horaire sélectionnée');
+        alert('Veuillez sélectionner une tranche horaire');
         return;
     }
     
@@ -978,7 +1086,7 @@ function toggleTemplatesVisibility() {
         container.style.display = 'none';
         icon.className = 'fas fa-eye';
         text.textContent = 'Afficher les templates';
-        button.className = 'bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2';
+        button.className = 'bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2';
     }
 }
 </script>

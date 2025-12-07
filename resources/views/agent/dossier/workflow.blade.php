@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion du Dossier')
 @section('subtitle', 'Workflow de traitement du dossier client')
@@ -10,7 +10,7 @@
         <div class="flex justify-between items-start">
             <div class="flex-1">
                 <div class="flex items-center space-x-4 mb-4">
-                    <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <div class="w-12 h-12 bg-mayelia-600 rounded-lg flex items-center justify-center">
                         <i class="fas fa-folder-open text-white text-xl"></i>
                     </div>
                     <div>
@@ -22,7 +22,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex items-center space-x-2 mb-2">
-                            <i class="fas fa-user text-blue-600"></i>
+                            <i class="fas fa-user text-mayelia-600"></i>
                             <span class="font-semibold text-gray-700">Client</span>
                         </div>
                         <p class="text-gray-900">{{ $dossierOuvert->rendezVous->client->nom }} {{ $dossierOuvert->rendezVous->client->prenom }}</p>
@@ -52,7 +52,7 @@
             <div class="ml-6 text-right">
                 <div class="mb-4">
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium
-                        @if($dossierOuvert->statut === 'ouvert') bg-blue-100 text-blue-800
+                        @if($dossierOuvert->statut === 'ouvert') bg-mayelia-100 text-mayelia-800
                         @elseif($dossierOuvert->statut === 'en_cours') bg-yellow-100 text-yellow-800
                         @elseif($dossierOuvert->statut === 'finalise') bg-green-100 text-green-800
                         @endif">
@@ -64,7 +64,7 @@
                 <div class="bg-white border rounded-lg p-4">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-medium text-gray-700">Progression</span>
-                        <span class="text-sm font-bold text-blue-600">{{ $dossierOuvert->progression }}%</span>
+                        <span class="text-sm font-bold text-mayelia-600">{{ $dossierOuvert->progression }}%</span>
                     </div>
                     <div class="w-48 bg-gray-200 rounded-full h-3">
                         <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300" 
@@ -79,11 +79,11 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         <!-- Étape 1: Fiche de pré-enrôlement -->
-        <div class="bg-white rounded-lg shadow-lg border-l-4 border-blue-500 p-6 hover:shadow-xl transition-shadow">
+        <div class="bg-white rounded-lg shadow-lg border-l-4 border-mayelia-500 p-6 hover:shadow-xl transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-file-alt text-blue-600"></i>
+                    <div class="w-10 h-10 bg-mayelia-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-file-alt text-mayelia-600"></i>
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Fiche de pré-enrôlement</h3>
@@ -104,7 +104,7 @@
             
             <div class="bg-gray-50 rounded-lg p-4 mb-4">
                 <p class="text-gray-700 text-sm mb-2">
-                    <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    <i class="fas fa-info-circle text-mayelia-500 mr-2"></i>
                     Vérification de la fiche de pré-enrôlement remplie par le client en ligne.
                 </p>
                 <div class="text-xs text-gray-500">
@@ -114,9 +114,11 @@
             </div>
             
             @if(!$dossierOuvert->fiche_pre_enrolement_verifiee)
-                <button onclick="verifierFichePreEnrolement()" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                @userCan('dossiers', 'update')
+                <button onclick="verifierFichePreEnrolement()" class="w-full bg-mayelia-600 text-white px-4 py-3 rounded-lg hover:bg-mayelia-700 transition-colors font-medium">
                     <i class="fas fa-check mr-2"></i>Vérifier la fiche
                 </button>
+                @enduserCan
             @else
                 <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800 text-sm">
                     <i class="fas fa-check-circle mr-2"></i>Fiche vérifiée avec succès
@@ -151,38 +153,29 @@
                 </span>
             </div>
             
-            @if(isset($documentsVerifies) && !empty($documentsVerifies))
-                <!-- Affichage des résultats des documents vérifiés -->
+            
+            @if($documentsVerifies->isNotEmpty())
+                <!-- Affichage des documents vérifiés -->
                 <div class="documents-results bg-gray-50 rounded-lg p-4 mb-4">
                     <h4 class="font-medium text-gray-700 mb-3">
-                        <i class="fas fa-list-check mr-2"></i>Résultats de la vérification
-                        <span class="text-sm text-gray-500 ml-2">({{ $documentsVerifies['type_demande'] }})</span>
+                        <i class="fas fa-list-check mr-2"></i>Documents vérifiés
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <h5 class="text-sm font-medium text-green-700 mb-2">
-                                <i class="fas fa-check-circle mr-1"></i>Documents présents ({{ count($documentsVerifies['documents_selectionnes']) }})
-                            </h5>
-                            <div class="space-y-1">
-                                @foreach($documentsVerifies['documents_selectionnes'] as $doc)
-                                    <div class="text-xs text-gray-600 bg-green-50 p-2 rounded">
-                                        <i class="fas fa-file mr-1"></i>{{ $doc['nom'] }}
-                                    </div>
-                                @endforeach
+                    <div class="space-y-2">
+                        @foreach($documentsVerifies as $docVerif)
+                            <div class="flex items-center justify-between p-2 rounded {{ $docVerif->present ? 'bg-green-50' : 'bg-red-50' }}">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fas {{ $docVerif->present ? 'fa-check-circle text-green-600' : 'fa-times-circle text-red-600' }}"></i>
+                                    <span class="text-sm {{ $docVerif->present ? 'text-green-800' : 'text-red-800' }}">
+                                        {{ $docVerif->documentRequis->nom_document }}
+                                    </span>
+                                </div>
+                                @if($docVerif->present && $docVerif->nom_fichier)
+                                    <span class="text-xs text-gray-500">
+                                        <i class="fas fa-paperclip mr-1"></i>Fichier joint
+                                    </span>
+                                @endif
                             </div>
-                        </div>
-                        <div>
-                            <h5 class="text-sm font-medium text-red-700 mb-2">
-                                <i class="fas fa-exclamation-triangle mr-1"></i>Documents manquants ({{ count($documentsVerifies['documents_manquants']) }})
-                            </h5>
-                            <div class="space-y-1">
-                                @foreach($documentsVerifies['documents_manquants'] as $doc)
-                                    <div class="text-xs text-gray-600 bg-red-50 p-2 rounded">
-                                        <i class="fas fa-file mr-1"></i>{{ $doc['nom'] }}
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
+                        @endforeach
                     </div>
                 </div>
             @endif
@@ -192,9 +185,11 @@
                     <i class="fas fa-check mr-2"></i>Documents vérifiés
                 </button>
             @else
+                @userCan('dossiers', 'update')
                 <button onclick="verifierDocuments()" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
                     <i class="fas fa-list-check mr-2"></i>Vérifier les documents
                 </button>
+                @enduserCan
             @endif
         </div>
 
@@ -308,9 +303,11 @@
                     <i class="fas fa-check mr-2"></i>Informations validées
                 </button>
             @else
+                @userCan('dossiers', 'update')
                 <button onclick="modifierInformationsClient()" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
                     <i class="fas fa-edit mr-2"></i>Modifier les informations
                 </button>
+                @enduserCan
             @endif
         </div>
 
@@ -418,9 +415,11 @@
                     <i class="fas fa-check mr-2"></i>Paiement vérifié
                 </button>
             @else
+                @userCan('dossiers', 'update')
                 <button onclick="verifierPaiement()" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium">
                     <i class="fas fa-receipt mr-2"></i>Vérifier le paiement
                 </button>
+                @enduserCan
             @endif
         </div>
     </div>
@@ -435,10 +434,12 @@
             
             <div class="flex space-x-3">
                 @if($dossierOuvert->statut !== 'finalise')
-                    <button class="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
+                    @userCan('dossiers', 'update')
+                    <button onclick="finaliserDossier()" class="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
                         <i class="fas fa-check-circle"></i>
                         <span>Finaliser le dossier</span>
                     </button>
+                    @enduserCan
                 @else
                     <div class="flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-lg font-medium">
                         <i class="fas fa-check-circle"></i>
@@ -446,10 +447,21 @@
                     </div>
                 @endif
                 
-                <button class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                @if($dossierOuvert->statut === 'finalise')
+                <a href="{{ route('dossier.imprimer-recu', $dossierOuvert) }}" 
+                   target="_blank"
+                   class="flex items-center space-x-2 bg-mayelia-600 text-white px-6 py-3 rounded-lg hover:bg-mayelia-700 transition-colors font-medium">
                     <i class="fas fa-print"></i>
-                    <span>Imprimer</span>
-                </button>
+                    <span>Imprimer le reçu</span>
+                </a>
+                
+                <a href="{{ route('dossier.imprimer-etiquette', $dossierOuvert) }}" 
+                   target="_blank"
+                   class="flex items-center space-x-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                    <i class="fas fa-barcode"></i>
+                    <span>Imprimer étiquette</span>
+                </a>
+                @endif
             </div>
         </div>
     </div>
@@ -462,7 +474,7 @@
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-file-alt text-blue-600 mr-2"></i>
+                        <i class="fas fa-file-alt text-mayelia-600 mr-2"></i>
                         Vérification fiche pré-enrôlement
                     </h3>
                     <button onclick="closeModal('modalFichePreEnrolement')" class="text-gray-400 hover:text-gray-600">
@@ -479,14 +491,14 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Upload de la fiche (optionnel)
                         </label>
-                        <input type="file" id="ficheFile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <input type="file" id="ficheFile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-mayelia-50 file:text-mayelia-700 hover:file:bg-mayelia-100">
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Commentaires
                         </label>
-                        <textarea id="ficheCommentaires" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ajoutez des commentaires si nécessaire..."></textarea>
+                        <textarea id="ficheCommentaires" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Ajoutez des commentaires si nécessaire..."></textarea>
                     </div>
                 </div>
                 
@@ -494,7 +506,7 @@
                     <button onclick="closeModal('modalFichePreEnrolement')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
                         Annuler
                     </button>
-                    <button onclick="validerFichePreEnrolement()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    <button onclick="validerFichePreEnrolement()" class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700">
                         <i class="fas fa-check mr-2"></i>Valider la fiche
                     </button>
                 </div>
@@ -539,27 +551,54 @@
                     
                     <div class="space-y-3" id="documentsList">
                         @foreach($documentsRequis as $document)
-                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border document-item" data-type="{{ $document->type_demande }}" style="display: none;">
-                            <div class="flex items-center space-x-3">
-                                <input type="checkbox" id="doc_{{ $document->id }}" 
-                                       class="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
-                                       value="{{ $document->id }}"
-                                       data-nom="{{ $document->nom_document }}"
-                                       data-obligatoire="{{ $document->obligatoire ? 'true' : 'false' }}">
-                                <label for="doc_{{ $document->id }}" class="text-sm font-medium text-gray-700">
-                                    {{ $document->nom_document }}
-                                </label>
+                        <div class="p-4 bg-gray-50 rounded-lg border document-item" data-type="{{ $document->type_demande }}" style="display: none;">
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" id="doc_{{ $document->id }}" 
+                                           class="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500"
+                                           value="{{ $document->id }}"
+                                           data-nom="{{ $document->nom_document }}"
+                                           data-obligatoire="{{ $document->obligatoire ? 'true' : 'false' }}">
+                                    <label for="doc_{{ $document->id }}" class="text-sm font-medium text-gray-700">
+                                        {{ $document->nom_document }}
+                                    </label>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    @if($document->obligatoire)
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
+                                            Obligatoire
+                                        </span>
+                                    @else
+                                        <span class="px-2 py-1 text-xs rounded-full bg-mayelia-100 text-mayelia-700">
+                                            Optionnel
+                                        </span>
+                                    @endif
+                                    
+                                    <!-- Bouton pour afficher la zone d'upload (facultatif) -->
+                                    <button type="button" 
+                                            id="btn_upload_{{ $document->id }}"
+                                            onclick="toggleFileInput({{ $document->id }})"
+                                            class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors hidden">
+                                        <i class="fas fa-paperclip mr-1"></i>Ajouter fichier
+                                    </button>
+                                </div>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                @if($document->obligatoire)
-                                    <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-700">
-                                        Obligatoire
-                                    </span>
-                                @else
-                                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">
-                                        Optionnel
-                                    </span>
-                                @endif
+                            
+                            <!-- Zone d'upload (visible si activée) -->
+                            <div id="upload_zone_{{ $document->id }}" class="ml-8 mt-2 hidden">
+                                <div class="flex items-center space-x-2">
+                                    <input type="file" id="file_{{ $document->id }}" 
+                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                           accept=".pdf,.jpg,.jpeg,.png">
+                                    <button type="button" 
+                                            onclick="removeFileInput({{ $document->id }})"
+                                            class="px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    <i class="fas fa-info-circle mr-1"></i>Formats acceptés: PDF, JPG, PNG (Max 10Mo) - Facultatif
+                                </p>
                             </div>
                         </div>
                         @endforeach
@@ -811,8 +850,15 @@ function filtrerDocumentsParType() {
     let documentsVisibles = 0;
     document.querySelectorAll('.document-item').forEach(item => {
         if (item.dataset.type === typeSelectionne) {
-            item.style.display = 'flex';
+            item.style.display = 'block';
             documentsVisibles++;
+            
+            // Afficher le bouton d'upload pour chaque document
+            const docId = item.querySelector('input[type="checkbox"]').value;
+            const btnUpload = document.getElementById(`btn_upload_${docId}`);
+            if (btnUpload) {
+                btnUpload.classList.remove('hidden');
+            }
         } else {
             item.style.display = 'none';
         }
@@ -828,6 +874,47 @@ function filtrerDocumentsParType() {
     }
 }
 
+// Afficher/masquer le champ d'upload (facultatif)
+function toggleFileInput(docId) {
+    const uploadZone = document.getElementById(`upload_zone_${docId}`);
+    const btnUpload = document.getElementById(`btn_upload_${docId}`);
+    
+    if (uploadZone.classList.contains('hidden')) {
+        uploadZone.classList.remove('hidden');
+        if (btnUpload) {
+            btnUpload.innerHTML = '<i class="fas fa-check mr-1"></i>Fichier ajouté';
+            btnUpload.classList.remove('bg-blue-100', 'text-blue-700');
+            btnUpload.classList.add('bg-green-100', 'text-green-700');
+        }
+    } else {
+        uploadZone.classList.add('hidden');
+        if (btnUpload) {
+            btnUpload.innerHTML = '<i class="fas fa-paperclip mr-1"></i>Ajouter fichier';
+            btnUpload.classList.remove('bg-green-100', 'text-green-700');
+            btnUpload.classList.add('bg-blue-100', 'text-blue-700');
+        }
+    }
+}
+
+// Supprimer le fichier sélectionné
+function removeFileInput(docId) {
+    const fileInput = document.getElementById(`file_${docId}`);
+    const uploadZone = document.getElementById(`upload_zone_${docId}`);
+    const btnUpload = document.getElementById(`btn_upload_${docId}`);
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    uploadZone.classList.add('hidden');
+    
+    if (btnUpload) {
+        btnUpload.innerHTML = '<i class="fas fa-paperclip mr-1"></i>Ajouter fichier';
+        btnUpload.classList.remove('bg-green-100', 'text-green-700');
+        btnUpload.classList.add('bg-blue-100', 'text-blue-700');
+    }
+}
+
 function validerDocuments() {
     console.log('=== DÉBUT VALIDATION DOCUMENTS ===');
     
@@ -838,38 +925,37 @@ function validerDocuments() {
         return;
     }
     
-    // Récupérer les documents cochés
-    const documentsCoches = [];
-    const checkboxes = document.querySelectorAll('#documentsList input[type="checkbox"]:checked');
-    
-    checkboxes.forEach(checkbox => {
-        documentsCoches.push({
-            id: checkbox.id.replace('doc_', ''),
-            nom: checkbox.dataset.nom,
-            obligatoire: checkbox.dataset.obligatoire === 'true'
-        });
-    });
-    
-    console.log('Type de demande:', typeDemande);
-    console.log('Documents cochés:', documentsCoches);
-    
     // Afficher un indicateur de chargement
     const button = event.target;
     const originalText = button.innerHTML;
     button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Validation...';
     button.disabled = true;
     
+    // Préparer les données avec FormData pour l'upload de fichiers
+    const formData = new FormData();
+    formData.append('type_demande', typeDemande);
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+    
+    // Récupérer les documents cochés
+    const checkboxes = document.querySelectorAll('#documentsList input[type="checkbox"]:checked');
+    
+    checkboxes.forEach((checkbox, index) => {
+        const docId = checkbox.id.replace('doc_', '');
+        const fileInput = document.getElementById(`file_${docId}`);
+        
+        // Ajouter l'ID du document
+        formData.append(`documents[${index}][id]`, docId);
+        
+        // Ajouter le fichier s'il y en a un
+        if (fileInput && fileInput.files[0]) {
+            formData.append(`documents[${index}][fichier]`, fileInput.files[0]);
+        }
+    });
+    
     // Appel AJAX
     fetch(`/dossier/{{ $dossierOuvert->id }}/etape2-documents`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: JSON.stringify({
-            type_demande: typeDemande,
-            documents: documentsCoches
-        })
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
@@ -1143,14 +1229,16 @@ function updateEtapeStatus(etape, valide, progression) {
             progressBar.style.width = `${progression}%`;
         }
         
-        const progressText = document.querySelector('.text-blue-600');
+        const progressText = document.querySelector('.text-mayelia-600');
         if (progressText) {
             progressText.textContent = `${progression}%`;
         }
     }
     
     // Mettre à jour le statut de l'étape spécifique
-    if (etape === 2) {
+    if (etape === 1) {
+        updateEtape1Status(valide);
+    } else if (etape === 2) {
         updateEtape2Status(valide);
     } else if (etape === 3) {
         updateEtape3Status(valide);
@@ -1162,6 +1250,37 @@ function updateEtapeStatus(etape, valide, progression) {
     // setTimeout(() => {
     //     location.reload();
     // }, 1500);
+}
+
+function updateEtape1Status(valide) {
+    const etape1Card = document.querySelector('.bg-white.rounded-lg.shadow-lg.border-l-4.border-mayelia-500');
+    if (!etape1Card) return;
+    
+    // Mettre à jour le statut dans l'en-tête
+    const statusSpan = etape1Card.querySelector('span.px-3.py-1.text-xs.rounded-full');
+    if (statusSpan) {
+        if (valide) {
+            statusSpan.className = 'px-3 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800';
+            statusSpan.innerHTML = '<i class="fas fa-check mr-1"></i>Vérifiée';
+        } else {
+            statusSpan.className = 'px-3 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-800';
+            statusSpan.innerHTML = '<i class="fas fa-clock mr-1"></i>En attente';
+        }
+    }
+    
+    // Mettre à jour le contenu de la carte
+    const cardContent = etape1Card.querySelector('.space-y-4');
+    if (cardContent && valide) {
+        // Remplacer le bouton par le message de succès
+        const button = etape1Card.querySelector('button');
+        if (button) {
+            button.outerHTML = `
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800 text-sm">
+                    <i class="fas fa-check-circle mr-2"></i>Fiche vérifiée avec succès
+                </div>
+            `;
+        }
+    }
 }
 
 function updateEtape2Status(valide) {
@@ -1459,6 +1578,86 @@ function showErrorToast(message) {
     setTimeout(() => {
         toast.remove();
     }, 3000);
+}
+
+function finaliserDossier() {
+    // Vérifier que toutes les étapes sont validées
+    const etapes = [
+        { nom: 'Fiche de pré-enrôlement', valide: {{ $dossierOuvert->fiche_pre_enrolement_valide ? 'true' : 'false' }} },
+        { nom: 'Documents', valide: {{ $dossierOuvert->documents_valides ? 'true' : 'false' }} },
+        { nom: 'Biométrie', valide: {{ $dossierOuvert->biometrie_validee ? 'true' : 'false' }} },
+        { nom: 'Paiement', valide: {{ $dossierOuvert->paiement_valide ? 'true' : 'false' }} }
+    ];
+    
+    const etapesNonValidees = etapes.filter(e => !e.valide);
+    
+    if (etapesNonValidees.length > 0) {
+        const etapesNoms = etapesNonValidees.map(e => e.nom).join(', ');
+        showErrorToast(`Veuillez valider toutes les étapes avant de finaliser le dossier. Étapes manquantes : ${etapesNoms}`);
+        return;
+    }
+    
+    // Afficher le modal de chargement
+    const modal = document.createElement('div');
+    modal.id = 'modal-finalisation';
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+    modal.innerHTML = `
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                    <i class="fas fa-spinner fa-spin text-green-600 text-2xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">Finalisation du dossier</h3>
+                <p class="text-sm text-gray-600">Traitement en cours...</p>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Appeler l'API pour finaliser le dossier
+    fetch('{{ route("dossier.finaliser", $dossierOuvert->id) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Afficher le message de succès
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4 shadow-xl">
+                    <div class="text-center">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                            <i class="fas fa-check-circle text-green-600 text-3xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 mb-2">Dossier finalisé avec succès !</h3>
+                        <p class="text-sm text-gray-600 mb-6">${data.message || 'Le dossier a été finalisé avec succès.'}</p>
+                        <button onclick="location.reload()" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Recharger la page après 2 secondes
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            // Afficher l'erreur
+            document.body.removeChild(modal);
+            showErrorToast(data.message || 'Erreur lors de la finalisation du dossier');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        document.body.removeChild(modal);
+        showErrorToast('Erreur lors de la finalisation du dossier');
+    });
 }
 </script>
 @endsection

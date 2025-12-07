@@ -1,4 +1,4 @@
-@extends('booking.layout')
+﻿@extends('booking.layout')
 
 @section('title', 'Sélection de la formule')
 
@@ -15,7 +15,7 @@
     <!-- Formule Selection -->
     <div class="bg-white rounded-lg shadow-lg p-8">
         <div class="text-center mb-8">
-            <i class="fas fa-star text-6xl text-blue-600 mb-4"></i>
+            <i class="fas fa-star text-6xl text-mayelia-600 mb-4"></i>
             <h3 class="text-2xl font-semibold text-gray-900 mb-2">
                 Formules disponibles
             </h3>
@@ -27,7 +27,7 @@
         <div id="formules-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Les formules seront chargées via AJAX -->
             <div class="col-span-full text-center py-8">
-                <i class="fas fa-spinner fa-spin text-3xl text-blue-600 mb-4"></i>
+                <i class="fas fa-spinner fa-spin text-3xl text-mayelia-600 mb-4"></i>
                 <p class="text-gray-600">Chargement des formules...</p>
             </div>
         </div>
@@ -89,13 +89,13 @@
 
         // Afficher le service sélectionné
         const serviceInfo = document.createElement('div');
-        serviceInfo.className = 'col-span-full bg-blue-50 rounded-lg p-4 mb-6';
+        serviceInfo.className = 'col-span-full bg-mayelia-50 rounded-lg p-4 mb-6';
         serviceInfo.innerHTML = `
             <div class="flex items-center">
-                <i class="fas fa-file-alt text-2xl text-blue-600 mr-4"></i>
+                <i class="fas fa-file-alt text-2xl text-mayelia-600 mr-4"></i>
                 <div>
-                    <h4 class="text-lg font-semibold text-blue-900">${service.nom}</h4>
-                    <p class="text-sm text-blue-700">${service.description || 'Service de démarche administrative'}</p>
+                    <h4 class="text-lg font-semibold text-mayelia-900">${service.nom}</h4>
+                    <p class="text-sm text-mayelia-700">${service.description || 'Service de démarche administrative'}</p>
                 </div>
             </div>
         `;
@@ -126,7 +126,7 @@
                         <div class="text-2xl font-bold text-gray-900 mb-4">
                             ${parseFloat(formule.prix).toLocaleString()} FCFA
                         </div>
-                        <div class="flex items-center justify-center text-sm text-blue-600">
+                        <div class="flex items-center justify-center text-sm text-mayelia-600">
                             <i class="fas fa-arrow-right mr-2"></i>
                             Continuer
                         </div>

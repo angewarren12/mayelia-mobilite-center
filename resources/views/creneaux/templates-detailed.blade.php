@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion des créneaux')
 @section('subtitle', 'Configurez les créneaux de rendez-vous pour votre centre')
@@ -10,22 +10,22 @@
         <div class="border-b border-gray-200">
             <nav class="-mb-px flex space-x-8 px-6" aria-label="Tabs">
                 <a href="{{ route('creneaux.index') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.index') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.index') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-calendar-day mr-2"></i>
                     Jours ouvrables
                 </a>
                 <a href="{{ route('creneaux.templates') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.templates') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.templates') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-calendar-alt mr-2"></i>
                     Templates
                 </a>
                 <a href="{{ route('creneaux.exceptions') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.exceptions') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.exceptions') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-exclamation-triangle mr-2"></i>
                     Exceptions
                 </a>
                 <a href="{{ route('creneaux.calendrier') }}" 
-                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.calendrier') ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                   class="py-4 px-1 border-b-2 font-medium text-sm {{ request()->routeIs('creneaux.calendrier') ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <i class="fas fa-calendar mr-2"></i>
                     Calendrier
                 </a>
@@ -80,14 +80,14 @@
                         <div class="p-4 border-b border-gray-200 bg-gray-50">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center space-x-4">
-                                    <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $actif ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500' }}">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center {{ $actif ? 'bg-mayelia-100 text-mayelia-600' : 'bg-gray-200 text-gray-500' }}">
                                         <span class="font-semibold">{{ $jour['lettre'] }}</span>
                                     </div>
                                     <div>
                                         <h4 class="font-medium text-gray-900">{{ $jour['nom'] }}</h4>
                                         @if($actif && $jourTravail)
                                             <div class="flex items-center space-x-4 text-sm">
-                                                <span class="text-blue-600">
+                                                <span class="text-mayelia-600">
                                                     <i class="fas fa-clock mr-1"></i>
                                                     Horaires: {{ $jourTravail->heure_debut }} - {{ $jourTravail->heure_fin }}
                                                 </span>
@@ -107,7 +107,7 @@
                                         <span class="px-3 py-1 text-sm font-medium rounded-full bg-green-100 text-green-800">
                                             {{ $nbCreneaux }} créneaux configurés
                                         </span>
-                                        <button onclick="toggleDay({{ $numero }})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+                                        <button onclick="toggleDay({{ $numero }})" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
                                             <i class="fas fa-edit"></i>
                                             <span>Édition globale</span>
                                         </button>
@@ -128,7 +128,7 @@
                                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                                         @foreach($servicesActives as $service)
                                             <button onclick="showServiceTab('{{ $service->id }}', {{ $numero }})" 
-                                                    class="service-tab py-2 px-1 border-b-2 font-medium text-sm {{ $loop->first ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}"
+                                                    class="service-tab py-2 px-1 border-b-2 font-medium text-sm {{ $loop->first ? 'border-mayelia-500 text-mayelia-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}"
                                                     data-service="{{ $service->id }}"
                                                     data-jour="{{ $numero }}">
                                                 {{ $service->nom }}
@@ -202,7 +202,7 @@
                                                                         
                                                                         @if($templatesTranche->isEmpty())
                                                                             <button onclick="addTemplate('{{ $service->id }}', {{ $numero }}, '{{ $trancheHoraire }}')" 
-                                                                                    class="text-blue-600 hover:text-blue-800 text-sm">
+                                                                                    class="text-mayelia-600 hover:text-mayelia-800 text-sm">
                                                                                 <i class="fas fa-plus mr-1"></i>
                                                                                 Ajouter une formule
                                                                             </button>
@@ -236,7 +236,7 @@ function toggleDay(jourSemaine) {
 function showServiceTab(serviceId, jourSemaine) {
     // Masquer tous les contenus de services pour ce jour
     document.querySelectorAll(`[data-jour="${jourSemaine}"]`).forEach(tab => {
-        tab.classList.remove('border-blue-500', 'text-blue-600');
+        tab.classList.remove('border-mayelia-500', 'text-mayelia-600');
         tab.classList.add('border-transparent', 'text-gray-500');
     });
     
@@ -250,7 +250,7 @@ function showServiceTab(serviceId, jourSemaine) {
     
     if (selectedTab && selectedContent) {
         selectedTab.classList.remove('border-transparent', 'text-gray-500');
-        selectedTab.classList.add('border-blue-500', 'text-blue-600');
+        selectedTab.classList.add('border-mayelia-500', 'text-mayelia-600');
         selectedContent.classList.remove('hidden');
     }
 }

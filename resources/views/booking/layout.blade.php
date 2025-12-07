@@ -1,12 +1,43 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Réserver un rendez-vous') - Mayelia</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('img/logo.png') }}">
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mayelia': {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#11B49A',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
         .progress-step {
             transition: all 0.3s ease;
@@ -33,8 +64,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-6">
                 <div class="flex items-center">
-                    <i class="fas fa-calendar-check text-3xl text-blue-600 mr-3"></i>
-                    <h1 class="text-2xl font-bold text-gray-900">Mayelia</h1>
+                    <img src="{{ asset('img/LogoMobilité.svg') }}" alt="Mayelia Mobilité" class="h-12 w-auto">
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-sm text-gray-500">
@@ -42,7 +72,7 @@
                         Réservation sécurisée
                     </div>
                     @if(session('booking_pays_nom'))
-                        <div class="text-sm text-blue-600">
+                        <div class="text-sm text-mayelia-600">
                             <i class="fas fa-map-marker-alt mr-1"></i>
                             {{ session('booking_pays_nom') }}
                         </div>
@@ -58,15 +88,14 @@
             <div class="flex items-center py-4">
                 @php
                     $steps = [
-                        ['number' => 1, 'name' => 'Pays', 'route' => 'booking.index'],
-                        ['number' => 2, 'name' => 'Ville', 'route' => 'booking.villes'],
-                        ['number' => 3, 'name' => 'Centre', 'route' => 'booking.centres'],
-                        ['number' => 4, 'name' => 'Service', 'route' => 'booking.services'],
-                        ['number' => 5, 'name' => 'Formule', 'route' => 'booking.formules'],
+                        ['number' => 1, 'name' => 'Service', 'route' => 'booking.wizard'],
+                        ['number' => 2, 'name' => 'Vérification', 'route' => 'booking.verification'],
+                        ['number' => 3, 'name' => 'Pays', 'route' => 'booking.index'],
+                        ['number' => 4, 'name' => 'Ville', 'route' => 'booking.villes'],
+                        ['number' => 5, 'name' => 'Centre', 'route' => 'booking.centres'],
                         ['number' => 6, 'name' => 'Calendrier', 'route' => 'booking.calendrier'],
                         ['number' => 7, 'name' => 'Informations', 'route' => 'booking.client'],
-                        ['number' => 8, 'name' => 'Paiement', 'route' => 'booking.payment'],
-                        ['number' => 9, 'name' => 'Confirmation', 'route' => 'booking.confirmation'],
+                        ['number' => 8, 'name' => 'Confirmation', 'route' => 'booking.confirmation'],
                     ];
                     $currentStep = $currentStep ?? 1;
                 @endphp
@@ -85,7 +114,7 @@
                         </div>
                         <span class="ml-2 text-sm font-medium
                             @if($step['number'] < $currentStep) text-green-600
-                            @elseif($step['number'] == $currentStep) text-blue-600
+                            @elseif($step['number'] == $currentStep) text-mayelia-600
                             @else text-gray-500 @endif">
                             {{ $step['name'] }}
                         </span>
@@ -119,8 +148,8 @@
                         <p class="text-gray-600">Réservation en quelques minutes</p>
                     </div>
                     <div class="text-center">
-                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i class="fas fa-shield-alt text-blue-600"></i>
+                        <div class="w-12 h-12 bg-mayelia-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-shield-alt text-mayelia-600"></i>
                         </div>
                         <h4 class="text-lg font-semibold text-gray-900 mb-2">Sécurisé</h4>
                         <p class="text-gray-600">Données protégées et sécurisées</p>
@@ -178,7 +207,7 @@
     <div id="loading-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
         <div class="flex items-center justify-center h-full">
             <div class="bg-white rounded-lg p-6 flex items-center space-x-4">
-                <i class="fas fa-spinner fa-spin text-2xl text-blue-600"></i>
+                <i class="fas fa-spinner fa-spin text-2xl text-mayelia-600"></i>
                 <span class="text-lg font-medium">Chargement...</span>
             </div>
         </div>
@@ -201,7 +230,7 @@
             
             const bgColor = type === 'success' ? 'bg-green-500' : 
                            type === 'error' ? 'bg-red-500' : 
-                           type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500';
+                           type === 'warning' ? 'bg-yellow-500' : 'bg-mayelia-500';
             
             toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 max-w-sm`;
             

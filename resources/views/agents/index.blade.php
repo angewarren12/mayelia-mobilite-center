@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion des Agents')
 
@@ -13,11 +13,13 @@
                 </h3>
                 <p class="text-sm text-gray-600 mt-1">Gérez les agents de votre centre</p>
             </div>
+            @isAdmin
             <a href="{{ route('agents.create') }}" 
-               class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 flex items-center">
+               class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-6 py-3 rounded-lg shadow-md transition duration-200 flex items-center">
                 <i class="fas fa-plus mr-2"></i>
                 Nouvel Agent
             </a>
+            @endisAdmin
         </div>
     </div>
 
@@ -27,11 +29,11 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Recherche</label>
                 <input type="text" id="searchAgent" placeholder="Nom, email ou téléphone..." 
-                       class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                       class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Centre</label>
-                <select id="filterCentre" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="filterCentre" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les centres</option>
                     @foreach(\App\Models\Centre::all() as $centre)
                         <option value="{{ $centre->id }}">{{ $centre->nom }}</option>
@@ -40,10 +42,10 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                <select id="filterStatut" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="filterStatut" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les statuts</option>
-                    <option value="1">Actif</option>
-                    <option value="0">Inactif</option>
+                    <option value="actif">Actif</option>
+                    <option value="inactif">Inactif</option>
                 </select>
             </div>
             <div class="flex items-end">
@@ -105,8 +107,8 @@
                             <div class="text-sm text-gray-900">{{ $agent->centre->nom ?? 'N/A' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $agent->actif ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ $agent->actif ? 'Actif' : 'Inactif' }}
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $agent->statut === 'actif' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ ucfirst($agent->statut) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -117,17 +119,18 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 <a href="{{ route('agents.show', $agent) }}" 
-                                   class="text-blue-600 hover:text-blue-900 p-2 rounded-md hover:bg-blue-50">
+                                   class="text-mayelia-600 hover:text-mayelia-900 p-2 rounded-md hover:bg-mayelia-50">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @isAdmin
                                 <a href="{{ route('agents.edit', $agent) }}" 
                                    class="text-yellow-600 hover:text-yellow-900 p-2 rounded-md hover:bg-yellow-50">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <button type="button" 
-                                        class="toggle-status {{ $agent->actif ? 'text-gray-600 hover:text-gray-900' : 'text-green-600 hover:text-green-900' }} p-2 rounded-md hover:bg-gray-50"
+                                        class="toggle-status {{ $agent->statut === 'actif' ? 'text-gray-600 hover:text-gray-900' : 'text-green-600 hover:text-green-900' }} p-2 rounded-md hover:bg-gray-50"
                                         data-id="{{ $agent->id }}">
-                                    <i class="fas fa-{{ $agent->actif ? 'pause' : 'play' }}"></i>
+                                    <i class="fas fa-{{ $agent->statut === 'actif' ? 'pause' : 'play' }}"></i>
                                 </button>
                                 <form action="{{ route('agents.destroy', $agent) }}" method="POST" class="inline"
                                       onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cet agent ?')">
@@ -137,6 +140,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endisAdmin
                             </div>
                         </td>
                     </tr>

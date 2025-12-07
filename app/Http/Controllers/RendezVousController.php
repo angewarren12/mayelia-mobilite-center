@@ -9,27 +9,60 @@ use App\Models\Formule;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Services\AuthService;
+use App\Http\Controllers\Concerns\ChecksPermissions;
 
 class RendezVousController extends Controller
 {
-    public function index()
+    use ChecksPermissions;
+
+    protected $authService;
+
+    public function __construct(AuthService $authService)
     {
+        $this->authService = $authService;
+    }
+    public function index(Request $request)
+    {
+        $this->checkPermission('rendez-vous', 'view');
+
         $query = RendezVous::with(['client', 'service', 'formule', 'centre', 'dossierOuvert.agent']);
         
-        // Filtres
-        if (request('centre_id')) {
-            $query->where('centre_id', request('centre_id'));
+        // Filtre de recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->whereHas('client', function($clientQuery) use ($search) {
+                    $clientQuery->where('nom', 'like', "%{$search}%")
+                              ->orWhere('prenom', 'like', "%{$search}%")
+                              ->orWhere('email', 'like', "%{$search}%")
+                              ->orWhere('telephone', 'like', "%{$search}%");
+                })
+                ->orWhere('numero_suivi', 'like', "%{$search}%")
+                ->orWhere('id', 'like', "%{$search}%");
+            });
         }
         
-        if (request('date')) {
-            $query->whereDate('date_rendez_vous', request('date'));
+        // Filtre par centre
+        if ($request->filled('centre_id')) {
+            $query->where('centre_id', $request->centre_id);
         }
         
-        if (request('statut')) {
-            $query->where('statut', request('statut'));
+        // Filtre par date
+        if ($request->filled('date')) {
+            $query->whereDate('date_rendez_vous', $request->date);
         }
         
-        $rendezVous = $query->orderBy('date_rendez_vous', 'desc')->paginate(15);
+        // Filtre par statut
+        if ($request->filled('statut')) {
+            $query->where('statut', $request->statut);
+        }
+        
+        $rendezVous = $query->orderBy('date_rendez_vous', 'desc')
+                           ->orderBy('tranche_horaire', 'asc')
+                           ->paginate(15)
+                           ->appends($request->query());
+        
         $centres = Centre::all();
         
         return view('rendez-vous.index', compact('rendezVous', 'centres'));
@@ -43,6 +76,8 @@ class RendezVousController extends Controller
 
     public function create()
     {
+        $this->checkPermission('rendez-vous', 'create');
+
         $centres = Centre::where('statut', 'actif')->get();
         $services = Service::where('statut', 'actif')->get();
         $formules = Formule::where('statut', 'actif')->get();
@@ -53,6 +88,8 @@ class RendezVousController extends Controller
 
     public function store(Request $request)
     {
+        $this->checkPermission('rendez-vous', 'create');
+
         $request->validate([
             'client_id' => 'required|exists:clients,id',
             'centre_id' => 'required|exists:centres,id',
@@ -92,6 +129,8 @@ class RendezVousController extends Controller
 
     public function edit(RendezVous $rendezVous)
     {
+        $this->checkPermission('rendez-vous', 'update');
+
         $rendezVous->load(['client', 'service', 'formule', 'centre']);
         $centres = Centre::where('statut', 'actif')->get();
         $services = Service::where('statut', 'actif')->get();
@@ -103,6 +142,8 @@ class RendezVousController extends Controller
 
     public function update(Request $request, RendezVous $rendezVous)
     {
+        $this->checkPermission('rendez-vous', 'update');
+
         $request->validate([
             'client_id' => 'required|exists:clients,id',
             'centre_id' => 'required|exists:centres,id',
@@ -129,6 +170,8 @@ class RendezVousController extends Controller
 
     public function destroy(RendezVous $rendezVous)
     {
+        $this->checkPermission('rendez-vous', 'delete');
+
         try {
             $rendezVous->delete();
             return redirect()->route('rendez-vous.index')
@@ -143,10 +186,10 @@ class RendezVousController extends Controller
     /**
      * API pour récupérer les formules d'un service
      */
-    public function getFormulesByService($serviceId)
+    public function getFormulesByService(Service $service)
     {
         try {
-            $formules = Formule::where('service_id', $serviceId)
+            $formules = $service->formules()
                              ->where('statut', 'actif')
                              ->get(['id', 'nom', 'prix', 'description']);
 

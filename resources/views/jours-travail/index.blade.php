@@ -1,10 +1,10 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Configuration des jours de travail')
 @section('subtitle', 'Configurez les horaires de travail pour chaque jour de la semaine')
 
 @section('header-actions')
-<a href="{{ route('jours-travail.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
+<a href="{{ route('jours-travail.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2">
     <i class="fas fa-plus"></i>
     <span>Ajouter un jour</span>
 </a>
@@ -15,7 +15,7 @@
     <!-- Informations du centre -->
     <div class="bg-white rounded-lg shadow p-6">
         <div class="flex items-center mb-4">
-            <i class="fas fa-building text-blue-600 text-xl mr-3"></i>
+            <i class="fas fa-building text-mayelia-600 text-xl mr-3"></i>
             <h3 class="text-lg font-semibold text-gray-900">Centre: {{ $centre->nom }}</h3>
         </div>
         <p class="text-gray-600">{{ $centre->adresse }}</p>
@@ -62,6 +62,7 @@
                                 </div>
                                 
                                 <div class="flex items-center space-x-2">
+                                    @isAdmin
                                     <form method="POST" action="{{ route('jours-travail.toggle', $jour) }}" class="inline">
                                         @csrf
                                         <button type="submit" 
@@ -71,7 +72,7 @@
                                     </form>
                                     
                                     <a href="{{ route('jours-travail.edit', $jour) }}" 
-                                       class="p-2 text-gray-400 hover:text-blue-600 transition-colors">
+                                       class="p-2 text-gray-400 hover:text-mayelia-600 transition-colors">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     
@@ -82,6 +83,7 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @endisAdmin
                                 </div>
                             </div>
                         </div>
@@ -92,7 +94,7 @@
                     <i class="fas fa-calendar-times text-gray-300 text-4xl mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun jour configuré</h3>
                     <p class="text-gray-600 mb-6">Commencez par configurer les jours de travail pour votre centre.</p>
-                    <a href="{{ route('jours-travail.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
+                    <a href="{{ route('jours-travail.create') }}" class="bg-mayelia-600 hover:bg-mayelia-700 text-white px-6 py-3 rounded-lg inline-flex items-center space-x-2">
                         <i class="fas fa-plus"></i>
                         <span>Configurer les jours</span>
                     </a>

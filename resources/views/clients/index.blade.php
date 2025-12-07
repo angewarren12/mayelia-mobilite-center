@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Gestion des Clients')
 @section('subtitle', 'Liste des clients du centre')
@@ -11,10 +11,12 @@
             <h2 class="text-2xl font-bold text-gray-900">Clients</h2>
             <p class="text-gray-600">Gérez les clients de votre centre</p>
         </div>
-        <button onclick="openCreateModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center">
+        @userCan('clients', 'create')
+        <button onclick="openCreateModal()" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 flex items-center">
             <i class="fas fa-plus mr-2"></i>
             Nouveau Client
         </button>
+        @enduserCan
     </div>
 
     <!-- Filtres et recherche -->
@@ -27,11 +29,11 @@
                        name="search" 
                        value="{{ request('search') }}"
                        placeholder="Nom, prénom, email ou téléphone..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
             </div>
             <div class="min-w-48">
                 <label for="actif" class="block text-sm font-medium text-gray-700 mb-1">Statut</label>
-                <select id="actif" name="actif" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select id="actif" name="actif" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous</option>
                     <option value="1" {{ request('actif') === '1' ? 'selected' : '' }}>Actifs</option>
                     <option value="0" {{ request('actif') === '0' ? 'selected' : '' }}>Inactifs</option>
@@ -97,18 +99,22 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
-                                        <button onclick="viewClient({{ $client->id }})" class="text-blue-600 hover:text-blue-900">
+                                        <button onclick="viewClient({{ $client->id }})" class="text-mayelia-600 hover:text-mayelia-900">
                                             <i class="fas fa-eye"></i>
                                         </button>
+                                        @userCan('clients', 'update')
                                         <button onclick="editClient({{ $client->id }})" class="text-indigo-600 hover:text-indigo-900">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button onclick="toggleClientStatus({{ $client->id }})" class="text-yellow-600 hover:text-yellow-900">
                                             <i class="fas fa-toggle-{{ $client->actif ? 'on' : 'off' }}"></i>
                                         </button>
+                                        @enduserCan
+                                        @userCan('clients', 'delete')
                                         <button onclick="deleteClient({{ $client->id }})" class="text-red-600 hover:text-red-900">
                                             <i class="fas fa-trash"></i>
                                         </button>
+                                        @enduserCan
                                     </div>
                                 </td>
                             </tr>
@@ -126,10 +132,12 @@
                 <i class="fas fa-users text-4xl text-gray-400 mb-4"></i>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun client trouvé</h3>
                 <p class="text-gray-500 mb-4">Commencez par ajouter votre premier client.</p>
-                <button onclick="openCreateModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                @userCan('clients', 'create')
+                <button onclick="openCreateModal()" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700">
                     <i class="fas fa-plus mr-2"></i>
                     Ajouter un client
                 </button>
+                @enduserCan
             </div>
         @endif
     </div>
@@ -147,27 +155,27 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom *</label>
-                        <input type="text" id="nom" name="nom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="nom" name="nom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="prenom" class="block text-sm font-medium text-gray-700 mb-1">Prénom *</label>
-                        <input type="text" id="prenom" name="prenom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="prenom" name="prenom" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="email" id="email" name="email" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="telephone" class="block text-sm font-medium text-gray-700 mb-1">Téléphone *</label>
-                        <input type="text" id="telephone" name="telephone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="telephone" name="telephone" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="date_naissance" class="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
-                        <input type="date" id="date_naissance" name="date_naissance" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="date" id="date_naissance" name="date_naissance" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="sexe" class="block text-sm font-medium text-gray-700 mb-1">Sexe</label>
-                        <select id="sexe" name="sexe" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="sexe" name="sexe" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             <option value="">Sélectionner</option>
                             <option value="M">Masculin</option>
                             <option value="F">Féminin</option>
@@ -175,19 +183,19 @@
                     </div>
                     <div>
                         <label for="lieu_naissance" class="block text-sm font-medium text-gray-700 mb-1">Lieu de naissance</label>
-                        <input type="text" id="lieu_naissance" name="lieu_naissance" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="lieu_naissance" name="lieu_naissance" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div>
                         <label for="profession" class="block text-sm font-medium text-gray-700 mb-1">Profession</label>
-                        <input type="text" id="profession" name="profession" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="profession" name="profession" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div class="md:col-span-2">
                         <label for="adresse" class="block text-sm font-medium text-gray-700 mb-1">Adresse</label>
-                        <textarea id="adresse" name="adresse" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="adresse" name="adresse" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500"></textarea>
                     </div>
                     <div>
                         <label for="type_piece_identite" class="block text-sm font-medium text-gray-700 mb-1">Type de pièce d'identité</label>
-                        <select id="type_piece_identite" name="type_piece_identite" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <select id="type_piece_identite" name="type_piece_identite" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                             <option value="">Sélectionner</option>
                             <option value="CNI">CNI</option>
                             <option value="Passeport">Passeport</option>
@@ -197,18 +205,18 @@
                     </div>
                     <div>
                         <label for="numero_piece_identite" class="block text-sm font-medium text-gray-700 mb-1">Numéro de pièce d'identité</label>
-                        <input type="text" id="numero_piece_identite" name="numero_piece_identite" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <input type="text" id="numero_piece_identite" name="numero_piece_identite" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     </div>
                     <div class="md:col-span-2">
                         <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                        <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                        <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500"></textarea>
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3 mt-6">
                     <button type="button" onclick="closeModal()" class="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300">
                         Annuler
                     </button>
-                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <button type="submit" class="px-4 py-2 bg-mayelia-600 text-white rounded-md hover:bg-mayelia-700">
                         <i class="fas fa-save mr-2"></i>
                         Enregistrer
                     </button>
@@ -225,7 +233,7 @@
             <div class="px-8 py-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
                 <div class="flex items-center justify-between">
                     <h3 class="text-2xl font-bold text-gray-900 flex items-center">
-                        <i class="fas fa-user-circle mr-3 text-blue-600"></i>
+                        <i class="fas fa-user-circle mr-3 text-mayelia-600"></i>
                         Détails du Client
                     </h3>
                     <button onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
@@ -319,7 +327,7 @@ function viewClient(id) {
                                     </div>
                                     <div>
                                         <h2 class="text-2xl font-bold">${client.nom_complet}</h2>
-                                        <p class="text-blue-100">${client.profession || 'Profession non renseignée'}</p>
+                                        <p class="text-mayelia-100">${client.profession || 'Profession non renseignée'}</p>
                                         <div class="flex items-center mt-2">
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${client.actif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                                                 <i class="fas fa-circle text-xs mr-2"></i>
@@ -329,7 +337,7 @@ function viewClient(id) {
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-blue-100 text-sm">Membre depuis</p>
+                                    <p class="text-mayelia-100 text-sm">Membre depuis</p>
                                     <p class="text-lg font-semibold">${new Date(client.created_at).toLocaleDateString('fr-FR')}</p>
                                 </div>
                             </div>
@@ -340,7 +348,7 @@ function viewClient(id) {
                             <!-- Informations personnelles -->
                             <div class="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                                 <h4 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                                    <i class="fas fa-user mr-3 text-blue-600"></i>
+                                    <i class="fas fa-user mr-3 text-mayelia-600"></i>
                                     Informations personnelles
                                 </h4>
                                 <div class="space-y-4">
@@ -439,10 +447,10 @@ function viewClient(id) {
                                 Rendez-vous et statistiques
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div class="text-center p-4 bg-blue-50 rounded-lg">
-                                    <i class="fas fa-calendar-check text-2xl text-blue-600 mb-2"></i>
-                                    <p class="text-2xl font-bold text-blue-900">${client.rendez_vous_count || 0}</p>
-                                    <p class="text-sm text-blue-700">Rendez-vous total</p>
+                                <div class="text-center p-4 bg-mayelia-50 rounded-lg">
+                                    <i class="fas fa-calendar-check text-2xl text-mayelia-600 mb-2"></i>
+                                    <p class="text-2xl font-bold text-mayelia-900">${client.rendez_vous_count || 0}</p>
+                                    <p class="text-sm text-mayelia-700">Rendez-vous total</p>
                                 </div>
                                 <div class="text-center p-4 bg-green-50 rounded-lg">
                                     <i class="fas fa-user-check text-2xl text-green-600 mb-2"></i>

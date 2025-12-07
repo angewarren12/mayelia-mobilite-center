@@ -107,5 +107,21 @@ class Centre extends Model
     {
         return $this->hasMany(CreneauGenere::class);
     }
+
+    /**
+     * Relation avec les guichets (QMS)
+     */
+    public function guichets()
+    {
+        return $this->hasMany(Guichet::class);
+    }
+
+    /**
+     * Relation avec les tickets (QMS)
+     */
+    public function tickets()
+    {
+        return $this->hasMany(Ticket::class);
+    }
 }
 

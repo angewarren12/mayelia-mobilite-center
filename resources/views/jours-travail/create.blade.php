@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+﻿@extends('layouts.dashboard')
 
 @section('title', 'Ajouter un jour de travail')
 @section('subtitle', 'Configurez un nouveau jour de travail pour votre centre')
@@ -16,7 +16,7 @@
                     </label>
                     <select id="jour_semaine" 
                             name="jour_semaine"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('jour_semaine') border-red-500 @enderror"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('jour_semaine') border-red-500 @enderror"
                             required>
                         <option value="">Sélectionnez un jour</option>
                         <option value="1" {{ old('jour_semaine') == '1' ? 'selected' : '' }}>Lundi</option>
@@ -38,7 +38,7 @@
                                name="actif" 
                                value="1"
                                {{ old('actif', true) ? 'checked' : '' }}
-                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                               class="h-4 w-4 text-mayelia-600 focus:ring-mayelia-500 border-gray-300 rounded">
                         <span class="ml-2 text-sm text-gray-700">Ce jour est un jour de travail</span>
                     </label>
                 </div>
@@ -52,7 +52,7 @@
                                id="heure_debut" 
                                name="heure_debut" 
                                value="{{ old('heure_debut', '08:00') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('heure_debut') border-red-500 @enderror"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('heure_debut') border-red-500 @enderror"
                                required>
                         @error('heure_debut')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -67,7 +67,7 @@
                                id="heure_fin" 
                                name="heure_fin" 
                                value="{{ old('heure_fin', '18:00') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('heure_fin') border-red-500 @enderror"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('heure_fin') border-red-500 @enderror"
                                required>
                         @error('heure_fin')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -87,7 +87,7 @@
                                    id="pause_debut" 
                                    name="pause_debut" 
                                    value="{{ old('pause_debut', '12:00') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pause_debut') border-red-500 @enderror">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('pause_debut') border-red-500 @enderror">
                             @error('pause_debut')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -101,7 +101,7 @@
                                    id="pause_fin" 
                                    name="pause_fin" 
                                    value="{{ old('pause_fin', '13:00') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pause_fin') border-red-500 @enderror">
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:border-transparent @error('pause_fin') border-red-500 @enderror">
                             @error('pause_fin')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -120,7 +120,7 @@
                     Annuler
                 </a>
                 <button type="submit" 
-                        class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                        class="px-6 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white rounded-lg transition-colors">
                     Enregistrer
                 </button>
             </div>
