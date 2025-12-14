@@ -17,7 +17,7 @@
             <!-- Logo et titre -->
             <div class="text-center mb-8">
                 <div class="mx-auto h-28 w-28 bg-white rounded-2xl flex items-center justify-center shadow-lg transform hover:scale-110 transition-transform duration-300 p-4">
-                    <img src="{{ asset('img/LogoMobilité.svg') }}" 
+                    <img src="{{ asset('img/logo-oneci.jpg') }}" 
                          alt="Mayelia Mobilité & ONECI" 
                          class="w-full h-full object-contain">
                 </div>

@@ -373,7 +373,8 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions rapides</h3>
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <a href="{{ route('services.index') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            @isAdmin
+            <a href="{{ route('centres.index') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="p-2 bg-mayelia-100 text-mayelia-600 rounded-lg mr-3">
                     <i class="fas fa-cogs"></i>
                 </div>
@@ -382,7 +383,9 @@
                     <p class="text-sm text-gray-600">Configurer les services et formules</p>
                 </div>
             </a>
+            @endisAdmin
             
+            @isAdmin
             <a href="{{ route('jours-travail.index') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="p-2 bg-green-100 text-green-600 rounded-lg mr-3">
                     <i class="fas fa-clock"></i>
@@ -392,7 +395,9 @@
                     <p class="text-sm text-gray-600">Configurer les horaires</p>
                 </div>
             </a>
+            @endisAdmin
             
+            @isAdmin
             <a href="{{ route('creneaux.templates') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="p-2 bg-yellow-100 text-yellow-600 rounded-lg mr-3">
                     <i class="fas fa-calendar-alt"></i>
@@ -402,6 +407,7 @@
                     <p class="text-sm text-gray-600">Gérer les créneaux</p>
                 </div>
             </a>
+            @endisAdmin
             
             <a href="{{ route('rendez-vous.index') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="p-2 bg-purple-100 text-purple-600 rounded-lg mr-3">
@@ -410,6 +416,16 @@
                 <div>
                     <h4 class="font-medium text-gray-900">Rendez-vous</h4>
                     <p class="text-sm text-gray-600">Voir les RDV</p>
+                </div>
+            </a>
+            
+            <a href="{{ route('qms.agent') }}" class="flex items-center p-4 border border-mayelia-200 bg-mayelia-50 rounded-lg hover:bg-mayelia-100 transition-colors shadow-sm">
+                <div class="p-2 bg-mayelia-600 text-white rounded-lg mr-3">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Guichet Agent</h4>
+                    <p class="text-sm text-gray-600">Accéder au QMS</p>
                 </div>
             </a>
         </div>

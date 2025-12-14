@@ -56,7 +56,7 @@
 
 ### 7. **Statistiques et rapports** 📊
 **Pourquoi** : Analyser les performances et identifier les problèmes
-- Taux de réussite par centre
+- Taux de réussite par centre 
 - Temps moyen de traitement par service
 - Nombre de rejets et raisons
 - Export Excel/PDF des statistiques

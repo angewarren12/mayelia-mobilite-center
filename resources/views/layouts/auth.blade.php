@@ -15,11 +15,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ asset('js/tailwind.js') }}"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'mayelia': {
+                            50: '#f2faf5',
+                            100: '#e6f4ec',
+                            200: '#c0e4cf',
+                            300: '#9ad3b2',
+                            400: '#4eb279',
+                            500: '#02913F',
+                            600: '#028339',
+                            700: '#01662c',
+                            800: '#014920',
+                            900: '#012c13',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome Local -->
+    <link rel="stylesheet" href="{{ asset('css/fontawesome.css') }}">
     
     <!-- Additional Styles -->
     @stack('styles')

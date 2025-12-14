@@ -1,4 +1,69 @@
-<!-- ff5df0c0-d5f7-436d-a6c1-8f5e2b0b240c bbdb3feb-5007-49ee-8461-f481cc1cb197 -->
+---
+name: "Plan : Workflow ONECI et Synchronisation Mayelia-ONECI"
+overview: ""
+todos:
+  - id: 9aa5310d-53e1-4349-9521-36efd8601bd0
+    content: Créer la migration pour la table permissions
+    status: pending
+  - id: dc93a266-4192-4717-beca-fd68f97729dc
+    content: Créer la migration pour la table pivot agent_permissions
+    status: pending
+  - id: b23a1b65-0516-494b-a1ce-5535338f0c86
+    content: Créer le modèle Permission avec relations
+    status: pending
+  - id: b0bc3cdf-6baa-49cc-8251-3f99003d7054
+    content: Ajouter relations et méthodes de vérification de permissions au modèle Agent
+    status: pending
+  - id: 88858107-e663-44c1-b45a-16f192bf614b
+    content: Créer le seeder avec toutes les permissions de base
+    status: pending
+  - id: cbc12131-dc08-4ba0-aab9-3324d73ad16e
+    content: Créer AuthService pour gérer l'authentification unifiée Agent/User
+    status: pending
+  - id: 330746ea-b397-4844-b766-0c17f20977ed
+    content: Créer le middleware CheckPermission
+    status: pending
+  - id: 5b28d410-2b99-417a-9322-38d455965ab9
+    content: Créer le trait ChecksPermissions pour les contrôleurs
+    status: pending
+  - id: 01042e6d-aa18-408a-b064-14f9c0098738
+    content: Adapter CentreController avec vérifications de permissions
+    status: pending
+  - id: 6468e1b2-65f0-45f2-8c5d-78d695007589
+    content: Adapter CreneauxController avec vérifications de permissions
+    status: pending
+  - id: ec8e365e-8819-42d1-a4d8-94ae865c883a
+    content: Adapter RendezVousController avec vérifications de permissions
+    status: pending
+  - id: e495042e-32b7-42ce-affe-d77b622c878d
+    content: Adapter DossierWorkflowController pour bloquer la suppression
+    status: pending
+  - id: 790365a3-f3fd-4151-9135-c57c4bfff9bd
+    content: Adapter ClientController avec vérifications de permissions
+    status: pending
+  - id: 0414748d-2bf6-427b-a56a-e31110d176a1
+    content: Ajouter section permissions au formulaire de création agent
+    status: pending
+  - id: 23211052-583d-4214-845b-eecf1f078e82
+    content: Créer/modifier le formulaire de modification agent avec permissions
+    status: pending
+  - id: 9a8888e7-caf5-4705-8f2e-41ba131ec4bb
+    content: Adapter AgentController pour gérer les permissions (store/update)
+    status: pending
+  - id: 1b864762-9f53-41eb-8133-8472d82be886
+    content: Adapter la sidebar pour masquer/afficher selon les permissions
+    status: pending
+  - id: be549c1d-1f91-49f0-856c-75f8e5dcdc5f
+    content: Adapter les vues pour masquer les actions non autorisées
+    status: pending
+  - id: 24896399-0551-42df-a94f-377ef5bf904d
+    content: Enregistrer le middleware dans bootstrap/app.php
+    status: pending
+  - id: fe7c144f-659f-41ea-832c-b0c2d0bdf4fb
+    content: Tester le système de permissions avec différents scénarios d'agents
+    status: pending
+---
+
 # Plan : Workflow ONECI et Synchronisation Mayelia-ONECI
 
 ## 1. Masquer les RDV finalisés du calendrier
@@ -319,26 +384,3 @@
 - Filtres rapides par statut
 - Pagination pour les listes
 - Responsive design pour scanner mobile
-
-### To-dos
-
-- [ ] Créer la migration pour la table permissions
-- [ ] Créer la migration pour la table pivot agent_permissions
-- [ ] Créer le modèle Permission avec relations
-- [ ] Ajouter relations et méthodes de vérification de permissions au modèle Agent
-- [ ] Créer le seeder avec toutes les permissions de base
-- [ ] Créer AuthService pour gérer l'authentification unifiée Agent/User
-- [ ] Créer le middleware CheckPermission
-- [ ] Créer le trait ChecksPermissions pour les contrôleurs
-- [ ] Adapter CentreController avec vérifications de permissions
-- [ ] Adapter CreneauxController avec vérifications de permissions
-- [ ] Adapter RendezVousController avec vérifications de permissions
-- [ ] Adapter DossierWorkflowController pour bloquer la suppression
-- [ ] Adapter ClientController avec vérifications de permissions
-- [ ] Ajouter section permissions au formulaire de création agent
-- [ ] Créer/modifier le formulaire de modification agent avec permissions
-- [ ] Adapter AgentController pour gérer les permissions (store/update)
-- [ ] Adapter la sidebar pour masquer/afficher selon les permissions
-- [ ] Adapter les vues pour masquer les actions non autorisées
-- [ ] Enregistrer le middleware dans bootstrap/app.php
-- [ ] Tester le système de permissions avec différents scénarios d'agents

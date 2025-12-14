@@ -125,6 +125,22 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+// Routes QMS Publiques (Kiosk et Affichage - Accessibles sans authentification)
+Route::prefix('qms')->name('qms.')->group(function () {
+    // Interfaces publiques
+    Route::get('/kiosk/{centre}', [App\Http\Controllers\QmsController::class, 'kiosk'])->name('kiosk');
+    Route::get('/display/{centre}', [App\Http\Controllers\QmsController::class, 'display'])->name('display');
+    
+    // API publiques pour le kiosk
+    Route::post('/check-rdv', [App\Http\Controllers\QmsController::class, 'checkRdv'])->name('check-rdv');
+    Route::post('/tickets', [App\Http\Controllers\QmsController::class, 'storeTicket'])->name('tickets.store');
+    Route::get('/tickets/{ticket}/print', [App\Http\Controllers\QmsController::class, 'printTicket'])->name('tickets.print');
+    
+    // API Data publiques
+    Route::get('/api/queue/{centre}', [App\Http\Controllers\QmsController::class, 'getQueueData'])->name('api.queue');
+    Route::get('/api/services/{centre}', [App\Http\Controllers\QmsController::class, 'getServices'])->name('api.services');
+});
+
 // Routes protégées
 Route::middleware(['auth', 'oneci.redirect'])->group(function () {
     // Dashboard (Mayelia uniquement - les agents ONECI sont redirigés)
@@ -192,6 +208,7 @@ Route::get('/api/centres/{centre}/services', [CentreController::class, 'getServi
 
 // Routes pour l'export
 Route::post('/export/rendez-vous', [App\Http\Controllers\ExportController::class, 'exportRendezVous'])->name('export.rendez-vous');
+Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, 'exportDossiers'])->name('export.dossiers');
     
     // Route de test temporaire
     Route::get('/test-login', function() {
@@ -297,23 +314,23 @@ Route::post('/export/rendez-vous', [App\Http\Controllers\ExportController::class
         Route::post('/confirmer-lot', [OneciRecuperationController::class, 'confirmerRecuperationLot'])->name('confirmer-lot');
     });
 
-    // Routes QMS (Système de File d'Attente)
+    // Routes QMS Protégées (Agent et gestion des tickets - Nécessitent authentification)
     Route::prefix('qms')->name('qms.')->group(function () {
-        // Interfaces
-        Route::get('/kiosk/{centre}', [App\Http\Controllers\QmsController::class, 'kiosk'])->name('kiosk');
-        Route::get('/display/{centre}', [App\Http\Controllers\QmsController::class, 'display'])->name('display');
+        // Interface Agent (protégée)
         Route::get('/agent', [App\Http\Controllers\QmsController::class, 'agent'])->name('agent');
         
-        // API Actions
-        Route::post('/tickets', [App\Http\Controllers\QmsController::class, 'storeTicket'])->name('tickets.store');
-        Route::post('/tickets/{ticket}/call', [App\Http\Controllers\QmsController::class, 'callTicket'])->name('tickets.call');
-        Route::post('/tickets/{ticket}/complete', [App\Http\Controllers\QmsController::class, 'completeTicket'])->name('tickets.complete');
-        Route::post('/tickets/{ticket}/cancel', [App\Http\Controllers\QmsController::class, 'cancelTicket'])->name('tickets.cancel');
-        Route::post('/tickets/{ticket}/recall', [App\Http\Controllers\QmsController::class, 'recallTicket'])->name('tickets.recall');
-        
-        // API Data
-        Route::get('/api/queue/{centre}', [App\Http\Controllers\QmsController::class, 'getQueueData'])->name('api.queue');
-        Route::get('/api/services/{centre}', [App\Http\Controllers\QmsController::class, 'getServices'])->name('api.services');
+        // Actions sur les tickets (protégées - réservées aux agents)
+    Route::post('/tickets/call-next', [App\Http\Controllers\QmsController::class, 'callTicket'])->name('tickets.callNext');
+    Route::post('/tickets/{ticket}/call', [App\Http\Controllers\QmsController::class, 'callTicket'])->name('tickets.call');
+    Route::post('/tickets/{ticket}/complete', [App\Http\Controllers\QmsController::class, 'completeTicket'])->name('tickets.complete');
+    Route::post('/tickets/{ticket}/cancel', [App\Http\Controllers\QmsController::class, 'cancelTicket'])->name('tickets.cancel');
+    Route::post('/tickets/{ticket}/recall', [App\Http\Controllers\QmsController::class, 'recallTicket'])->name('tickets.recall');
+    });
+
+    // Routes Admin - Paramètres QMS des Centres
+    Route::prefix('admin/centres')->name('admin.centres.')->group(function () {
+        Route::get('/{centre}/qms-settings', [App\Http\Controllers\CentreQmsSettingsController::class, 'edit'])->name('qms.edit');
+        Route::put('/{centre}/qms-settings', [App\Http\Controllers\CentreQmsSettingsController::class, 'update'])->name('qms.update');
     });
 });
 

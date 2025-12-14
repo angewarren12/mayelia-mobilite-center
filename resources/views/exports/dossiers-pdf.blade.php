@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $titre }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            line-height: 1.4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #3B82F6;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #3B82F6;
+            font-size: 24px;
+            margin: 0 0 10px 0;
+        }
+        
+        .header p {
+            color: #666;
+            margin: 0;
+        }
+        
+        .info-section {
+            background: #F8FAFC;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #374151;
+        }
+        
+        .info-value {
+            color: #6B7280;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+        }
+        
+        th {
+            background: #3B82F6;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: bold;
+            font-size: 11px;
+        }
+        
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #E5E7EB;
+            font-size: 11px;
+        }
+        
+        tr:nth-child(even) {
+            background: #F9FAFB;
+        }
+        
+        .statut-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        .statut-en_attente { background: #FEF3C7; color: #92400E; }
+        .statut-recu { background: #DBEAFE; color: #1E40AF; }
+        .statut-traite { background: #E9D5FF; color: #5B21B6; }
+        .statut-carte_prete { background: #D1FAE5; color: #065F46; }
+        .statut-recupere { background: #F3F4F6; color: #374151; }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #E5E7EB;
+            text-align: center;
+            color: #6B7280;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{ $titre }}</h1>
+        <p>Généré le {{ $date_export }}</p>
+    </div>
+    
+    <div class="info-section">
+        <div class="info-row">
+            <span class="info-label">Nombre total de dossiers:</span>
+            <span class="info-value">{{ $dossiers->count() }}</span>
+        </div>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Code-barres</th>
+                <th>Client</th>
+                <th>Service</th>
+                <th>Centre</th>
+                <th>Date réception</th>
+                <th>Statut</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($dossiers as $item)
+                <tr>
+                    <td style="font-family: monospace;">{{ $item->code_barre }}</td>
+                    <td>{{ $item->dossierOuvert->rendezVous->client->nom_complet ?? 'N/A' }}</td>
+                    <td>{{ $item->dossierOuvert->rendezVous->service->nom ?? 'N/A' }}</td>
+                    <td>{{ $item->transfer->centre->nom ?? 'N/A' }}</td>
+                    <td>{{ $item->date_reception ? $item->date_reception->format('d/m/Y H:i') : '-' }}</td>
+                    <td>
+                        <span class="statut-badge statut-{{ $item->statut }}">
+                            {{ $item->statut_formate }}
+                        </span>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p>Mayelia Mobilité Center - Système de gestion des dossiers ONECI</p>
+    </div>
+</body>
+</html>
+

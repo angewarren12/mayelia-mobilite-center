@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Centre;
 use App\Models\Guichet;
+use App\Models\RendezVous;
 use App\Models\Service;
 use App\Models\Ticket;
+use App\Services\QmsPriorityService;
+use App\Services\ThermalPrintService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +16,14 @@ use Illuminate\Support\Facades\DB;
 
 class QmsController extends Controller
 {
+    protected $priorityService;
+    protected $thermalPrintService;
+
+    public function __construct(QmsPriorityService $priorityService, ThermalPrintService $thermalPrintService)
+    {
+        $this->priorityService = $priorityService;
+        $this->thermalPrintService = $thermalPrintService;
+    }
     /**
      * Interface Borne (Kiosk)
      */
@@ -60,6 +71,8 @@ class QmsController extends Controller
         try {
             DB::beginTransaction();
 
+            $centre = Centre::findOrFail($request->centre_id);
+
             // Génération du numéro de ticket
             // Format: [Lettre Service][001-999]
             $service = Service::find($request->service_id);
@@ -73,14 +86,26 @@ class QmsController extends Controller
             
             $numero = $prefix . str_pad($count + 1, 3, '0', STR_PAD_LEFT);
 
+            // Récupérer l'heure du RDV si applicable
+            $heureRdv = null;
+            if ($request->type === 'rdv' && $request->numero_rdv) {
+                $rdv = RendezVous::where('numero_suivi', $request->numero_rdv)->first();
+                $heureRdv = $rdv?->tranche_horaire;
+            }
+
             $ticket = Ticket::create([
                 'numero' => $numero,
                 'centre_id' => $request->centre_id,
                 'service_id' => $request->service_id,
                 'type' => $request->type,
-                'priorite' => $request->type === 'rdv' ? 2 : 1,
+                'heure_rdv' => $heureRdv,
+                'priorite' => 1, // Sera recalculée
                 'statut' => 'en_attente'
             ]);
+
+            // Calculer la priorité selon le mode du centre
+            $priorite = $this->priorityService->calculatePriority($centre, $ticket);
+            $ticket->update(['priorite' => $priorite]);
 
             DB::commit();
 
@@ -114,9 +139,19 @@ class QmsController extends Controller
             return response()->json(['success' => true, 'ticket' => $ticket]);
         }
 
-        // Sinon, trouver le prochain ticket
-        // Priorité: RDV > Sans RDV, puis par ordre d'arrivée
-        $nextTicket = Ticket::where('centre_id', $request->centre_id)
+        $centre = Centre::findOrFail($request->centre_id);
+        
+        // NETTOYAGE: Terminer automatiquement tout ticket encore en "appelé" pour ce guichet
+        // Cela évite les "tickets zombies" qui réapparaissent sur la TV si l'agent a oublié de terminer
+        Ticket::where('guichet_id', $request->guichet_id)
+              ->where('statut', 'appelé')
+              ->update(['statut' => 'terminé', 'completed_at' => now()]);
+
+        // Recalculer les priorités selon le mode actif du centre
+        $this->priorityService->updateAllPriorities($centre);
+
+        // Sélectionner le prochain ticket
+        $nextTicket = Ticket::where('centre_id', $centre->id)
             ->where('statut', 'en_attente')
             ->orderBy('priorite', 'desc')
             ->orderBy('created_at', 'asc')
@@ -182,37 +217,128 @@ class QmsController extends Controller
     }
 
     /**
+     * Vérifier un numéro de RDV (Borne)
+     */
+    public function checkRdv(Request $request)
+    {
+        $request->validate([
+            'numero' => 'required|string',
+            'centre_id' => 'required|exists:centres,id'
+        ]);
+
+        // Rechercher le RDV
+        // On suppose que le modèle RendezVous a les champs necessaires ou qu'on check dans une table externe
+        // Ici on simplifie en cherchant par numero_suivi
+        $rdv = RendezVous::where('numero_suivi', $request->numero)
+            ->where('centre_id', $request->centre_id)
+            ->whereDate('date_rendez_vous', Carbon::today())
+            ->first();
+
+        if ($rdv) {
+            return response()->json([
+                'success' => true,
+                'rdv' => [
+                    'id' => $rdv->id,
+                    'client_nom' => $rdv->client_nom ?? $rdv->client?->nom_complet ?? 'Client',
+                    'heure' => $rdv->tranche_horaire,
+                    'service_id' => $rdv->service_id ?? null // Service lié au RDV
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Rendez-vous introuvable pour aujourd\'hui.'
+        ]);
+    }
+
+    /**
+     * Vue impression ticket
+     */
+    public function printTicket(Ticket $ticket)
+    {
+        // Charger les relations nécessaires pour éviter les requêtes N+1
+        $ticket->load(['centre', 'service']);
+        
+        $printData = $this->thermalPrintService->prepareTicketPrintData($ticket);
+        return view('qms.ticket-print', $printData);
+    }
+
+    /**
+     * Récupérer les informations d'un centre (pour le kiosk)
+     */
+    public function getCentreInfo($centreId)
+    {
+        $centre = Centre::findOrFail($centreId);
+        
+        return response()->json([
+            'id' => $centre->id,
+            'nom' => $centre->nom,
+            'qms_mode' => $centre->qms_mode,
+            'qms_fenetre_minutes' => $centre->qms_fenetre_minutes,
+        ]);
+    }
+
+    /**
+     * Récupérer les services d'un centre (pour sélection dans le kiosk)
+     */
+    public function getServices($centreId)
+    {
+        $centre = Centre::findOrFail($centreId);
+        // Utiliser servicesActives() qui filtre déjà par actif dans la table pivot
+        // et aussi filtrer par statut actif du service
+        $services = $centre->servicesActives()
+            ->where('statut', 'actif')
+            ->get(['services.id', 'services.nom']);
+        
+        return response()->json($services);
+    }
+
+    /**
      * Données pour l'affichage TV et Agent (Polling)
      */
     public function getQueueData($centreId)
     {
         // Dernier appelé (pour la TV)
-        $lastCalled = Ticket::where('centre_id', $centreId)
+        $lastCalled = Ticket::select('id', 'numero', 'guichet_id', 'updated_at', 'type', 'statut')
+            ->where('centre_id', $centreId)
             ->where('statut', 'appelé')
-            ->with('guichet')
+            ->whereDate('updated_at', Carbon::today())
+            ->with('guichet:id,nom')
             ->orderBy('called_at', 'desc')
             ->first();
 
         // Historique des appelés (3 derniers)
-        $history = Ticket::where('centre_id', $centreId)
+        $history = Ticket::select('id', 'numero', 'guichet_id', 'updated_at', 'statut')
+            ->where('centre_id', $centreId)
             ->whereIn('statut', ['appelé', 'en_cours', 'terminé'])
             ->whereDate('updated_at', Carbon::today())
             ->where('id', '!=', $lastCalled ? $lastCalled->id : 0)
-            ->with('guichet')
+            ->with('guichet:id,nom')
             ->orderBy('updated_at', 'desc')
             ->take(3)
             ->get();
 
         // File d'attente (pour l'agent)
-        $waiting = Ticket::where('centre_id', $centreId)
+        $waiting = Ticket::select('id', 'numero', 'service_id', 'type', 'created_at', 'priorite')
+            ->where('centre_id', $centreId)
             ->where('statut', 'en_attente')
-            ->with('service')
+            ->with('service:id,nom')
             ->orderBy('priorite', 'desc')
             ->orderBy('created_at', 'asc')
             ->get();
 
+        // Tickets actuellement en cours de traitement (par guichet) pour le widget
+        $activeTickets = Ticket::select('id', 'numero', 'guichet_id', 'service_id', 'type', 'statut')
+            ->where('centre_id', $centreId)
+            ->where('statut', 'appelé')
+            ->whereDate('updated_at', Carbon::today())
+            ->with('service:id,nom')
+            ->get();
+
         return response()->json([
             'last_called' => $lastCalled,
+            'active_tickets' => $activeTickets, // Pour le widget agent
             'history' => $history,
             'waiting' => $waiting,
             'waiting_count' => $waiting->count()

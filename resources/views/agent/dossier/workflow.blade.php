@@ -690,10 +690,10 @@
 <!-- Modal Étape 4: Vérification paiement -->
 <div id="modalPaiement" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">
                         <i class="fas fa-credit-card text-orange-600 mr-2"></i>
                         Vérification du paiement
                     </h3>
@@ -702,55 +702,121 @@
                     </button>
                 </div>
                 
-                <div class="mb-4">
-                    <p class="text-gray-600 text-sm mb-4">
+                <div class="mb-6">
+                    <p class="text-gray-600 text-sm mb-6 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500">
+                        <i class="fas fa-info-circle text-blue-600 mr-2"></i>
                         Le client a effectué la biométrie et le paiement. Vérifiez le reçu de paiement.
                     </p>
                     
+                    <!-- Mode de paiement -->
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-3">
+                            Mode de paiement <span class="text-red-500">*</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button type="button" onclick="selectPaymentMode('especes')" 
+                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center">
+                                <i class="fas fa-money-bill-wave text-3xl text-green-600 mb-2"></i>
+                                <p class="text-sm font-medium text-gray-700">Espèces</p>
+                            </button>
+                            <button type="button" onclick="selectPaymentMode('carte')" 
+                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
+                                <i class="fas fa-credit-card text-3xl text-blue-600 mb-2"></i>
+                                <p class="text-sm font-medium text-gray-700">Carte bancaire</p>
+                            </button>
+                            <button type="button" onclick="selectPaymentMode('mobile_money')" 
+                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all text-center">
+                                <i class="fas fa-mobile-alt text-3xl text-orange-600 mb-2"></i>
+                                <p class="text-sm font-medium text-gray-700">Mobile Money</p>
+                            </button>
+                            <button type="button" onclick="selectPaymentMode('virement')" 
+                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center">
+                                <i class="fas fa-university text-3xl text-purple-600 mb-2"></i>
+                                <p class="text-sm font-medium text-gray-700">Virement</p>
+                            </button>
+                        </div>
+                        <input type="hidden" id="modePaiement" value="">
+                    </div>
+
+                    <!-- Détails carte bancaire (affiché si carte sélectionnée) -->
+                    <div id="carteDetails" class="hidden mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-sm font-semibold text-gray-700">
+                                <i class="fas fa-credit-card mr-2"></i>Informations carte
+                            </h4>
+                            <div class="flex space-x-2">
+                                <i class="fab fa-cc-visa text-2xl text-blue-600"></i>
+                                <i class="fab fa-cc-mastercard text-2xl text-red-600"></i>
+                            </div>
+                        </div>
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Type de carte</label>
+                                <select id="typeCarte" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Sélectionner...</option>
+                                    <option value="visa">Visa</option>
+                                    <option value="mastercard">Mastercard</option>
+                                    <option value="autre">Autre</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-600 mb-1">4 derniers chiffres</label>
+                                <input type="text" id="derniers4Chiffres" maxlength="4" 
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                       placeholder="XXXX">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Montant -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Numéro de référence du paiement *
+                            Montant payé (FCFA) <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input type="number" id="montantPaye" 
+                                   class="w-full px-4 py-3 pr-16 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
+                                   placeholder="Ex: 50000"
+                                   oninput="formatMontant(this)">
+                            <span class="absolute right-4 top-3 text-gray-500 font-medium">FCFA</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1" id="montantEnLettres"></p>
+                    </div>
+                    
+                    <!-- Référence -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Numéro de référence <span class="text-red-500">*</span>
                         </label>
                         <input type="text" id="referencePaiement" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" 
+                               class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent uppercase" 
                                placeholder="Ex: REF-2024-001234">
                     </div>
                     
+                    <!-- Upload reçu -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Montant payé (FCFA) *
+                            Reçu de paiement (optionnel)
                         </label>
-                        <input type="number" id="montantPaye" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500" 
-                               placeholder="Ex: 50000">
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Mode de paiement
-                        </label>
-                        <select id="modePaiement" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
-                            <option value="">Sélectionner...</option>
-                            <option value="especes">Espèces</option>
-                            <option value="carte">Carte bancaire</option>
-                            <option value="mobile_money">Mobile Money</option>
-                            <option value="virement">Virement</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Upload du reçu (optionnel)
-                        </label>
-                        <input type="file" id="recuPaiement" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                        <div class="flex items-center justify-center w-full">
+                            <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                    <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">Cliquer pour uploader</span> ou glisser-déposer</p>
+                                    <p class="text-xs text-gray-500">PDF, JPG, PNG (MAX. 5MB)</p>
+                                </div>
+                                <input type="file" id="recuPaiement" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="displayFileName(this)">
+                            </label>
+                        </div>
+                        <p id="fileName" class="text-xs text-green-600 mt-2 hidden"></p>
                     </div>
                 </div>
                 
                 <div class="flex justify-end space-x-3">
-                    <button onclick="closeModal('modalPaiement')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+                    <button onclick="closeModal('modalPaiement')" class="px-5 py-2.5 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium transition-colors">
                         Annuler
                     </button>
-                    <button onclick="validerPaiement()" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                    <button onclick="validerPaiement()" class="px-5 py-2.5 bg-gradient-to-r from-orange-600 to-orange-700 text-white rounded-lg hover:from-orange-700 hover:to-orange-800 font-medium shadow-lg transition-all transform hover:scale-105">
                         <i class="fas fa-check mr-2"></i>Valider le paiement
                     </button>
                 </div>
@@ -758,6 +824,54 @@
         </div>
     </div>
 </div>
+
+<script>
+// Sélection du mode de paiement
+function selectPaymentMode(mode) {
+    // Retirer la sélection de tous les boutons
+    document.querySelectorAll('.payment-mode-btn').forEach(btn => {
+        btn.classList.remove('border-orange-500', 'bg-orange-50', 'ring-2', 'ring-orange-500');
+        btn.classList.add('border-gray-200');
+    });
+    
+    // Ajouter la sélection au bouton cliqué
+    event.currentTarget.classList.remove('border-gray-200');
+    event.currentTarget.classList.add('border-orange-500', 'bg-orange-50', 'ring-2', 'ring-orange-500');
+    
+    // Mettre à jour le champ caché
+    document.getElementById('modePaiement').value = mode;
+    
+    // Afficher/masquer les détails carte
+    const carteDetails = document.getElementById('carteDetails');
+    if (mode === 'carte') {
+        carteDetails.classList.remove('hidden');
+    } else {
+        carteDetails.classList.add('hidden');
+    }
+}
+
+// Formater le montant et afficher en lettres
+function formatMontant(input) {
+    const montant = parseInt(input.value) || 0;
+    const montantEnLettres = document.getElementById('montantEnLettres');
+    
+    if (montant > 0) {
+        montantEnLettres.textContent = `${montant.toLocaleString('fr-FR')} FCFA`;
+        montantEnLettres.classList.remove('hidden');
+    } else {
+        montantEnLettres.textContent = '';
+    }
+}
+
+// Afficher le nom du fichier uploadé
+function displayFileName(input) {
+    const fileName = document.getElementById('fileName');
+    if (input.files && input.files[0]) {
+        fileName.textContent = `✓ Fichier sélectionné: ${input.files[0].name}`;
+        fileName.classList.remove('hidden');
+    }
+}
+</script>
 
 <script>
 // Fonctions pour les modals
@@ -1172,9 +1286,25 @@ function validerPaiement() {
     const mode = document.getElementById('modePaiement').value;
     const recu = document.getElementById('recuPaiement').files[0];
     
-    if (!reference || !montant) {
+    // Informations carte bancaire (si mode = carte)
+    const typeCarte = document.getElementById('typeCarte')?.value || '';
+    const derniers4Chiffres = document.getElementById('derniers4Chiffres')?.value || '';
+    
+    if (!reference || !montant || !mode) {
         showErrorToast('Veuillez remplir tous les champs obligatoires');
         return;
+    }
+    
+    // Validation spécifique pour carte bancaire
+    if (mode === 'carte') {
+        if (!typeCarte || !derniers4Chiffres) {
+            showErrorToast('Veuillez renseigner le type de carte et les 4 derniers chiffres');
+            return;
+        }
+        if (derniers4Chiffres.length !== 4 || !/^\d{4}$/.test(derniers4Chiffres)) {
+            showErrorToast('Les 4 derniers chiffres doivent être des nombres');
+            return;
+        }
     }
     
     // Afficher un indicateur de chargement
@@ -1188,6 +1318,13 @@ function validerPaiement() {
     formData.append('reference', reference);
     formData.append('montant', montant);
     formData.append('mode_paiement', mode);
+    
+    // Ajouter les infos carte si mode = carte
+    if (mode === 'carte') {
+        formData.append('type_carte', typeCarte);
+        formData.append('derniers_4_chiffres', derniers4Chiffres);
+    }
+    
     if (recu) {
         formData.append('recu_file', recu);
     }

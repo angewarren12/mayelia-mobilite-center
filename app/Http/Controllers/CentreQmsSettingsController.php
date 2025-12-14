@@ -1,0 +1,46 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Centre;
+use App\Services\AuthService;
+use Illuminate\Http\Request;
+
+class CentreQmsSettingsController extends Controller
+{
+    /**
+     * Afficher le formulaire de configuration QMS
+     */
+    public function edit(Centre $centre, AuthService $authService)
+    {
+        // Vérifier que l'utilisateur est admin
+        if (!$authService->isAdmin()) {
+            abort(403, 'Accès non autorisé');
+        }
+
+        return view('admin.centres.qms-settings', compact('centre'));
+    }
+
+    /**
+     * Mettre à jour les paramètres QMS du centre
+     */
+    public function update(Request $request, Centre $centre, AuthService $authService)
+    {
+        // Vérifier que l'utilisateur est admin
+        if (!$authService->isAdmin()) {
+            abort(403, 'Accès non autorisé');
+        }
+
+        $request->validate([
+            'qms_mode' => 'required|in:fifo,fenetre_tolerance',
+            'qms_fenetre_minutes' => 'nullable|integer|min:5|max:60'
+        ]);
+
+        $centre->update([
+            'qms_mode' => $request->qms_mode,
+            'qms_fenetre_minutes' => $request->qms_fenetre_minutes ?? 15
+        ]);
+
+        return redirect()->back()->with('success', 'Paramètres QMS mis à jour avec succès');
+    }
+}

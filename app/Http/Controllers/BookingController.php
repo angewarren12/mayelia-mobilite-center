@@ -449,8 +449,10 @@ class BookingController extends Controller
                 'oneci_data' => 'nullable|array'
             ]);
 
-            // Générer un numéro de suivi unique
-            $numeroSuivi = 'RDV-' . date('Y') . '-' . strtoupper(substr(md5(uniqid()), 0, 6));
+            // Générer un numéro de suivi unique au format MAYELIA-YYYY-XXXXXX (où XXXXXX sont des chiffres)
+            $annee = date('Y');
+            $chiffresAleatoires = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $numeroSuivi = 'MAYELIA-' . $annee . '-' . $chiffresAleatoires;
 
             // Extraire les données ONECI si présentes
             $oneciData = $request->oneci_data;
@@ -652,8 +654,10 @@ class BookingController extends Controller
                 'notes' => 'Réservation en ligne',
             ]);
 
-            // Générer un numéro de suivi
-            $numeroSuivi = 'RDV-' . strtoupper(substr(md5($rendezVous->id . time()), 0, 8));
+            // Générer un numéro de suivi au format MAYELIA-YYYY-XXXXXX (où XXXXXX sont des chiffres)
+            $annee = date('Y');
+            $chiffresAleatoires = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $numeroSuivi = 'MAYELIA-' . $annee . '-' . $chiffresAleatoires;
             $rendezVous->update(['numero_suivi' => $numeroSuivi]);
 
             return redirect()->route('booking.confirmation', $rendezVous->id)

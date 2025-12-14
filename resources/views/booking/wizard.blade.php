@@ -930,29 +930,48 @@
         }
         
         // Logique de rechargement des données dynamiques lors de la navigation (notamment retour arrière ou refresh)
-        if (stepId === 'step-pays' && selectedData.service) {
-             // Vérifier si besoin de recharger
-             const container = document.getElementById('pays-container');
-             // Si container vide ou contient seulement le spinner (cas initial ou perdu)
-             if (!container.children.length || (container.children.length === 1 && container.firstElementChild.querySelector('.fa-spinner'))) {
-                 loadLocationsForService(selectedData.service.id);
-             }
-        } else if (stepId === 'step-ville' && selectedData.pays) {
-             const container = document.getElementById('villes-container');
-             if (!container.children.length || (container.children.length === 1 && container.firstElementChild.querySelector('.fa-spinner'))) {
-                 renderVilles(selectedData.pays.id);
-             }
-        } else if (stepId === 'step-centre' && selectedData.ville && selectedData.service) {
-             const container = document.getElementById('centres-container');
-             if (!container.children.length || (container.children.length === 1 && container.firstElementChild.querySelector('.fa-spinner'))) {
-                 loadCentres(selectedData.ville.id, selectedData.service.id);
-             }
-        } else if (stepId === 'step-calendrier' && selectedData.centre) {
-            // Le calendrier a sa propre logique de rendu, on s'assure qu'il est rendu
-            // Mais renderCalendar() ne fetch rien, il affiche juste.
-            // Si on change de mois, il fetch.
-            // On peut appeler renderCalendar() sans risque
-            setTimeout(() => renderCalendar(), 100);
+        // AMÉLIORATION: Forcer le rechargement si les données ne sont pas disponibles
+        if (stepId === 'step-pays') {
+            if (selectedData.service) {
+                const container = document.getElementById('pays-container');
+                // Recharger si: container vide OU pas de données en cache OU seulement spinner
+                const needsReload = !container.children.length || 
+                                  !loadedLocations || 
+                                  (container.children.length === 1 && container.firstElementChild.querySelector('.fa-spinner'));
+                
+                if (needsReload) {
+                    loadLocationsForService(selectedData.service.id);
+                }
+            }
+        } else if (stepId === 'step-ville') {
+            if (selectedData.pays) {
+                const container = document.getElementById('villes-container');
+                // Recharger si: container vide OU pas de données en cache
+                const needsReload = !container.children.length || 
+                                  !loadedLocations ||
+                                  (container.children.length === 1 && container.firstElementChild.querySelector('.fa-spinner'));
+                
+                if (needsReload) {
+                    // renderVilles se chargera de recharger les locations si nécessaire
+                    renderVilles(selectedData.pays.id);
+                }
+            }
+        } else if (stepId === 'step-centre') {
+            if (selectedData.ville && selectedData.service) {
+                const container = document.getElementById('centres-container');
+                // Toujours recharger les centres car ils ne sont pas en cache
+                const needsReload = !container.children.length ||
+                                  (container.children.length === 1 && container.firstElementChild.querySelector('.fa-spinner'));
+                
+                if (needsReload) {
+                    loadCentres(selectedData.ville.id, selectedData.service.id);
+                }
+            }
+        } else if (stepId === 'step-calendrier') {
+            if (selectedData.centre) {
+                // Le calendrier a sa propre logique de rendu
+                setTimeout(() => renderCalendar(), 100);
+            }
         }
 
         // Mettre à jour le numéro d'étape
@@ -1355,7 +1374,8 @@
 
     function showConfirmation() {
         // Utiliser le numéro de suivi généré par l'API
-        const trackingNumber = selectedData.numeroSuivi || '#RDV-' + new Date().getFullYear() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        // Utiliser le numéro de suivi généré par l'API (format: MAYELIA-YYYY-XXXXXX)
+        const trackingNumber = selectedData.numeroSuivi || '#MAYELIA-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
         
         // Cacher les boutons de navigation
         const navigationButtons = document.querySelector('.flex.justify-between.mt-8');
@@ -1443,7 +1463,7 @@
 RECU DE RESERVATION
 ==================
 
-Numéro de suivi: #RDV-${new Date().getFullYear()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}
+Numéro de suivi: #MAYELIA-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000000)).padStart(6, '0')}
 Date d'émission: ${new Date().toLocaleDateString('fr-FR')}
 
 DETAILS DE LA RESERVATION

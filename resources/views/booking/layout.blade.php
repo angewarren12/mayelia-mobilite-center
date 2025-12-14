@@ -8,11 +8,11 @@
     <link rel="icon" type="image/png" href="{{ asset('img/logo.png') }}">
     <link rel="shortcut icon" type="image/png" href="{{ asset('img/logo.png') }}">
     
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS Local -->
+    <script src="{{ asset('js/tailwind.js') }}?v={{ time() }}"></script>
     
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome Local -->
+    <link rel="stylesheet" href="{{ asset('css/fontawesome.css') }}?v={{ time() }}">
     
     <!-- Tailwind Config -->
     <script>
@@ -21,16 +21,16 @@
                 extend: {
                     colors: {
                         'mayelia': {
-                            50: '#f0fdfa',
-                            100: '#ccfbf1',
-                            200: '#99f6e4',
-                            300: '#5eead4',
-                            400: '#2dd4bf',
-                            500: '#11B49A',
-                            600: '#0d9488',
-                            700: '#0f766e',
-                            800: '#115e59',
-                            900: '#134e4a',
+                            50: '#f2faf5',
+                            100: '#e6f4ec',
+                            200: '#c0e4cf',
+                            300: '#9ad3b2',
+                            400: '#4eb279',
+                            500: '#02913F',
+                            600: '#028339',
+                            700: '#01662c',
+                            800: '#014920',
+                            900: '#012c13',
                         }
                     }
                 }
@@ -64,7 +64,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-6">
                 <div class="flex items-center">
-                    <img src="{{ asset('img/LogoMobilité.svg') }}" alt="Mayelia Mobilité" class="h-12 w-auto">
+                    <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia Mobilité" class="h-12 w-auto">
                 </div>
                 <div class="flex items-center space-x-4">
                     <div class="text-sm text-gray-500">

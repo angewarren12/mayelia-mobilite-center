@@ -1,0 +1,21 @@
+{
+    "name": "Mayelia Kiosk",
+    "short_name": "Kiosk",
+    "start_url": "/qms/kiosk",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#02913F",
+    "orientation": "landscape",
+    "icons": [
+        {
+            "src": "/img/logo-oneci.jpg",
+            "sizes": "192x192",
+            "type": "image/jpeg"
+        },
+        {
+            "src": "/img/logo-oneci.jpg",
+            "sizes": "512x512",
+            "type": "image/jpeg"
+        }
+    ]
+}

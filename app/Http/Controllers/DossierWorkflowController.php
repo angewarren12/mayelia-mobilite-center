@@ -519,28 +519,28 @@ class DossierWorkflowController extends Controller
             }
 
             // Vérifier que toutes les étapes sont validées
-            if (!$dossierOuvert->fiche_pre_enrolement_valide) {
+            if (!$dossierOuvert->fiche_pre_enrolement_verifiee) {
                 return response()->json([
                     'success' => false,
                     'message' => 'La fiche de pré-enrôlement n\'est pas encore validée'
                 ], 400);
             }
 
-            if (!$dossierOuvert->documents_valides) {
+            if (!$dossierOuvert->documents_verifies) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Les documents ne sont pas encore validés'
                 ], 400);
             }
 
-            if (!$dossierOuvert->biometrie_validee) {
+            if (!$dossierOuvert->informations_client_verifiees) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'La biométrie n\'est pas encore validée'
+                    'message' => 'Les informations client ne sont pas encore validées'
                 ], 400);
             }
 
-            if (!$dossierOuvert->paiement_valide) {
+            if (!$dossierOuvert->paiement_verifie) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Le paiement n\'est pas encore validé'

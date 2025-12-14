@@ -102,8 +102,10 @@ class RendezVousController extends Controller
         ]);
 
         try {
-            // Générer un numéro de suivi unique
-            $numeroSuivi = 'RDV' . date('Ymd') . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+            // Générer un numéro de suivi unique au format MAYELIA-YYYY-XXXXXX (où XXXXXX sont des chiffres)
+            $annee = date('Y');
+            $chiffresAleatoires = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $numeroSuivi = 'MAYELIA-' . $annee . '-' . $chiffresAleatoires;
             
             $rendezVous = RendezVous::create([
                 'client_id' => $request->client_id,

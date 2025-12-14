@@ -12,3 +12,10 @@ Route::get('/disponibilite-mois/{centreId}/{year}/{month}', [CreneauxController:
 Route::post('/check-client', [ClientController::class, 'checkClient'])->name('api.check-client');
 Route::post('/create-client', [ClientController::class, 'createClient'])->name('api.create-client');
 Route::post('/create-rendez-vous', [BookingController::class, 'createRendezVous'])->name('api.create-rendez-vous');
+
+// Routes QMS API publiques (pour les kiosks)
+Route::get('/qms/centre/{centre}', [App\Http\Controllers\QmsController::class, 'getCentreInfo'])->name('api.qms.centre');
+Route::get('/qms/services/{centre}', [App\Http\Controllers\QmsController::class, 'getServices'])->name('api.qms.services');
+Route::get('/qms/queue/{centre}', [App\Http\Controllers\QmsController::class, 'getQueueData'])->name('api.qms.queue');
+Route::post('/qms/check-rdv', [App\Http\Controllers\QmsController::class, 'checkRdv'])->name('api.qms.check-rdv');
+Route::post('/qms/tickets', [App\Http\Controllers\QmsController::class, 'storeTicket'])->name('api.qms.tickets.store');

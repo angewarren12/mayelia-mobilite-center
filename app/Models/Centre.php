@@ -15,7 +15,17 @@ class Centre extends Model
         'adresse',
         'email',
         'telephone',
-        'statut'
+        'statut',
+        'qms_mode',
+        'qms_fenetre_minutes'
+    ];
+
+    // Constantes pour les modes QMS
+    const QMS_MODE_FIFO = 'fifo';
+    const QMS_MODE_FENETRE = 'fenetre_tolerance';
+
+    protected $casts = [
+        'qms_fenetre_minutes' => 'integer'
     ];
 
     /**

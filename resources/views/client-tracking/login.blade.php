@@ -76,7 +76,7 @@
                                    type="text" 
                                    required 
                                    class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-mayelia-500 focus:border-mayelia-500 sm:text-sm @error('numero_suivi') border-red-300 @enderror"
-                                   placeholder="Ex: RDV-2025-ABC123"
+                                   placeholder="Ex: MAYELIA-2025-123456"
                                    value="{{ old('numero_suivi') }}">
                         </div>
                         @error('numero_suivi')

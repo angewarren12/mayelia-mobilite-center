@@ -15,11 +15,13 @@ class Ticket extends Model
         'statut',
         'type',
         'priorite',
+        'heure_rdv',
         'called_at',
         'completed_at'
     ];
 
     protected $casts = [
+        'heure_rdv' => 'datetime:H:i',
         'called_at' => 'datetime',
         'completed_at' => 'datetime'
     ];

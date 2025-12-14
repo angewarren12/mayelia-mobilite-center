@@ -21,7 +21,7 @@
             <div class="space-y-4">
                 <div class="flex justify-between py-2 border-b border-gray-200">
                     <span class="text-gray-600">Numéro de suivi</span>
-                    <span class="font-medium" id="tracking-number">#RDV-2025-001</span>
+                    <span class="font-medium" id="tracking-number">#MAYELIA-2025-000000</span>
                 </div>
                 
                 <div class="flex justify-between py-2 border-b border-gray-200">
@@ -141,7 +141,8 @@ function loadBookingData() {
 
 function updateBookingInfo() {
     // Générer un numéro de suivi aléatoire
-    const trackingNumber = '#RDV-' + new Date().getFullYear() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+    // Numéro temporaire (sera remplacé par le vrai numéro du backend - format: MAYELIA-YYYY-XXXXXX)
+    const trackingNumber = '#MAYELIA-' + new Date().getFullYear() + '-' + String(Math.floor(Math.random() * 1000000)).padStart(6, '0');
     document.getElementById('tracking-number').textContent = trackingNumber;
     
     // Mettre à jour les informations
