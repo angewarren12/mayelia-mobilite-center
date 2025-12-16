@@ -207,4 +207,16 @@ class User extends Authenticatable
     {
         return $this->hasOne(Guichet::class);
     }
+
+    /**
+     * Vérifier si l'utilisateur peut accéder aux données d'un centre
+     */
+    public function canAccessCentre($centreId)
+    {
+        if ($this->role === 'admin') {
+            return true;
+        }
+        
+        return $this->centre_id == $centreId;
+    }
 }

@@ -6,11 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- En-tête -->
-    <div class="flex justify-between items-center">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Dossiers ONECI</h2>
-            <p class="text-gray-600">Gérez les dossiers reçus de Mayelia</p>
-        </div>
+    <div class="flex justify-end items-center">
         <div class="flex space-x-2">
             <button onclick="openExportModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center">
                 <i class="fas fa-download mr-2"></i>

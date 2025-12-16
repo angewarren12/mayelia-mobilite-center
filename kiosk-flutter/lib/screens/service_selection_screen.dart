@@ -75,6 +75,32 @@ class ServiceSelectionScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 16),
+              if (provider.errorMessage.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red[700], size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          provider.errorMessage,
+                          style: TextStyle(
+                            color: Colors.red[800],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ElevatedButton.icon(
                 onPressed: provider.loading ? null : () => provider.goBack(),
                 icon: const Icon(Icons.arrow_back, size: 20),

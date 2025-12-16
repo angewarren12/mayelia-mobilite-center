@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test des Reçus - Mayelia Mobilité</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #012c13 0%, #014920 50%, #01662c 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .receipts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .receipt-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .receipt-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .receipt-card h3 {
+            color: #01662c;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+        
+        .receipt-card p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        
+        .receipt-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #028339;
+        }
+        
+        .btn-generate {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background: #028339;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .btn-generate:hover {
+            background: #01662c;
+        }
+        
+        .btn-generate:active {
+            transform: scale(0.98);
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            color: white;
+            margin-top: 2rem;
+        }
+        
+        .info-box h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .info-box ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .info-box li {
+            padding: 0.3rem 0;
+        }
+        
+        .info-box li:before {
+            content: "✓ ";
+            color: #9ad3b2;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧾 Test des Reçus et Impressions</h1>
+            <p>Génération de reçus avec données aléatoires pour tests</p>
+        </div>
+        
+        <div class="receipts-grid">
+            <!-- 1. Reçu de Réservation -->
+            <div class="receipt-card">
+                <div class="icon">📄</div>
+                <h3>Reçu de Réservation</h3>
+                <p>Reçu PDF après réservation d'un rendez-vous en ligne</p>
+                <button class="btn-generate" onclick="generateReceiptReservation()">
+                    Générer le Reçu
+                </button>
+            </div>
+            
+            <!-- 2. Reçu de Dossier Finalisé -->
+            <div class="receipt-card">
+                <div class="icon">📋</div>
+                <h3>Reçu de Dossier Finalisé</h3>
+                <p>Reçu PDF après finalisation d'un dossier</p>
+                <button class="btn-generate" onclick="generateReceiptDossier()">
+                    Générer le Reçu
+                </button>
+            </div>
+            
+            <!-- 3. Étiquette de Dossier -->
+            <div class="receipt-card">
+                <div class="icon">🏷️</div>
+                <h3>Étiquette de Dossier</h3>
+                <p>Étiquette avec code-barres pour un dossier</p>
+                <button class="btn-generate" onclick="generateEtiquetteDossier()">
+                    Générer l'Étiquette
+                </button>
+            </div>
+            
+            <!-- 4. Ticket QMS -->
+            <div class="receipt-card">
+                <div class="icon">🎫</div>
+                <h3>Ticket QMS</h3>
+                <p>Ticket thermique pour la file d'attente</p>
+                <button class="btn-generate" onclick="generateTicketQMS()">
+                    Générer le Ticket
+                </button>
+            </div>
+            
+            <!-- 5. Étiquettes ONECI -->
+            <div class="receipt-card">
+                <div class="icon">📦</div>
+                <h3>Étiquettes ONECI Transfert</h3>
+                <p>Étiquettes avec codes-barres pour transfert ONECI</p>
+                <button class="btn-generate" onclick="generateEtiquettesONECI()">
+                    Générer les Étiquettes
+                </button>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>ℹ️ Instructions</h3>
+            <ul>
+                <li>Chaque bouton génère un reçu avec des données aléatoires mais réalistes</li>
+                <li>Les reçus s'ouvrent dans une nouvelle fenêtre</li>
+                <li>Vous pouvez imprimer directement depuis le navigateur (Ctrl+P)</li>
+                <li>Le design est identique aux vrais reçus du système</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Fonction utilitaire pour générer des données aléatoires
+        function randomChoice(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+        
+        function randomNumber(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+        
+        function randomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        function formatDate(date) {
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        function formatDateTime(date) {
+            return date.toLocaleString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+        
+        // Données de test
+        const centres = ['Centre Mayelia San Pedro', 'Centre Mayelia Abidjan', 'Centre Mayelia Yopougon'];
+        const services = ['Demande de CNI', 'Renouvellement Passeport', 'Carte de Résident', 'Attestation'];
+        const formules = ['Standard - 10 000 FCFA', 'VIP - 15 000 FCFA', 'Express - 20 000 FCFA'];
+        const prenoms = ['Kouassi', 'Kouamé', 'Amani', 'Fatou', 'Aminata', 'Jean', 'Marie', 'Paul'];
+        const noms = ['Diabaté', 'Traoré', 'Koné', 'Sangaré', 'Diallo', 'Camara', 'Touré', 'Doumbia'];
+        
+        // 1. Reçu de Réservation
+        function generateReceiptReservation() {
+            const now = new Date();
+            const rendezVousDate = new Date(now.getTime() + Math.random() * 30 * 24 * 60 * 60 * 1000);
+            const numeroSuivi = 'RDV' + randomString(10);
+            const clientNom = randomChoice(noms);
+            const clientPrenom = randomChoice(prenoms);
+            const clientEmail = clientPrenom.toLowerCase() + '.' + clientNom.toLowerCase() + '@example.com';
+            const clientPhone = '+225 0' + randomNumber(1, 9) + ' ' + randomNumber(10, 99) + ' ' + randomNumber(10, 99) + ' ' + randomNumber(10, 99);
+            
+            const receiptHTML = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu de Réservation - ${numeroSuivi}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .receipt-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #028339;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #028339;
+            margin-bottom: 5px;
+        }
+        .receipt-title {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #028339;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ddd;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+        .info-value {
+            color: #333;
+            text-align: right;
+        }
+        .total-section {
+            background: #f0f9f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #028339;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .qr-placeholder {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #028339;
+            display: inline-block;
+            line-height: 100px;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        @media print {
+            body { background: white; }
+            .receipt-container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <div class="logo">MAYELIA MOBILITÉ</div>
+            <div class="receipt-title">REÇU DE RÉSERVATION</div>
+            <div style="color: #666; font-size: 12px;">Numéro: ${numeroSuivi}</div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">DÉTAILS DE LA RÉSERVATION</div>
+            <div class="info-row">
+                <span class="info-label">Centre:</span>
+                <span class="info-value">${randomChoice(centres)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Service:</span>
+                <span class="info-value">${randomChoice(services)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Formule:</span>
+                <span class="info-value">${randomChoice(formules)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value">${formatDate(rendezVousDate)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Heure:</span>
+                <span class="info-value">${rendezVousDate.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">INFORMATIONS CLIENT</div>
+            <div class="info-row">
+                <span class="info-label">Nom:</span>
+                <span class="info-value">${clientPrenom} ${clientNom}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">${clientEmail}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Téléphone:</span>
+                <span class="info-value">${clientPhone}</span>
+            </div>
+        </div>
+        
+        <div class="total-section">
+            <div style="text-align: center; color: #666;">Montant à payer</div>
+            <div class="total-amount">${randomChoice([10000, 15000, 20000]).toLocaleString('fr-FR')} FCFA</div>
+        </div>
+        
+        <div class="qr-section">
+            <div class="qr-placeholder">QR CODE</div>
+            <div style="margin-top: 5px; font-size: 10px; color: #666;">${numeroSuivi}</div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Merci pour votre confiance !</strong></p>
+            <p>Ce reçu confirme votre réservation. Veuillez le présenter lors de votre rendez-vous.</p>
+            <p>Généré le ${formatDateTime(now)}</p>
+        </div>
+    </div>
+</body>
+</html>
+            `;
+            
+            openReceiptWindow(receiptHTML, 'Reçu de Réservation');
+        }
+        
+        // 2. Reçu de Dossier Finalisé
+        function generateReceiptDossier() {
+            const now = new Date();
+            const dossierId = randomNumber(1000, 9999);
+            const numeroSuivi = 'DOS' + randomString(8);
+            const clientNom = randomChoice(noms);
+            const clientPrenom = randomChoice(prenoms);
+            
+            const receiptHTML = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Reçu Dossier - ${dossierId}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .receipt-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #028339;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #028339;
+            margin-bottom: 5px;
+        }
+        .receipt-title {
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
+        }
+        .section {
+            margin: 20px 0;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #028339;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ddd;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #666;
+        }
+        .info-value {
+            color: #333;
+            text-align: right;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #028339;
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        @media print {
+            body { background: white; }
+            .receipt-container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt-container">
+        <div class="header">
+            <div class="logo">MAYELIA MOBILITÉ</div>
+            <div class="receipt-title">REÇU DE TRAÇABILITÉ - DOSSIER FINALISÉ</div>
+            <div style="color: #666; font-size: 12px;">N° Dossier: ${dossierId}</div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">INFORMATIONS DU DOSSIER</div>
+            <div class="info-row">
+                <span class="info-label">Numéro de suivi:</span>
+                <span class="info-value">${numeroSuivi}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Centre:</span>
+                <span class="info-value">${randomChoice(centres)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Service:</span>
+                <span class="info-value">${randomChoice(services)}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Statut:</span>
+                <span class="info-value"><span class="status-badge">FINALISÉ</span></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date de finalisation:</span>
+                <span class="info-value">${formatDateTime(now)}</span>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">INFORMATIONS CLIENT</div>
+            <div class="info-row">
+                <span class="info-label">Nom complet:</span>
+                <span class="info-value">${clientPrenom} ${clientNom}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Service traité:</span>
+                <span class="info-value">${randomChoice(services)}</span>
+            </div>
+        </div>
+        
+        <div class="section">
+            <div class="section-title">PAIEMENT</div>
+            <div class="info-row">
+                <span class="info-label">Montant payé:</span>
+                <span class="info-value">${randomChoice([10000, 15000, 20000]).toLocaleString('fr-FR')} FCFA</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mode de paiement:</span>
+                <span class="info-value">${randomChoice(['Espèces', 'Carte bancaire', 'Mobile Money'])}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Statut paiement:</span>
+                <span class="info-value"><span class="status-badge">PAYÉ</span></span>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Dossier traité avec succès</strong></p>
+            <p>Ce reçu atteste de la finalisation et du traitement de votre dossier.</p>
+            <p>Généré le ${formatDateTime(now)}</p>
+        </div>
+    </div>
+</body>
+</html>
+            `;
+            
+            openReceiptWindow(receiptHTML, 'Reçu Dossier');
+        }
+        
+        // 3. Étiquette de Dossier
+        function generateEtiquetteDossier() {
+            const dossierId = randomNumber(1000, 9999);
+            const codeBarre = randomString(12);
+            
+            const receiptHTML = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Étiquette Dossier - ${dossierId}</title>
+    <style>
+        @page {
+            margin: 10mm;
+            size: A4;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .etiquette {
+            width: 150mm;
+            height: 70mm;
+            border: 2px solid #028339;
+            padding: 10mm;
+            margin: 10mm auto;
+            page-break-inside: avoid;
+            box-sizing: border-box;
+        }
+        .etiquette-header {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 5mm;
+            border-bottom: 2px solid #028339;
+            padding-bottom: 3mm;
+            text-align: center;
+            color: #028339;
+        }
+        .etiquette-content {
+            font-size: 10pt;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5mm;
+        }
+        .etiquette-left {
+            flex: 1;
+        }
+        .etiquette-right {
+            flex: 1;
+            text-align: right;
+        }
+        .etiquette-barcode {
+            text-align: center;
+            margin: 5mm 0;
+            padding: 5mm;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .barcode-number {
+            font-family: 'Courier New', monospace;
+            font-size: 16pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 3mm;
+        }
+        .etiquette-footer {
+            font-size: 8pt;
+            margin-top: 5mm;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 3mm;
+        }
+        @media print {
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="etiquette">
+        <div class="etiquette-header">
+            MAYELIA MOBILITÉ - ÉTIQUETTE DOSSIER
+        </div>
+        <div class="etiquette-content">
+            <div class="etiquette-left">
+                <div><strong>N° Dossier:</strong> ${dossierId}</div>
+                <div><strong>Centre:</strong> ${randomChoice(centres)}</div>
+                <div><strong>Service:</strong> ${randomChoice(services)}</div>
+            </div>
+            <div class="etiquette-right">
+                <div><strong>Date:</strong> ${formatDate(new Date())}</div>
+                <div><strong>Client:</strong> ${randomChoice(prenoms)} ${randomChoice(noms)}</div>
+            </div>
+        </div>
+        <div class="etiquette-barcode">
+            <div style="font-size: 20pt; letter-spacing: 1px;">${codeBarre}</div>
+            <div class="barcode-number">${codeBarre}</div>
+        </div>
+        <div class="etiquette-footer">
+            Code-barres pour suivi et traçabilité du dossier
+        </div>
+    </div>
+</body>
+</html>
+            `;
+            
+            openReceiptWindow(receiptHTML, 'Étiquette Dossier');
+        }
+        
+        // 4. Ticket QMS
+        function generateTicketQMS() {
+            const ticketNum = randomChoice(['A', 'B', 'C']) + String(randomNumber(1, 999)).padStart(3, '0');
+            const now = new Date();
+            
+            const receiptHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Ticket ${ticketNum}</title>
+    <style>
+        @page {
+            size: 58mm auto;
+            margin: 0;
+        }
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 48mm;
+            margin: 0 auto;
+            padding: 5mm;
+            text-align: center;
+        }
+        .header {
+            font-size: 10px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            line-height: 1.2;
+        }
+        .centre-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .ticket-num {
+            font-size: 42px;
+            font-weight: 900;
+            margin: 8px 0;
+            padding: 8px 0;
+            letter-spacing: 2px;
+            border-top: 2px dashed #000;
+            border-bottom: 2px dashed #000;
+        }
+        .info {
+            font-size: 11px;
+            margin: 6px 0;
+            line-height: 1.3;
+        }
+        .qrcode {
+            margin: 8px auto;
+            width: 70px;
+            height: 70px;
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+        }
+        .footer {
+            font-size: 9px;
+            margin-top: 8px;
+            border-top: 1px dashed #000;
+            padding-top: 5px;
+        }
+        @media print {
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">CENTRE</div>
+    <div class="centre-name">${randomChoice(centres)}</div>
+    <div class="header">TICKET : ${ticketNum}</div>
+    <div class="info">SERVICE<br>${randomChoice(services)}</div>
+    <div class="info">TYPE<br>${randomChoice(['Avec RDV', 'Sans RDV'])}</div>
+    <div class="info">DATE<br>${formatDateTime(now)}</div>
+    <div class="qrcode">QR CODE<br>${ticketNum}</div>
+    <div class="footer">
+        Merci de patienter<br>
+        Votre numéro sera appelé<br>
+        à l'écran d'affichage
+    </div>
+</body>
+</html>
+            `;
+            
+            openReceiptWindow(receiptHTML, 'Ticket QMS');
+        }
+        
+        // 5. Étiquettes ONECI
+        function generateEtiquettesONECI() {
+            const transferId = randomNumber(100, 999);
+            const items = [];
+            for (let i = 0; i < 3; i++) {
+                items.push({
+                    id: randomNumber(1000, 9999),
+                    codeBarre: randomString(12),
+                    client: randomChoice(prenoms) + ' ' + randomChoice(noms)
+                });
+            }
+            
+            const itemsHTML = items.map(item => `
+                <div class="etiquette">
+                    <div class="etiquette-header">
+                        TRANSFERT ONECI - LOT #${transferId}
+                    </div>
+                    <div class="etiquette-content">
+                        <div class="etiquette-left">
+                            <div><strong>Item ID:</strong> ${item.id}</div>
+                            <div><strong>Client:</strong> ${item.client}</div>
+                            <div><strong>Date transfert:</strong> ${formatDate(new Date())}</div>
+                        </div>
+                        <div class="etiquette-right">
+                            <div><strong>Destination:</strong> ONECI</div>
+                            <div><strong>Statut:</strong> En attente</div>
+                        </div>
+                    </div>
+                    <div class="etiquette-barcode">
+                        <div style="font-size: 20pt; letter-spacing: 1px;">${item.codeBarre}</div>
+                        <div class="barcode-number">${item.codeBarre}</div>
+                    </div>
+                    <div class="etiquette-footer">
+                        Code-barres unique pour suivi ONECI
+                    </div>
+                </div>
+            `).join('');
+            
+            const receiptHTML = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Étiquettes ONECI - ${transferId}</title>
+    <style>
+        @page {
+            margin: 10mm;
+            size: A4;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .etiquette {
+            width: 150mm;
+            height: 70mm;
+            border: 2px solid #028339;
+            padding: 10mm;
+            margin: 10mm auto;
+            page-break-after: always;
+            box-sizing: border-box;
+        }
+        .etiquette:last-child {
+            page-break-after: auto;
+        }
+        .etiquette-header {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 5mm;
+            border-bottom: 2px solid #028339;
+            padding-bottom: 3mm;
+            text-align: center;
+            color: #028339;
+        }
+        .etiquette-content {
+            font-size: 10pt;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5mm;
+        }
+        .etiquette-left {
+            flex: 1;
+        }
+        .etiquette-right {
+            flex: 1;
+            text-align: right;
+        }
+        .etiquette-barcode {
+            text-align: center;
+            margin: 5mm 0;
+            padding: 5mm;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .barcode-number {
+            font-family: 'Courier New', monospace;
+            font-size: 16pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 3mm;
+        }
+        .etiquette-footer {
+            font-size: 8pt;
+            margin-top: 5mm;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 3mm;
+        }
+        @media print {
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    ${itemsHTML}
+</body>
+</html>
+            `;
+            
+            openReceiptWindow(receiptHTML, 'Étiquettes ONECI');
+        }
+        
+        // Fonction pour ouvrir le reçu dans une nouvelle fenêtre
+        function openReceiptWindow(html, title) {
+            const newWindow = window.open('', '_blank', 'width=800,height=600');
+            newWindow.document.write(html);
+            newWindow.document.close();
+            newWindow.focus();
+        }
+    </script>
+</body>
+</html>
+
+

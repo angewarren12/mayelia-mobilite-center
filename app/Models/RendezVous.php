@@ -84,22 +84,66 @@ class RendezVous extends Model
         return $this->hasOne(DossierOuvert::class);
     }
 
+    // Constantes pour les statuts
+    const STATUT_CONFIRME = 'confirme';
+    const STATUT_DOSSIER_OUVERT = 'dossier_ouvert';
+    const STATUT_DOCUMENTS_VERIFIES = 'documents_verifies';
+    const STATUT_DOCUMENTS_MANQUANTS = 'documents_manquants';
+    const STATUT_PAIEMENT_EFFECTUE = 'paiement_effectue';
+    const STATUT_DOSSIER_ONECI = 'dossier_oneci';
+    const STATUT_CARTE_MAYELIA = 'carte_mayelia';
+    const STATUT_CARTE_PRETE = 'carte_prete';
+    const STATUT_TERMINE = 'termine';
+    const STATUT_ANNULE = 'annule';
+
+    /**
+     * Scope pour les rendez-vous confirmés
+     */
+    public function scopeConfirme($query)
+    {
+        return $query->where('statut', self::STATUT_CONFIRME);
+    }
+
+    /**
+     * Scope pour les rendez-vous d'une date donnée
+     */
+    public function scopePourDate($query, $date)
+    {
+        return $query->whereDate('date_rendez_vous', $date);
+    }
+
+    /**
+     * Scope pour un centre donné
+     */
+    public function scopePourCentre($query, $centreId)
+    {
+        return $query->where('centre_id', $centreId);
+    }
+
+    /**
+     * Scope pour charger les relations fréquentes
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['centre.ville', 'service', 'formule', 'client']);
+    }
+
     /**
      * Accessor pour le statut formaté
      */
     public function getStatutFormateAttribute()
     {
         $statuts = [
-            'confirme' => 'Confirmé',
-            'dossier_ouvert' => 'Dossier ouvert',
-            'documents_verifies' => 'Documents vérifiés',
-            'documents_manquants' => 'Documents manquants',
-            'paiement_effectue' => 'Paiement effectué',
-            'dossier_oneci' => 'Dossier ONECI',
-            'carte_mayelia' => 'Carte Mayelia',
-            'carte_prete' => 'Carte prête',
-            'termine' => 'Terminé',
-            'annule' => 'Annulé'
+            self::STATUT_CONFIRME => 'Confirmé',
+            self::STATUT_DOSSIER_OUVERT => 'Dossier ouvert',
+            self::STATUT_DOCUMENTS_VERIFIES => 'Documents vérifiés',
+            self::STATUT_DOCUMENTS_MANQUANTS => 'Documents manquants',
+            self::STATUT_PAIEMENT_EFFECTUE => 'Paiement effectué',
+            self::STATUT_DOSSIER_ONECI => 'Dossier ONECI',
+            self::STATUT_CARTE_MAYELIA => 'Carte Mayelia',
+            self::STATUT_CARTE_PRETE => 'Carte prête',
+            self::STATUT_TERMINE => 'Terminé',
+            self::STATUT_ANNULE => 'Annulé'
         ];
 
         return $statuts[$this->statut] ?? $this->statut;

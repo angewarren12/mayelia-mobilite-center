@@ -21,51 +21,56 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
 </head>
-<body class="font-sans antialiased bg-gray-100">
+<body class="font-sans antialiased bg-gray-100" x-data="{ sidebarOpen: localStorage.getItem('sidebarOpenOneci') !== 'false' }" 
+      x-init="$watch('sidebarOpen', value => localStorage.setItem('sidebarOpenOneci', value))">
     <div class="min-h-screen flex">
         <!-- Sidebar ONECI -->
-        <div class="w-64 bg-purple-700 shadow-lg">
-            <div class="p-6">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                        <span class="text-purple-700 font-bold text-xl">O</span>
-                    </div>
-                    <span class="text-xl font-bold text-white">ONECI</span>
+        <div class="bg-purple-700 shadow-lg transition-all duration-300 ease-in-out" :class="sidebarOpen ? 'w-64' : 'w-20'">
+            <div class="p-6 flex justify-center items-center relative">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                    <span class="text-purple-700 font-bold text-xl">O</span>
                 </div>
+                <span class="text-xl font-bold text-white transition-opacity duration-300 whitespace-nowrap ml-3" 
+                      :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">ONECI</span>
             </div>
             
             <nav class="mt-8">
-                <a href="{{ route('oneci.dashboard') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.dashboard') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}">
-                    <i class="fas fa-tachometer-alt w-5 h-5 mr-3"></i>
-                    Tableau de bord
+                <a href="{{ route('oneci.dashboard') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.dashboard') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}"
+                   :title="!sidebarOpen ? 'Tableau de bord' : ''">
+                    <i class="fas fa-tachometer-alt w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Tableau de bord</span>
                 </a>
                 
-                <a href="{{ route('oneci.dossiers') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.dossiers') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}">
-                    <i class="fas fa-folder w-5 h-5 mr-3"></i>
-                    Dossiers
+                <a href="{{ route('oneci.dossiers') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.dossiers') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}"
+                   :title="!sidebarOpen ? 'Dossiers' : ''">
+                    <i class="fas fa-folder w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Dossiers</span>
                 </a>
                 
-                <a href="{{ route('oneci.scanner') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.scanner') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}">
-                    <i class="fas fa-barcode w-5 h-5 mr-3"></i>
-                    Scanner
+                <a href="{{ route('oneci.scanner') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.scanner') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}"
+                   :title="!sidebarOpen ? 'Scanner' : ''">
+                    <i class="fas fa-barcode w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Scanner</span>
                 </a>
                 
-                <a href="{{ route('oneci.cartes-prete') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.cartes-prete') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}">
-                    <i class="fas fa-check-circle w-5 h-5 mr-3"></i>
-                    Cartes prêtes
+                <a href="{{ route('oneci.cartes-prete') }}" class="flex items-center px-6 py-3 text-purple-100 hover:bg-purple-600 hover:text-white {{ request()->routeIs('oneci.cartes-prete') ? 'bg-purple-600 text-white border-r-2 border-white' : '' }}"
+                   :title="!sidebarOpen ? 'Cartes prêtes' : ''">
+                    <i class="fas fa-check-circle w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Cartes prêtes</span>
                 </a>
             </nav>
             
-            <div class="absolute bottom-0 w-64 p-6">
-                <div class="flex items-center justify-between">
+            <div class="absolute bottom-0 p-6 w-full" :class="sidebarOpen ? 'w-64' : 'w-20'">
+                <div class="flex items-center justify-between" :class="sidebarOpen ? 'flex-row' : 'flex-col'">
                     @php
                         $currentUser = auth()->user();
                         $nomComplet = $currentUser ? trim(($currentUser->nom ?? '') . ' ' . ($currentUser->prenom ?? '')) : 'Utilisateur';
                     @endphp
-                    <span class="text-sm text-purple-100">{{ $nomComplet }}</span>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                    <span class="text-sm text-purple-100 transition-opacity duration-300 whitespace-nowrap" 
+                          :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">{{ $nomComplet }}</span>
+                    <form method="POST" action="{{ route('logout') }}" class="inline" :class="sidebarOpen ? '' : 'ml-auto'">
                         @csrf
-                        <button type="submit" class="text-purple-100 hover:text-white">
+                        <button type="submit" class="text-purple-100 hover:text-white" title="Déconnexion">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </form>
@@ -79,11 +84,12 @@
             <header class="bg-white shadow-sm border-b">
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-800">@yield('title', 'Dashboard ONECI')</h1>
-                            @hasSection('subtitle')
-                                <p class="text-gray-600 mt-1">@yield('subtitle')</p>
-                            @endif
+                        <div class="flex items-center space-x-4">
+                            <button @click="sidebarOpen = !sidebarOpen" 
+                                    class="p-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                    :title="sidebarOpen ? 'Masquer la sidebar' : 'Afficher la sidebar'">
+                                <i class="fas" :class="sidebarOpen ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+                            </button>
                         </div>
                         <div class="flex items-center space-x-4">
                             @php
@@ -118,10 +124,23 @@
                     </div>
                 @endif
 
+                <!-- Page Title -->
+                @hasSection('title')
+                    <div class="mb-6 pb-4 border-b border-gray-200">
+                        <h1 class="text-2xl font-bold text-purple-600">@yield('title')</h1>
+                        @hasSection('subtitle')
+                            <p class="text-gray-600 mt-1">@yield('subtitle')</p>
+                        @endif
+                    </div>
+                @endif
+
                 @yield('content')
             </main>
         </div>
     </div>
+    
+    <!-- Toast Notifications -->
+    @include('components.toast')
 </body>
 </html>
 

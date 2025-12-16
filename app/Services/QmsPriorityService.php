@@ -41,7 +41,7 @@ class QmsPriorityService
     private function fenetreToleranceMode(Centre $centre, Ticket $ticket): int
     {
         // Si ce n'est pas un RDV ou pas d'heure définie
-        if ($ticket->type !== 'rdv' || !$ticket->heure_rdv) {
+        if ($ticket->type !== Ticket::TYPE_RDV || !$ticket->heure_rdv) {
             return 1; // Priorité normale
         }
 
@@ -67,8 +67,8 @@ class QmsPriorityService
      */
     public function updateAllPriorities(Centre $centre): void
     {
-        $tickets = Ticket::where('centre_id', $centre->id)
-            ->where('statut', 'en_attente')
+        $tickets = Ticket::pourCentre($centre->id)
+            ->enAttente()
             ->get();
 
         foreach ($tickets as $ticket) {

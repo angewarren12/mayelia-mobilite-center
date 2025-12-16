@@ -16,6 +16,26 @@ class Service extends Model
         'statut'
     ];
 
+    // Constantes pour les statuts
+    const STATUT_ACTIF = 'actif';
+    const STATUT_INACTIF = 'inactif';
+
+    /**
+     * Scope pour récupérer uniquement les services actifs
+     */
+    public function scopeActif($query)
+    {
+        return $query->where('statut', self::STATUT_ACTIF);
+    }
+
+    /**
+     * Scope pour récupérer les services avec leurs relations fréquentes
+     */
+    public function scopeWithRelations($query)
+    {
+        return $query->with(['formules', 'documentsRequis']);
+    }
+
     /**
      * Relation avec les centres (many-to-many)
      */

@@ -17,6 +17,18 @@ class Formule extends Model
         'statut'
     ];
 
+    // Constantes pour les statuts
+    const STATUT_ACTIF = 'actif';
+    const STATUT_INACTIF = 'inactif';
+
+    /**
+     * Scope pour récupérer uniquement les formules actives
+     */
+    public function scopeActif($query)
+    {
+        return $query->where('statut', self::STATUT_ACTIF);
+    }
+
     /**
      * Relation avec le service
      */

@@ -78,24 +78,43 @@ class ThermalPrintService
     }
 
     /**
-     * Génère des commandes ESC/POS pour impression directe (future implémentation)
+     * Génère des commandes ESC/POS pour impression directe
+     * 
+     * Note: Cette méthode est optionnelle car l'impression est actuellement gérée
+     * via la vue Blade 'qms.ticket-print' qui génère le HTML/JS pour l'impression côté client.
+     * 
+     * Cette méthode pourrait être utilisée pour :
+     * - Impression serveur directe (si imprimante connectée au serveur)
+     * - API d'impression centralisée
+     * - Intégration avec système d'impression réseau
+     * 
+     * Format ESC/POS: https://reference.epson-biz.com/modules/ref_escpos/
      * 
      * @param Ticket $ticket
-     * @return string Commandes ESC/POS en binaire
+     * @return string Commandes ESC/POS en binaire (format prêt pour socket/port série)
      */
     public function generateEscPosCommands(Ticket $ticket): string
     {
-        // TODO: Implémenter la génération de commandes ESC/POS
-        // Pour l'instant, retourne une chaîne vide
-        // Format ESC/POS: https://reference.epson-biz.com/modules/ref_escpos/
+        // NOTE: Non implémenté car non nécessaire actuellement
+        // L'impression est gérée via la vue Blade qui génère le format d'impression
+        // pour les imprimantes thermiques via JavaScript côté client (kiosk web)
+        // ou via l'application Flutter (kiosk mobile)
+        // 
+        // Pour une implémentation future, voir:
+        // - https://github.com/mike42/escpos-php (bibliothèque PHP pour ESC/POS)
+        // - Documentation ESC/POS: https://reference.epson-biz.com/modules/ref_escpos/
         
         $commands = '';
         
         // Exemple de structure future :
-        // $commands .= "\x1B\x40"; // Initialize printer
-        // $commands .= "\x1B\x61\x01"; // Center align
-        // $commands .= "ONECI - " . $ticket->centre->nom . "\n";
+        // $commands .= "\x1B\x40"; // Initialize printer (ESC @)
+        // $commands .= "\x1B\x61\x01"; // Center align (ESC a 1)
+        // $commands .= "\x1B\x21\x10"; // Double height (ESC ! 16)
+        // $commands .= $ticket->centre->nom . "\n";
+        // $commands .= "\x1B\x21\x00"; // Normal size
+        // $commands .= "TICKET : " . $ticket->numero . "\n";
         // ... etc
+        // $commands .= "\x1D\x56\x41"; // Cut paper (GS V 65)
         
         return $commands;
     }

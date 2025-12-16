@@ -10,6 +10,7 @@ use App\Models\CentreService;
 use App\Models\CentreFormule;
 use App\Services\AuthService;
 use App\Http\Controllers\Concerns\ChecksPermissions;
+use Illuminate\Support\Facades\Cache;
 
 class CentreController extends Controller
 {
@@ -37,13 +38,13 @@ class CentreController extends Controller
         }
 
         // Récupérer tous les services globaux
-        $servicesGlobaux = Service::where('statut', 'actif')->get();
+        $servicesGlobaux = Service::actif()->get();
         
         // Récupérer les services activés pour ce centre
-        $servicesActives = $centre->services()->wherePivot('actif', true)->get();
+        $servicesActives = $centre->servicesActives()->actif()->get();
         
         // Récupérer toutes les formules globales
-        $formulesGlobales = Formule::where('statut', 'actif')->get();
+        $formulesGlobales = Formule::actif()->get();
         
         // Récupérer les formules activées pour ce centre
         $formulesActives = $centre->formules()->wherePivot('actif', true)->get();
@@ -82,6 +83,9 @@ class CentreController extends Controller
             $message = "Service '{$service->nom}' désactivé pour votre centre.";
         }
 
+        // Invalider le cache des services de ce centre
+        Cache::forget("centre_services_{$centre->id}");
+
         return redirect()->route('centres.index')->with('success', $message);
     }
 
@@ -115,6 +119,9 @@ class CentreController extends Controller
             $centre->formules()->updateExistingPivot($formule->id, ['actif' => false]);
             $message = "Formule '{$formule->nom}' désactivée pour votre centre.";
         }
+
+        // Invalider le cache (même si les formules ne sont pas en cache actuellement, on prépare l'avenir)
+        Cache::forget("centre_formules_{$centre->id}");
 
         return redirect()->route('centres.index')->with('success', $message);
     }

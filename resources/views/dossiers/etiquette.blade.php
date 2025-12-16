@@ -17,32 +17,60 @@
         .etiquette {
             width: 150mm;
             height: 70mm;
-            border: 1px solid #000;
-            padding: 5mm;
-            margin: 5mm;
-            display: inline-block;
+            border: 2px solid #028339;
+            padding: 10mm;
+            margin: 10mm auto;
             page-break-inside: avoid;
             box-sizing: border-box;
         }
         .etiquette-header {
-            font-size: 10pt;
+            font-size: 14pt;
             font-weight: bold;
-            margin-bottom: 3mm;
-            border-bottom: 1px solid #000;
-            padding-bottom: 2mm;
+            margin-bottom: 5mm;
+            border-bottom: 2px solid #028339;
+            padding-bottom: 3mm;
             text-align: center;
+            color: #028339;
+        }
+        .logo-img {
+            max-width: 80px;
+            height: auto;
+            margin-bottom: 3mm;
         }
         .etiquette-content {
-            font-size: 9pt;
+            font-size: 10pt;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5mm;
+        }
+        .etiquette-left {
+            flex: 1;
+        }
+        .etiquette-right {
+            flex: 1;
+            text-align: right;
         }
         .etiquette-barcode {
             text-align: center;
-            margin: 2mm 0;
+            margin: 5mm 0;
+            padding: 5mm;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+        .barcode-number {
+            font-family: 'Courier New', monospace;
+            font-size: 16pt;
+            font-weight: bold;
+            letter-spacing: 2px;
+            margin-top: 3mm;
         }
         .etiquette-footer {
             font-size: 8pt;
-            margin-top: 2mm;
+            margin-top: 5mm;
             text-align: center;
+            color: #666;
+            border-top: 1px solid #ddd;
+            padding-top: 3mm;
         }
         @media print {
             .no-print {
@@ -69,24 +97,26 @@
 
     <div class="etiquette">
         <div class="etiquette-header">
-            MAYELIA MOBILITÉ - ONECI
+            <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia Mobilité" class="logo-img" onerror="this.style.display='none';">
+            <div>MAYELIA MOBILITÉ - ÉTIQUETTE DOSSIER</div>
         </div>
         <div class="etiquette-content">
-            <div><strong>Code-barres:</strong></div>
-            <div class="etiquette-barcode">
-                {!! $barcodeSvg !!}
+            <div class="etiquette-left">
+                <div><strong>N° Dossier:</strong> {{ $dossierOuvert->id }}</div>
+                <div><strong>Centre:</strong> {{ $dossierOuvert->rendezVous->centre->nom ?? 'N/A' }}</div>
+                <div><strong>Service:</strong> {{ $dossierOuvert->rendezVous->service->nom ?? 'N/A' }}</div>
             </div>
-            <div style="text-align: center; font-family: monospace; font-size: 10pt; margin-top: 2mm;">
-                {{ $codeBarre }}
-            </div>
-            <div style="margin-top: 3mm;">
-                <strong>Client:</strong> {{ $dossierOuvert->rendezVous->client->nom_complet ?? 'N/A' }}<br>
-                <strong>Service:</strong> {{ $dossierOuvert->rendezVous->service->nom ?? 'N/A' }}<br>
-                <strong>N° Dossier:</strong> DOS-{{ str_pad($dossierOuvert->id, 8, '0', STR_PAD_LEFT) }}
+            <div class="etiquette-right">
+                <div><strong>Date:</strong> {{ $dossierOuvert->date_ouverture->format('d/m/Y') }}</div>
+                <div><strong>Client:</strong> {{ $dossierOuvert->rendezVous->client->nom_complet ?? 'N/A' }}</div>
             </div>
         </div>
+        <div class="etiquette-barcode">
+            {!! $barcodeSvg !!}
+            <div class="barcode-number">{{ $codeBarre }}</div>
+        </div>
         <div class="etiquette-footer">
-            Date: {{ $dossierOuvert->date_ouverture->format('d/m/Y') }}
+            Code-barres pour suivi et traçabilité du dossier
         </div>
     </div>
 </body>

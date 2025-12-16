@@ -6,11 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- En-tête -->
-    <div class="flex justify-between items-center">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Transferts ONECI</h2>
-            <p class="text-gray-600">Gérez les transferts de dossiers vers l'ONECI</p>
-        </div>
+    <div class="flex justify-end items-center">
         @userCan('oneci-transfers', 'create')
         <a href="{{ route('oneci-transfers.create') }}" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 flex items-center">
             <i class="fas fa-plus mr-2"></i>

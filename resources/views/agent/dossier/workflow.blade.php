@@ -20,32 +20,42 @@
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <i class="fas fa-user text-mayelia-600"></i>
-                            <span class="font-semibold text-gray-700">Client</span>
+                    @if($dossierOuvert->rendezVous)
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <i class="fas fa-user text-mayelia-600"></i>
+                                <span class="font-semibold text-gray-700">Client</span>
+                            </div>
+                            <p class="text-gray-900">{{ $dossierOuvert->rendezVous->client->nom }} {{ $dossierOuvert->rendezVous->client->prenom }}</p>
+                            <p class="text-sm text-gray-600">{{ $dossierOuvert->rendezVous->client->email }}</p>
                         </div>
-                        <p class="text-gray-900">{{ $dossierOuvert->rendezVous->client->nom }} {{ $dossierOuvert->rendezVous->client->prenom }}</p>
-                        <p class="text-sm text-gray-600">{{ $dossierOuvert->rendezVous->client->email }}</p>
-                    </div>
-                    
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <i class="fas fa-cogs text-green-600"></i>
-                            <span class="font-semibold text-gray-700">Service</span>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <i class="fas fa-cogs text-green-600"></i>
+                                <span class="font-semibold text-gray-700">Service</span>
+                            </div>
+                            <p class="text-gray-900">{{ $dossierOuvert->rendezVous->service->nom }}</p>
+                            <p class="text-sm text-gray-600">{{ $dossierOuvert->rendezVous->formule->nom }}</p>
                         </div>
-                        <p class="text-gray-900">{{ $dossierOuvert->rendezVous->service->nom }}</p>
-                        <p class="text-sm text-gray-600">{{ $dossierOuvert->rendezVous->formule->nom }}</p>
-                    </div>
-                    
-                    <div class="bg-gray-50 rounded-lg p-4">
-                        <div class="flex items-center space-x-2 mb-2">
-                            <i class="fas fa-calendar text-purple-600"></i>
-                            <span class="font-semibold text-gray-700">Rendez-vous</span>
+                        
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <i class="fas fa-calendar text-purple-600"></i>
+                                <span class="font-semibold text-gray-700">Rendez-vous</span>
+                            </div>
+                            <p class="text-gray-900">{{ $dossierOuvert->rendezVous->date_rendez_vous->format('d/m/Y') }}</p>
+                            <p class="text-sm text-gray-600">{{ $dossierOuvert->rendezVous->tranche_horaire }}</p>
                         </div>
-                        <p class="text-gray-900">{{ $dossierOuvert->rendezVous->date_rendez_vous->format('d/m/Y') }}</p>
-                        <p class="text-sm text-gray-600">{{ $dossierOuvert->rendezVous->tranche_horaire }}</p>
-                    </div>
+                    @else
+                        <div class="bg-gray-50 rounded-lg p-4 md:col-span-3">
+                            <div class="flex items-center space-x-2 mb-2">
+                                <i class="fas fa-info-circle text-orange-600"></i>
+                                <span class="font-semibold text-gray-700">Dossier sans rendez-vous</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Ce dossier n'est associé à aucun rendez-vous.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
             
@@ -61,13 +71,13 @@
                     </span>
                 </div>
                 
-                <div class="bg-white border rounded-lg p-4">
+                <div class="bg-white border rounded-lg p-4" id="progression-container">
                     <div class="flex items-center justify-between mb-2">
                         <span class="text-sm font-medium text-gray-700">Progression</span>
-                        <span class="text-sm font-bold text-mayelia-600">{{ $dossierOuvert->progression }}%</span>
+                        <span class="text-sm font-bold text-mayelia-600" id="progression-text">{{ $dossierOuvert->progression }}%</span>
                     </div>
                     <div class="w-48 bg-gray-200 rounded-full h-3">
-                        <div class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300" 
+                        <div id="progression-bar" class="bg-gradient-to-r from-blue-500 to-blue-600 h-3 rounded-full transition-all duration-300" 
                              style="width: {{ $dossierOuvert->progression }}%"></div>
                     </div>
                 </div>
@@ -113,17 +123,17 @@
                 </div>
             </div>
             
-            @if(!$dossierOuvert->fiche_pre_enrolement_verifiee)
-                @userCan('dossiers', 'update')
-                <button onclick="verifierFichePreEnrolement()" class="w-full bg-mayelia-600 text-white px-4 py-3 rounded-lg hover:bg-mayelia-700 transition-colors font-medium">
-                    <i class="fas fa-check mr-2"></i>Vérifier la fiche
-                </button>
-                @enduserCan
-            @else
-                <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800 text-sm">
+            @if($dossierOuvert->fiche_pre_enrolement_verifiee)
+                <div id="fiche-verifiee-message" class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800 text-sm mb-3">
                     <i class="fas fa-check-circle mr-2"></i>Fiche vérifiée avec succès
                 </div>
             @endif
+            
+            @userCan('dossiers', 'update')
+            <button id="btn-verifier-fiche" onclick="verifierFichePreEnrolement()" class="w-full {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-mayelia-600 text-white hover:bg-mayelia-700' }} px-4 py-3 rounded-lg transition-colors font-medium">
+                <i class="fas {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'fa-edit' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'Modifier la vérification' : 'Vérifier la fiche' }}
+            </button>
+            @enduserCan
         </div>
 
         <!-- Étape 2: Vérification des documents -->
@@ -180,17 +190,11 @@
                 </div>
             @endif
             
-            @if($dossierOuvert->documents_verifies)
-                <button class="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium cursor-not-allowed" disabled>
-                    <i class="fas fa-check mr-2"></i>Documents vérifiés
-                </button>
-            @else
-                @userCan('dossiers', 'update')
-                <button onclick="verifierDocuments()" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                    <i class="fas fa-list-check mr-2"></i>Vérifier les documents
-                </button>
-                @enduserCan
-            @endif
+            @userCan('dossiers', 'update')
+            <button onclick="verifierDocuments()" class="w-full {{ $dossierOuvert->documents_verifies ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-green-600 text-white hover:bg-green-700' }} px-4 py-3 rounded-lg transition-colors font-medium">
+                <i class="fas {{ $dossierOuvert->documents_verifies ? 'fa-edit' : 'fa-list-check' }} mr-2"></i>{{ $dossierOuvert->documents_verifies ? 'Modifier les documents' : 'Vérifier les documents' }}
+            </button>
+            @enduserCan
         </div>
 
         <!-- Étape 3: Informations client -->
@@ -224,7 +228,7 @@
                 </p>
                 <div class="text-xs text-gray-500">
                     <i class="fas fa-user-edit mr-1"></i>
-                    Nom, prénom, date de naissance, CNI/Passport, etc.
+                    Nom, prénom, date de naissance, adresse, profession, etc.
                 </div>
             </div>
             
@@ -234,81 +238,97 @@
                     <h4 class="font-medium text-gray-700 mb-3">
                         <i class="fas fa-user-check mr-2"></i>Informations client vérifiées
                     </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="space-y-3">
-                            <div class="flex items-center space-x-3">
-                                <i class="fas fa-user text-purple-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">Nom complet</span>
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {{ $dossierOuvert->rendezVous->client->nom }} {{ $dossierOuvert->rendezVous->client->prenom }}
-                                    </p>
+                    @if($dossierOuvert->rendezVous)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-user text-purple-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Nom complet</span>
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ $dossierOuvert->rendezVous->client->nom }} {{ $dossierOuvert->rendezVous->client->prenom }}
+                                        </p>
+                                    </div>
                                 </div>
+                                
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-envelope text-purple-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Email</span>
+                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->email }}</p>
+                                    </div>
+                                </div>
+                                
+                                @if($dossierOuvert->rendezVous->client->telephone)
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-phone text-purple-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Téléphone</span>
+                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->telephone }}</p>
+                                    </div>
+                                </div>
+                                @endif
                             </div>
                             
-                            <div class="flex items-center space-x-3">
-                                <i class="fas fa-envelope text-purple-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">Email</span>
-                                    <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->email }}</p>
+                            <div class="space-y-3">
+                                @if($dossierOuvert->rendezVous->client->date_naissance)
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-calendar text-purple-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Date de naissance</span>
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('d/m/Y') }}
+                                        </p>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                                @if($dossierOuvert->rendezVous->client->adresse)
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-map-marker-alt text-purple-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Adresse</span>
+                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->adresse }}</p>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                                @if($dossierOuvert->rendezVous->client->profession)
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-briefcase text-purple-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Profession</span>
+                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->profession }}</p>
+                                    </div>
+                                </div>
+                                @endif
+                                
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-check-circle text-green-500 w-4"></i>
+                                    <div>
+                                        <span class="text-xs text-gray-500">Statut</span>
+                                        <p class="text-sm font-medium text-green-700">Informations validées</p>
+                                    </div>
                                 </div>
                             </div>
-                            
-                            @if($dossierOuvert->rendezVous->client->telephone)
-                            <div class="flex items-center space-x-3">
-                                <i class="fas fa-phone text-purple-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">Téléphone</span>
-                                    <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->telephone }}</p>
-                                </div>
-                            </div>
-                            @endif
                         </div>
-                        
-                        <div class="space-y-3">
-                            @if($dossierOuvert->rendezVous->client->date_naissance)
-                            <div class="flex items-center space-x-3">
-                                <i class="fas fa-calendar text-purple-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">Date de naissance</span>
-                                    <p class="text-sm font-medium text-gray-900">
-                                        {{ \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('d/m/Y') }}
-                                    </p>
-                                </div>
-                            </div>
-                            @endif
-                            
-                            @if($dossierOuvert->rendezVous->client->numero_piece_identite)
-                            <div class="flex items-center space-x-3">
-                                <i class="fas fa-id-card text-purple-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">CNI/Passport</span>
-                                    <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->numero_piece_identite }}</p>
-                                </div>
-                            </div>
-                            @endif
-                            
-                            <div class="flex items-center space-x-3">
-                                <i class="fas fa-check-circle text-green-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">Statut</span>
-                                    <p class="text-sm font-medium text-green-700">Informations validées</p>
-                                </div>
-                            </div>
+                    @else
+                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <p class="text-sm text-orange-800">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                Ce dossier n'est associé à aucun rendez-vous. Les informations client ne peuvent pas être affichées.
+                            </p>
                         </div>
-                    </div>
+                    @endif
                 </div>
                 
-                <button class="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium cursor-not-allowed" disabled>
-                    <i class="fas fa-check mr-2"></i>Informations validées
-                </button>
-            @else
-                @userCan('dossiers', 'update')
-                <button onclick="modifierInformationsClient()" class="w-full bg-purple-600 text-white px-4 py-3 rounded-lg hover:bg-purple-700 transition-colors font-medium">
-                    <i class="fas fa-edit mr-2"></i>Modifier les informations
-                </button>
-                @enduserCan
-            @endif
+            @endif 
+            
+            @userCan('dossiers', 'update')
+            <button onclick="modifierInformationsClient()" class="w-full {{ $dossierOuvert->informations_client_verifiees ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-purple-600 text-white hover:bg-purple-700' }} px-4 py-3 rounded-lg transition-colors font-medium">
+                <i class="fas {{ $dossierOuvert->informations_client_verifiees ? 'fa-edit' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->informations_client_verifiees ? 'Modifier les informations' : 'Modifier les informations' }}
+            </button>
+            @enduserCan
         </div>
 
         <!-- Étape 4: Vérification du paiement -->
@@ -365,14 +385,6 @@
                             </div>
                             
                             <div class="flex items-center space-x-3">
-                                <i class="fas fa-credit-card text-orange-500 w-4"></i>
-                                <div>
-                                    <span class="text-xs text-gray-500">Mode de paiement</span>
-                                    <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->paiementVerification->mode_paiement ?? 'Non spécifié' }}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="flex items-center space-x-3">
                                 <i class="fas fa-hashtag text-orange-500 w-4"></i>
                                 <div>
                                     <span class="text-xs text-gray-500">Référence</span>
@@ -411,9 +423,11 @@
                     </div>
                 </div>
                 
-                <button class="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium cursor-not-allowed" disabled>
-                    <i class="fas fa-check mr-2"></i>Paiement vérifié
+                @userCan('dossiers', 'update')
+                <button onclick="verifierPaiement()" class="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium hover:bg-green-200 transition-colors">
+                    <i class="fas fa-edit mr-2"></i>Modifier le paiement
                 </button>
+                @enduserCan
             @else
                 @userCan('dossiers', 'update')
                 <button onclick="verifierPaiement()" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium">
@@ -433,17 +447,26 @@
             </a>
             
             <div class="flex space-x-3">
-                @if($dossierOuvert->statut !== 'finalise')
+                @if($dossierOuvert->statut !== 'finalise' && $dossierOuvert->statut !== 'annulé')
                     @userCan('dossiers', 'update')
+                    <button onclick="rejeterDossier()" class="flex items-center space-x-2 bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors font-medium">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Rejeter le dossier</span>
+                    </button>
                     <button onclick="finaliserDossier()" class="flex items-center space-x-2 bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
                         <i class="fas fa-check-circle"></i>
                         <span>Finaliser le dossier</span>
                     </button>
                     @enduserCan
-                @else
+                @elseif($dossierOuvert->statut === 'finalise')
                     <div class="flex items-center space-x-2 bg-green-100 text-green-800 px-6 py-3 rounded-lg font-medium">
                         <i class="fas fa-check-circle"></i>
                         <span>Dossier finalisé</span>
+                    </div>
+                @elseif($dossierOuvert->statut === 'annulé')
+                    <div class="flex items-center space-x-2 bg-red-100 text-red-800 px-6 py-3 rounded-lg font-medium">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Dossier rejeté</span>
                     </div>
                 @endif
                 
@@ -498,7 +521,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Commentaires
                         </label>
-                        <textarea id="ficheCommentaires" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Ajoutez des commentaires si nécessaire..."></textarea>
+                        <textarea id="ficheCommentaires" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Ajoutez des commentaires si nécessaire...">{{ $dossierOuvert->notes }}</textarea>
                     </div>
                 </div>
                 
@@ -638,38 +661,52 @@
                     </button>
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                        <input type="text" id="clientNom" value="{{ $dossierOuvert->rendezVous->client->nom }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                @if($dossierOuvert->rendezVous)
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
+                            <input type="text" id="clientNom" value="{{ $dossierOuvert->rendezVous->client->nom }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
+                            <input type="text" id="clientPrenom" value="{{ $dossierOuvert->rendezVous->client->prenom }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="clientEmail" value="{{ $dossierOuvert->rendezVous->client->email }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
+                            <input type="tel" id="clientTelephone" value="{{ $dossierOuvert->rendezVous->client->telephone ?? '' }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
+                            <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->client->date_naissance ?? '' }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                            <input type="text" id="clientAdresse" value="{{ $dossierOuvert->rendezVous->client->adresse ?? '' }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Profession</label>
+                            <input type="text" id="clientProfession" value="{{ $dossierOuvert->rendezVous->client->profession ?? '' }}" 
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
-                        <input type="text" id="clientPrenom" value="{{ $dossierOuvert->rendezVous->client->prenom }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                @else
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                        <p class="text-sm text-orange-800">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Ce dossier n'est associé à aucun rendez-vous. La modification des informations client n'est pas disponible.
+                        </p>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <input type="email" id="clientEmail" value="{{ $dossierOuvert->rendezVous->client->email }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                        <input type="tel" id="clientTelephone" value="{{ $dossierOuvert->rendezVous->client->telephone ?? '' }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                        <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->client->date_naissance ?? '' }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">CNI/Passport</label>
-                        <input type="text" id="clientCni" value="{{ $dossierOuvert->rendezVous->client->numero_piece_identite ?? '' }}" 
-                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    </div>
-                </div>
+                @endif
                 
                 <div class="flex justify-end space-x-3">
                     <button onclick="closeModal('modalInformationsClient')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
@@ -680,6 +717,51 @@
                     </button>
                     <button onclick="validerInformationsClient()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
                         <i class="fas fa-save mr-2"></i>Valider les modifications
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Rejeter Dossier -->
+<div id="modalRejeterDossier" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                        Rejeter le dossier
+                    </h3>
+                    <button onclick="closeModal('modalRejeterDossier')" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-6">
+                    <p class="text-gray-600 text-sm mb-4 bg-red-50 p-3 rounded-lg border-l-4 border-red-500">
+                        <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                        Vous êtes sur le point de rejeter ce dossier. Veuillez indiquer la raison du rejet.
+                    </p>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Motif du rejet <span class="text-red-500">*</span>
+                        </label>
+                        <textarea id="noteRejet" rows="4" 
+                                  class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+                                  placeholder="Ex: Documents incomplets, informations erronées, client absent..." required></textarea>
+                        <p class="text-xs text-gray-500 mt-1">Cette note sera enregistrée dans l'historique du dossier.</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeModal('modalRejeterDossier')" class="px-5 py-2.5 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium transition-colors">
+                        Annuler
+                    </button>
+                    <button onclick="validerRejet()" class="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium shadow-lg transition-all transform hover:scale-105">
+                        <i class="fas fa-times-circle mr-2"></i>Confirmer le rejet
                     </button>
                 </div>
             </div>
@@ -708,66 +790,6 @@
                         Le client a effectué la biométrie et le paiement. Vérifiez le reçu de paiement.
                     </p>
                     
-                    <!-- Mode de paiement -->
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-3">
-                            Mode de paiement <span class="text-red-500">*</span>
-                        </label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button type="button" onclick="selectPaymentMode('especes')" 
-                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all text-center">
-                                <i class="fas fa-money-bill-wave text-3xl text-green-600 mb-2"></i>
-                                <p class="text-sm font-medium text-gray-700">Espèces</p>
-                            </button>
-                            <button type="button" onclick="selectPaymentMode('carte')" 
-                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center">
-                                <i class="fas fa-credit-card text-3xl text-blue-600 mb-2"></i>
-                                <p class="text-sm font-medium text-gray-700">Carte bancaire</p>
-                            </button>
-                            <button type="button" onclick="selectPaymentMode('mobile_money')" 
-                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all text-center">
-                                <i class="fas fa-mobile-alt text-3xl text-orange-600 mb-2"></i>
-                                <p class="text-sm font-medium text-gray-700">Mobile Money</p>
-                            </button>
-                            <button type="button" onclick="selectPaymentMode('virement')" 
-                                    class="payment-mode-btn p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all text-center">
-                                <i class="fas fa-university text-3xl text-purple-600 mb-2"></i>
-                                <p class="text-sm font-medium text-gray-700">Virement</p>
-                            </button>
-                        </div>
-                        <input type="hidden" id="modePaiement" value="">
-                    </div>
-
-                    <!-- Détails carte bancaire (affiché si carte sélectionnée) -->
-                    <div id="carteDetails" class="hidden mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                        <div class="flex items-center justify-between mb-4">
-                            <h4 class="text-sm font-semibold text-gray-700">
-                                <i class="fas fa-credit-card mr-2"></i>Informations carte
-                            </h4>
-                            <div class="flex space-x-2">
-                                <i class="fab fa-cc-visa text-2xl text-blue-600"></i>
-                                <i class="fab fa-cc-mastercard text-2xl text-red-600"></i>
-                            </div>
-                        </div>
-                        <div class="space-y-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">Type de carte</label>
-                                <select id="typeCarte" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                    <option value="">Sélectionner...</option>
-                                    <option value="visa">Visa</option>
-                                    <option value="mastercard">Mastercard</option>
-                                    <option value="autre">Autre</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-600 mb-1">4 derniers chiffres</label>
-                                <input type="text" id="derniers4Chiffres" maxlength="4" 
-                                       class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                                       placeholder="XXXX">
-                            </div>
-                        </div>
-                    </div>
-                    
                     <!-- Montant -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -777,6 +799,7 @@
                             <input type="number" id="montantPaye" 
                                    class="w-full px-4 py-3 pr-16 text-lg font-semibold border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent" 
                                    placeholder="Ex: 50000"
+                                   value="{{ $dossierOuvert->paiementVerification->montant_paye ?? '' }}"
                                    oninput="formatMontant(this)">
                             <span class="absolute right-4 top-3 text-gray-500 font-medium">FCFA</span>
                         </div>
@@ -790,7 +813,8 @@
                         </label>
                         <input type="text" id="referencePaiement" 
                                class="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent uppercase" 
-                               placeholder="Ex: REF-2024-001234">
+                               placeholder="Ex: REF-2024-001234"
+                               value="{{ $dossierOuvert->paiementVerification->reference_paiement ?? '' }}">
                     </div>
                     
                     <!-- Upload reçu -->
@@ -826,29 +850,6 @@
 </div>
 
 <script>
-// Sélection du mode de paiement
-function selectPaymentMode(mode) {
-    // Retirer la sélection de tous les boutons
-    document.querySelectorAll('.payment-mode-btn').forEach(btn => {
-        btn.classList.remove('border-orange-500', 'bg-orange-50', 'ring-2', 'ring-orange-500');
-        btn.classList.add('border-gray-200');
-    });
-    
-    // Ajouter la sélection au bouton cliqué
-    event.currentTarget.classList.remove('border-gray-200');
-    event.currentTarget.classList.add('border-orange-500', 'bg-orange-50', 'ring-2', 'ring-orange-500');
-    
-    // Mettre à jour le champ caché
-    document.getElementById('modePaiement').value = mode;
-    
-    // Afficher/masquer les détails carte
-    const carteDetails = document.getElementById('carteDetails');
-    if (mode === 'carte') {
-        carteDetails.classList.remove('hidden');
-    } else {
-        carteDetails.classList.add('hidden');
-    }
-}
 
 // Formater le montant et afficher en lettres
 function formatMontant(input) {
@@ -934,12 +935,58 @@ function validerFichePreEnrolement() {
 // Étape 2: Documents
 function verifierDocuments() {
     openModal('modalDocuments');
-    // Réinitialiser le filtre
-    document.getElementById('typeDemandeClient').value = '';
-    document.getElementById('noDocumentsMessage').style.display = 'block';
-    document.querySelectorAll('.document-item').forEach(item => {
-        item.style.display = 'none';
-    });
+    
+    // Vérifier si des documents sont déjà cochés ou vérifiés
+    const checkedDocs = document.querySelectorAll('#documentsList input[type="checkbox"]:checked');
+    const typeDemandeSelect = document.getElementById('typeDemandeClient');
+    
+    // Si aucun document n'est affiché (première ouverture ou rechargement), essayer de déduire
+    if (typeDemandeSelect.value === '') {
+        // Essayer de trouver un document déjà vérifié (via les attributs data ou checked au chargement)
+        // Note: Les checkboxes sont générées par la boucle Blade, donc si elles sont checked, c'est que c'est bon.
+        // Mais elles sont cachées par défaut (display: none sur le parent).
+        
+        let foundType = null;
+        
+        // Parcourir tous les items de documents pour voir s'il y en a un de coché (par le serveur)
+        const allDocItems = document.querySelectorAll('.document-item');
+        for (const item of allDocItems) {
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            // Si on avait un injectage serveur "checked", on le détecterait ici.
+            // Mais le blade actuel ne met pas "checked" directement.
+            
+            // Alternative: On va injecter les IDs vérifiés via JS au chargement de la page ci-dessous
+        }
+        
+        // Si on a des documentsVérifies pasés par le contrôleur
+        @if(isset($documentsVerifies) && $documentsVerifies->isNotEmpty())
+            // On prend le premier document vérifié pour déduire le type
+            const firstDoc = @json($documentsVerifies->first()->documentRequis);
+            if (firstDoc && firstDoc.type_demande) {
+                typeDemandeSelect.value = firstDoc.type_demande;
+                filtrerDocumentsParType();
+                
+                // Cocher les cases correspondantes
+                const verifiedIds = @json($documentsVerifies->pluck('document_requis_id'));
+                verifiedIds.forEach(id => {
+                    const cb = document.getElementById('doc_' + id);
+                    if (cb) {
+                        cb.checked = true;
+                        // Afficher zone upload si un fichier existe (à améliorer si possible)
+                    }
+                });
+            }
+        @else
+            // Comportement par défaut : reset si rien n'est fait
+             document.getElementById('noDocumentsMessage').style.display = 'block';
+             document.querySelectorAll('.document-item').forEach(item => {
+                item.style.display = 'none';
+            });
+        @endif
+    } else {
+        // Si une sélection existe déjà (par l'utilisateur dans cette session), on ne touche à rien
+        // sauf si on veut rafraichir.
+    }
 }
 
 // Filtrer les documents par type de demande
@@ -1224,9 +1271,10 @@ function validerInformationsClient() {
     const email = document.getElementById('clientEmail').value;
     const telephone = document.getElementById('clientTelephone').value;
     const dateNaissance = document.getElementById('clientDateNaissance').value;
-    const cni = document.getElementById('clientCni').value;
+    const adresse = document.getElementById('clientAdresse').value;
+    const profession = document.getElementById('clientProfession').value;
     
-    console.log('Données récupérées:', { nom, prenom, email, telephone, dateNaissance, cni });
+    console.log('Données récupérées:', { nom, prenom, email, telephone, dateNaissance, adresse, profession });
     
     // Afficher un indicateur de chargement
     const button = event.target;
@@ -1237,7 +1285,7 @@ function validerInformationsClient() {
     const dataToSend = {
         nom, prenom, email, telephone, 
         date_naissance: dateNaissance, 
-        cni
+        adresse, profession
     };
     
     console.log('Données à envoyer:', dataToSend);
@@ -1261,6 +1309,11 @@ function validerInformationsClient() {
             closeModal('modalInformationsClient');
             showSuccessToast('Informations client mises à jour avec succès');
             updateEtapeStatus(3, true, data.progression);
+            
+            // Mettre à jour l'affichage des informations client si les données sont fournies
+            if (data.client) {
+                updateClientInfoDisplay(data.client);
+            }
         } else {
             showErrorToast(data.message);
         }
@@ -1283,28 +1336,11 @@ function verifierPaiement() {
 function validerPaiement() {
     const reference = document.getElementById('referencePaiement').value;
     const montant = document.getElementById('montantPaye').value;
-    const mode = document.getElementById('modePaiement').value;
     const recu = document.getElementById('recuPaiement').files[0];
     
-    // Informations carte bancaire (si mode = carte)
-    const typeCarte = document.getElementById('typeCarte')?.value || '';
-    const derniers4Chiffres = document.getElementById('derniers4Chiffres')?.value || '';
-    
-    if (!reference || !montant || !mode) {
+    if (!reference || !montant) {
         showErrorToast('Veuillez remplir tous les champs obligatoires');
         return;
-    }
-    
-    // Validation spécifique pour carte bancaire
-    if (mode === 'carte') {
-        if (!typeCarte || !derniers4Chiffres) {
-            showErrorToast('Veuillez renseigner le type de carte et les 4 derniers chiffres');
-            return;
-        }
-        if (derniers4Chiffres.length !== 4 || !/^\d{4}$/.test(derniers4Chiffres)) {
-            showErrorToast('Les 4 derniers chiffres doivent être des nombres');
-            return;
-        }
     }
     
     // Afficher un indicateur de chargement
@@ -1317,13 +1353,6 @@ function validerPaiement() {
     const formData = new FormData();
     formData.append('reference', reference);
     formData.append('montant', montant);
-    formData.append('mode_paiement', mode);
-    
-    // Ajouter les infos carte si mode = carte
-    if (mode === 'carte') {
-        formData.append('type_carte', typeCarte);
-        formData.append('derniers_4_chiffres', derniers4Chiffres);
-    }
     
     if (recu) {
         formData.append('recu_file', recu);
@@ -1359,16 +1388,23 @@ function validerPaiement() {
 function updateEtapeStatus(etape, valide, progression) {
     console.log(`Étape ${etape} ${valide ? 'validée' : 'invalidée'}, progression: ${progression}%`);
     
-    // Mettre à jour la barre de progression
-    if (progression !== undefined) {
-        const progressBar = document.querySelector('.bg-gradient-to-r');
+    // Mettre à jour la barre de progression (utiliser les IDs pour être plus précis)
+    if (progression !== undefined && progression !== null) {
+        const progressBar = document.getElementById('progression-bar');
+        const progressText = document.getElementById('progression-text');
+        
         if (progressBar) {
             progressBar.style.width = `${progression}%`;
+            console.log(`Barre de progression mise à jour: ${progression}%`);
+        } else {
+            console.warn('Barre de progression non trouvée');
         }
         
-        const progressText = document.querySelector('.text-mayelia-600');
         if (progressText) {
             progressText.textContent = `${progression}%`;
+            console.log(`Texte de progression mis à jour: ${progression}%`);
+        } else {
+            console.warn('Texte de progression non trouvé');
         }
     }
     
@@ -1382,16 +1418,14 @@ function updateEtapeStatus(etape, valide, progression) {
     } else if (etape === 4) {
         updateEtape4Status(valide);
     }
-    
-    // Ne plus recharger la page automatiquement
-    // setTimeout(() => {
-    //     location.reload();
-    // }, 1500);
 }
 
 function updateEtape1Status(valide) {
     const etape1Card = document.querySelector('.bg-white.rounded-lg.shadow-lg.border-l-4.border-mayelia-500');
-    if (!etape1Card) return;
+    if (!etape1Card) {
+        console.error('Carte étape 1 non trouvée');
+        return;
+    }
     
     // Mettre à jour le statut dans l'en-tête
     const statusSpan = etape1Card.querySelector('span.px-3.py-1.text-xs.rounded-full');
@@ -1399,23 +1433,21 @@ function updateEtape1Status(valide) {
         if (valide) {
             statusSpan.className = 'px-3 py-1 text-xs rounded-full font-medium bg-green-100 text-green-800';
             statusSpan.innerHTML = '<i class="fas fa-check mr-1"></i>Vérifiée';
+            console.log('Statut étape 1 mis à jour: Vérifiée');
         } else {
             statusSpan.className = 'px-3 py-1 text-xs rounded-full font-medium bg-yellow-100 text-yellow-800';
             statusSpan.innerHTML = '<i class="fas fa-clock mr-1"></i>En attente';
         }
     }
     
-    // Mettre à jour le contenu de la carte
-    const cardContent = etape1Card.querySelector('.space-y-4');
-    if (cardContent && valide) {
-        // Remplacer le bouton par le message de succès
-        const button = etape1Card.querySelector('button');
-        if (button) {
-            button.outerHTML = `
-                <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800 text-sm">
-                    <i class="fas fa-check-circle mr-2"></i>Fiche vérifiée avec succès
-                </div>
-            `;
+    // Si validée, mettre à jour le bouton
+    if (valide) {
+        // Chercher le bouton par son ID
+        const btnVerifier = document.getElementById('btn-verifier-fiche');
+        if (btnVerifier) {
+            btnVerifier.innerHTML = '<i class="fas fa-edit mr-2"></i>Modifier la vérification';
+            btnVerifier.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium hover:bg-green-200 transition-colors';
+            btnVerifier.disabled = false;
         }
     }
 }
@@ -1439,9 +1471,9 @@ function updateEtape2Status(valide) {
     // Mettre à jour le bouton
     const button = etape2Card.querySelector('button');
     if (button && valide) {
-        button.innerHTML = '<i class="fas fa-check mr-2"></i>Documents vérifiés';
-        button.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium cursor-not-allowed';
-        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-edit mr-2"></i>Modifier les documents';
+        button.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium hover:bg-green-200 transition-colors';
+        button.disabled = false;
     }
 }
 
@@ -1464,9 +1496,9 @@ function updateEtape3Status(valide) {
     // Mettre à jour le bouton
     const button = etape3Card.querySelector('button');
     if (button && valide) {
-        button.innerHTML = '<i class="fas fa-check mr-2"></i>Informations validées';
-        button.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium cursor-not-allowed';
-        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-edit mr-2"></i>Modifier les informations';
+        button.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium hover:bg-green-200 transition-colors';
+        button.disabled = false;
     }
     
     // Afficher les informations client vérifiées
@@ -1475,7 +1507,7 @@ function updateEtape3Status(valide) {
     }
 }
 
-function updateClientInfoDisplay() {
+function updateClientInfoDisplay(clientData = null) {
     const etape3Card = document.querySelector('.bg-white.rounded-lg.shadow-lg.border-l-4.border-purple-500');
     if (!etape3Card) return;
     
@@ -1499,7 +1531,8 @@ function updateClientInfoDisplay() {
     const email = document.getElementById('clientEmail')?.value || '{{ $dossierOuvert->rendezVous->client->email }}';
     const telephone = document.getElementById('clientTelephone')?.value || '{{ $dossierOuvert->rendezVous->client->telephone ?? "" }}';
     const dateNaissance = document.getElementById('clientDateNaissance')?.value || '{{ $dossierOuvert->rendezVous->client->date_naissance ?? "" }}';
-    const cni = document.getElementById('clientCni')?.value || '{{ $dossierOuvert->rendezVous->client->numero_piece_identite ?? "" }}';
+    const adresse = document.getElementById('clientAdresse')?.value || '{{ $dossierOuvert->rendezVous->client->adresse ?? "" }}';
+    const profession = document.getElementById('clientProfession')?.value || '{{ $dossierOuvert->rendezVous->client->profession ?? "" }}';
     
     // Formater la date
     let dateFormatee = '';
@@ -1553,12 +1586,22 @@ function updateClientInfoDisplay() {
                 </div>
                 ` : ''}
                 
-                ${cni ? `
+                ${adresse ? `
                 <div class="flex items-center space-x-3">
-                    <i class="fas fa-id-card text-purple-500 w-4"></i>
+                    <i class="fas fa-map-marker-alt text-purple-500 w-4"></i>
                     <div>
-                        <span class="text-xs text-gray-500">CNI/Passport</span>
-                        <p class="text-sm font-medium text-gray-900">${cni}</p>
+                        <span class="text-xs text-gray-500">Adresse</span>
+                        <p class="text-sm font-medium text-gray-900">${adresse}</p>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${profession ? `
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-briefcase text-purple-500 w-4"></i>
+                    <div>
+                        <span class="text-xs text-gray-500">Profession</span>
+                        <p class="text-sm font-medium text-gray-900">${profession}</p>
                     </div>
                 </div>
                 ` : ''}
@@ -1594,9 +1637,9 @@ function updateEtape4Status(valide) {
     // Mettre à jour le bouton
     const button = etape4Card.querySelector('button');
     if (button && valide) {
-        button.innerHTML = '<i class="fas fa-check mr-2"></i>Paiement vérifié';
-        button.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium cursor-not-allowed';
-        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-edit mr-2"></i>Modifier le paiement';
+        button.className = 'w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium hover:bg-green-200 transition-colors';
+        button.disabled = false;
     }
     
     // Afficher les détails du paiement
@@ -1626,7 +1669,6 @@ function updatePaiementDisplay() {
     // Récupérer les informations du paiement depuis les champs du modal
     const montant = document.getElementById('montantPaye')?.value || '0';
     const reference = document.getElementById('referencePaiement')?.value || 'Non spécifiée';
-    const mode = document.getElementById('modePaiement')?.value || 'Non spécifié';
     
     // Formater le montant
     const montantFormate = new Intl.NumberFormat('fr-FR').format(montant);
@@ -1643,14 +1685,6 @@ function updatePaiementDisplay() {
                     <div>
                         <span class="text-xs text-gray-500">Montant payé</span>
                         <p class="text-sm font-medium text-gray-900">${montantFormate} FCFA</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center space-x-3">
-                    <i class="fas fa-credit-card text-orange-500 w-4"></i>
-                    <div>
-                        <span class="text-xs text-gray-500">Mode de paiement</span>
-                        <p class="text-sm font-medium text-gray-900">${mode}</p>
                     </div>
                 </div>
                 
@@ -1692,38 +1726,81 @@ function updatePaiementDisplay() {
     `;
 }
 
-// Fonctions de notification
-function showSuccessToast(message) {
-    // Créer un toast de succès
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    toast.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
+// Fonctions de notification (utilisent le composant toast unifié)
+// Ces fonctions sont définies dans components/toast.blade.php
+// Elles sont redéfinies ici pour éviter les erreurs si le composant n'est pas chargé
+if (typeof showSuccessToast === 'undefined') {
+    function showSuccessToast(message) {
+        showToast(message, 'success', 5000);
+    }
 }
 
-function showErrorToast(message) {
-    // Créer un toast d'erreur
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    toast.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
-    document.body.appendChild(toast);
+if (typeof showErrorToast === 'undefined') {
+    function showErrorToast(message) {
+        showToast(message, 'error', 7000);
+    }
+}
+
+function rejeterDossier() {
+    openModal('modalRejeterDossier');
+}
+
+function validerRejet() {
+    const note = document.getElementById('noteRejet').value.trim();
     
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
+    if (!note) {
+        showErrorToast('Veuillez saisir le motif du rejet');
+        return;
+    }
+    
+    // Afficher un indicateur de chargement
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement...';
+    button.disabled = true;
+    
+    // Appeler l'API pour rejeter le dossier
+    fetch(`/dossier/{{ $dossierOuvert->id }}/rejeter`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            note: note
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeModal('modalRejeterDossier');
+            showSuccessToast('Dossier rejeté avec succès');
+            // Recharger la page après 1.5 secondes
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showErrorToast(data.message || 'Erreur lors du rejet du dossier');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showErrorToast('Erreur lors du rejet du dossier');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
 }
 
 function finaliserDossier() {
-    // Vérifier que toutes les étapes sont validées
+    // Vérifier que toutes les étapes sont validées (utiliser les vrais noms d'attributs)
     const etapes = [
-        { nom: 'Fiche de pré-enrôlement', valide: {{ $dossierOuvert->fiche_pre_enrolement_valide ? 'true' : 'false' }} },
-        { nom: 'Documents', valide: {{ $dossierOuvert->documents_valides ? 'true' : 'false' }} },
-        { nom: 'Biométrie', valide: {{ $dossierOuvert->biometrie_validee ? 'true' : 'false' }} },
-        { nom: 'Paiement', valide: {{ $dossierOuvert->paiement_valide ? 'true' : 'false' }} }
+        { nom: 'Fiche de pré-enrôlement', valide: {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'true' : 'false' }} },
+        { nom: 'Documents', valide: {{ $dossierOuvert->documents_verifies ? 'true' : 'false' }} },
+        { nom: 'Informations client', valide: {{ $dossierOuvert->informations_client_verifiees ? 'true' : 'false' }} },
+        { nom: 'Paiement', valide: {{ $dossierOuvert->paiement_verifie ? 'true' : 'false' }} }
     ];
     
     const etapesNonValidees = etapes.filter(e => !e.valide);

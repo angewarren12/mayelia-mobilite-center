@@ -18,5 +18,5 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Handler d'exceptions personnalisé est géré dans app/Exceptions/Handler.php
     })->create();

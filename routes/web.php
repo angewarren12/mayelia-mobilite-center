@@ -28,29 +28,6 @@ Route::get('/', function () {
 // Page d'accueil institutionnelle (accessible via /accueil)
 Route::get('/accueil', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 
-// Route de test pour les services
-Route::get('/test-services', function() {
-    $services = App\Models\Service::with(['formules', 'documentsRequis'])
-        ->where('statut', 'actif')
-        ->orderBy('id', 'asc')
-        ->take(4)
-        ->get();
-    
-    return response()->json([
-        'count' => $services->count(),
-        'services' => $services->map(function($service) {
-            return [
-                'id' => $service->id,
-                'nom' => $service->nom,
-                'description' => $service->description,
-                'formules_count' => $service->formules->count(),
-                'documents_count' => $service->documentsRequis->count(),
-                'statut' => $service->statut
-            ];
-        })
-    ]);
-});
-
 // Routes publiques pour le wizard de rendez-vous
 Route::prefix('booking')->name('booking.')->group(function () {
     Route::get('/verification', [App\Http\Controllers\BookingController::class, 'showVerification'])->name('verification');
@@ -116,7 +93,7 @@ Route::get('/receipt/{rendezVousId}/download', [App\Http\Controllers\BookingCont
 
 // Routes de suivi client (publiques)
 Route::get('/clientconnect', [App\Http\Controllers\ClientTrackingController::class, 'showLogin'])->name('client.tracking.login');
-Route::post('/clientconnect', [App\Http\Controllers\ClientTrackingController::class, 'login'])->name('client.tracking.login');
+Route::post('/clientconnect', [App\Http\Controllers\ClientTrackingController::class, 'login'])->name('client.tracking.login.submit');
 Route::post('/clientconnect/search', [App\Http\Controllers\ClientTrackingController::class, 'searchByTracking'])->name('client.tracking.search');
 Route::get('/clientconnect/dashboard/{clientId}', [App\Http\Controllers\ClientTrackingController::class, 'dashboard'])->name('client.dashboard');
 
@@ -198,6 +175,7 @@ Route::post('/dossier/{dossierOuvert}/etape1-fiche', [DossierWorkflowController:
 Route::post('/dossier/{dossierOuvert}/etape2-documents', [DossierWorkflowController::class, 'validerEtape2'])->name('dossier.etape2');
 Route::post('/dossier/{dossierOuvert}/etape3-infos', [DossierWorkflowController::class, 'validerEtape3'])->name('dossier.etape3');
 Route::post('/dossier/{dossierOuvert}/etape4-paiement', [DossierWorkflowController::class, 'validerEtape4'])->name('dossier.etape4');
+Route::post('/dossier/{dossierOuvert}/rejeter', [DossierWorkflowController::class, 'rejeter'])->name('dossier.rejeter');
 Route::post('/dossier/{dossierOuvert}/finaliser', [DossierWorkflowController::class, 'finaliser'])->name('dossier.finaliser');
 
 // Routes pour les documents requis
@@ -259,7 +237,8 @@ Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, '
     // Route::resource('exceptions', ExceptionController::class); // Supprimé pour éviter les conflits
     
     // Rendez-vous
-    Route::resource('rendez-vous', RendezVousController::class);
+    // Routes resource déjà définies manuellement ci-dessus (lignes 160-166)
+    // Route::resource('rendez-vous', RendezVousController::class); // Commenté pour éviter duplication
     
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

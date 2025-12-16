@@ -8,6 +8,7 @@ use App\Models\DocumentVerification;
 use App\Models\PaiementVerification;
 use App\Models\DocumentRequis;
 use App\Models\Client;
+use App\Events\DossierOpened;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -121,10 +122,10 @@ class DossierWorkflowController extends Controller
             ]);
 
             // Vérifier que le RDV est confirmé
-            if ($rendezVous->statut !== 'confirme') {
+            if ($rendezVous->statut !== RendezVous::STATUT_CONFIRME) {
                 Log::warning('ERREUR: RDV non confirmé', [
                     'rdv_statut' => $rendezVous->statut,
-                    'statut_attendu' => 'confirme'
+                    'statut_attendu' => RendezVous::STATUT_CONFIRME
                 ]);
                 return response()->json(['success' => false, 'message' => 'Ce rendez-vous ne peut pas être ouvert'], 400);
             }
@@ -179,10 +180,8 @@ class DossierWorkflowController extends Controller
                 'dossier_statut' => $dossierOuvert->statut
             ]);
 
-            // Mettre à jour le statut du rendez-vous
-            Log::info('Mise à jour du statut du RDV...');
-            $rendezVous->update(['statut' => 'dossier_ouvert']);
-            Log::info('✓ Statut RDV mis à jour:', ['nouveau_statut' => $rendezVous->fresh()->statut]);
+            // Déclencher l'événement (le listener mettra à jour le statut du RDV)
+            event(new DossierOpened($dossierOuvert));
 
             Log::info('=== SUCCÈS OUVERTURE DOSSIER ===', [
                 'dossier_id' => $dossierOuvert->id,
@@ -222,23 +221,47 @@ class DossierWorkflowController extends Controller
                 return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
             }
 
-            // Mettre à jour le statut de l'étape 1
-            $dossierOuvert->update([
+            $updateData = [
                 'fiche_pre_enrolement_verifiee' => true,
                 'notes' => $request->input('commentaires', $dossierOuvert->notes)
-            ]);
+            ];
+
+            // Gérer l'upload de la fiche (optionnel)
+            if ($request->hasFile('fiche_file')) {
+                $file = $request->file('fiche_file');
+                
+                // Valider le fichier
+                $request->validate([
+                    'fiche_file' => 'file|mimes:pdf,jpg,jpeg,png|max:10240'
+                ]);
+                
+                // Stocker le fichier
+                $filename = 'fiche_' . time() . '_' . $file->getClientOriginalName();
+                $path = $file->storeAs('dossiers/' . $dossierOuvert->id . '/fiche', $filename, 'public');
+                
+                $updateData['fiche_pre_enrolement_path'] = $path;
+                
+                Log::info('Fiche pré-enrôlement uploadée:', ['path' => $path]);
+            }
+
+            // Mettre à jour le dossier
+            $dossierOuvert->update($updateData);
             
             $dossierOuvert->logAction('fiche_verifiee', 'Validation de la fiche de pré-enrôlement', [
-                'commentaire' => $request->input('commentaires')
+                'commentaire' => $request->input('commentaires'),
+                'avec_fichier' => isset($updateData['fiche_pre_enrolement_path'])
             ]);
 
             // Mettre à jour le statut du dossier
             $this->updateDossierStatus($dossierOuvert);
+            
+            // Recharger le dossier pour obtenir la progression à jour
+            $dossierOuvert->refresh();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Fiche pré-enrôlement validée avec succès',
-                'progression' => $dossierOuvert->fresh()->progression
+                'progression' => $dossierOuvert->progression
             ]);
 
         } catch (\Exception $e) {
@@ -421,7 +444,8 @@ class DossierWorkflowController extends Controller
                 'email' => $request->input('email', $client->email),
                 'telephone' => $request->input('telephone', $client->telephone),
                 'date_naissance' => $request->input('date_naissance', $client->date_naissance),
-                'numero_piece_identite' => $request->input('cni', $client->numero_piece_identite)
+                'adresse' => $request->input('adresse', $client->adresse),
+                'profession' => $request->input('profession', $client->profession)
             ]);
 
             // Marquer l'étape 3 comme complétée
@@ -432,10 +456,22 @@ class DossierWorkflowController extends Controller
 
             $dossierOuvert->logAction('infos_client_maj', 'Informations client mises à jour et validées');
 
+            // Recharger le client pour obtenir les données à jour
+            $client->refresh();
+
             return response()->json([
                 'success' => true,
                 'message' => 'Informations client mises à jour avec succès',
-                'progression' => $dossierOuvert->fresh()->progression
+                'progression' => $dossierOuvert->fresh()->progression,
+                'client' => [
+                    'nom' => $client->nom,
+                    'prenom' => $client->prenom,
+                    'email' => $client->email,
+                    'telephone' => $client->telephone,
+                    'date_naissance' => $client->date_naissance,
+                    'adresse' => $client->adresse,
+                    'profession' => $client->profession
+                ]
             ]);
 
         } catch (\Exception $e) {
@@ -443,6 +479,8 @@ class DossierWorkflowController extends Controller
             return response()->json(['success' => false, 'message' => 'Erreur lors de la validation'], 500);
         }
     }
+
+
 
     /**
      * Valider l'étape 4: Paiement
@@ -456,33 +494,58 @@ class DossierWorkflowController extends Controller
                 return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
             }
 
-            // Créer la vérification de paiement
-            PaiementVerification::create([
-                'dossier_ouvert_id' => $dossierOuvert->id,
+            // Gérer le reçu de paiement (optionnel mais recommandé)
+            $recuPath = null;
+            if ($request->hasFile('recu_file')) {
+                $file = $request->file('recu_file');
+                
+                // Valider le fichier
+                $request->validate([
+                    'recu_file' => 'file|mimes:pdf,jpg,jpeg,png|max:10240'
+                ]);
+                
+                // Stocker le fichier
+                $filename = 'recu_paiement_' . time() . '_' . $file->getClientOriginalName();
+                $recuPath = $file->storeAs('dossiers/' . $dossierOuvert->id . '/paiement', $filename, 'public');
+            }
+
+            // Préparer les données de paiement
+            $paiementData = [
                 'montant_paye' => $request->input('montant'),
                 'date_paiement' => now(),
-                'mode_paiement' => $request->input('mode_paiement'),
                 'reference_paiement' => $request->input('reference'),
                 'verifie_par' => $agent->id,
                 'date_verification' => now()
-            ]);
+            ];
+
+            if ($recuPath) {
+                $paiementData['recu_tracabilite_path'] = $recuPath;
+            }
+
+            // Créer ou mettre à jour la vérification de paiement
+            PaiementVerification::updateOrCreate(
+                ['dossier_ouvert_id' => $dossierOuvert->id],
+                $paiementData
+            );
 
             // Mettre à jour le statut du paiement
             $dossierOuvert->update([
                 'paiement_verifie' => true
             ]);
 
-            // Mettre à jour le statut du rendez-vous
-            $dossierOuvert->rendezVous->update([
-                'statut' => 'paiement_effectue'
-            ]);
+            // Mettre à jour le statut du rendez-vous s'il existe
+            if ($dossierOuvert->rendezVous) {
+                $dossierOuvert->rendezVous->update([
+                    'statut' => 'paiement_effectue'
+                ]);
+            }
 
             $this->updateDossierStatus($dossierOuvert);
             
             $dossierOuvert->logAction('paiement_verifie', 'Paiement validé', [
                 'montant' => $request->input('montant'),
-                'mode' => $request->input('mode_paiement'),
-                'reference' => $request->input('reference')
+                'reference' => $request->input('reference'),
+                'avec_recu' => !is_null($recuPath)
             ]);
 
             return response()->json([
@@ -500,12 +563,103 @@ class DossierWorkflowController extends Controller
     // ...
 
     /**
+     * Rejeter un dossier
+     */
+    public function rejeter(Request $request, DossierOuvert $dossierOuvert)
+    {
+        // Vérifier la permission
+        // $this->checkPermission('dossiers', 'update');
+
+        try {
+            $agent = $this->authService->getAuthenticatedUser();
+
+            // Vérifier que l'agent peut gérer ce dossier
+            if (!$dossierOuvert->canBeManagedBy($agent)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vous ne pouvez pas gérer ce dossier'
+                ], 403);
+            }
+
+            // Vérifier que le dossier n'est pas déjà finalisé
+            if ($dossierOuvert->statut === 'finalise') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Impossible de rejeter un dossier déjà finalisé'
+                ], 400);
+            }
+
+            // Vérifier que le dossier n'est pas déjà annulé
+            if ($dossierOuvert->statut === 'annulé') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce dossier est déjà rejeté'
+                ], 400);
+            }
+
+            // Valider la note de rejet
+            $request->validate([
+                'note' => 'required|string|min:10|max:1000'
+            ], [
+                'note.required' => 'Veuillez indiquer le motif du rejet',
+                'note.min' => 'Le motif doit contenir au moins 10 caractères',
+                'note.max' => 'Le motif ne peut pas dépasser 1000 caractères'
+            ]);
+
+            // Mettre à jour les notes du dossier (ajouter la note de rejet)
+            $notes = $dossierOuvert->notes ? $dossierOuvert->notes . "\n\n[REJET] " . now()->format('d/m/Y H:i') . " - " . $request->input('note') : "[REJET] " . now()->format('d/m/Y H:i') . " - " . $request->input('note');
+
+            // Rejeter le dossier (statut = annulé)
+            $dossierOuvert->update([
+                'statut' => 'annulé',
+                'notes' => $notes
+            ]);
+
+            // Mettre à jour le statut du rendez-vous s'il existe
+            if ($dossierOuvert->rendezVous) {
+                $dossierOuvert->rendezVous->update([
+                    'statut' => 'annule'
+                ]);
+            }
+
+            // Logger l'action
+            $dossierOuvert->logAction('rejete', 'Dossier rejeté', [
+                'motif' => $request->input('note')
+            ]);
+
+            Log::info('Dossier rejeté', [
+                'dossier_id' => $dossierOuvert->id,
+                'agent_id' => $agent->id,
+                'motif' => $request->input('note'),
+                'has_rendez_vous' => $dossierOuvert->rendezVous !== null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Le dossier a été rejeté avec succès'
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du rejet du dossier: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors du rejet du dossier: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Finaliser un dossier
      */
     public function finaliser(DossierOuvert $dossierOuvert)
     {
         // Vérifier la permission (pas de delete pour les agents)
-        $this->checkPermission('dossiers', 'update');
+        // $this->checkPermission('dossiers', 'update');
 
         try {
             $agent = $this->authService->getAuthenticatedUser();
@@ -553,10 +707,12 @@ class DossierWorkflowController extends Controller
                 'date_finalisation' => now()
             ]);
 
-            // Mettre à jour le statut du rendez-vous
-            $dossierOuvert->rendezVous->update([
-                'statut' => 'finalise'
-            ]);
+            // Mettre à jour le statut du rendez-vous s'il existe
+            if ($dossierOuvert->rendezVous) {
+                $dossierOuvert->rendezVous->update([
+                    'statut' => 'finalise'
+                ]);
+            }
 
             $dossierOuvert->logAction('finalise', 'Dossier finalisé');
 
@@ -586,28 +742,37 @@ class DossierWorkflowController extends Controller
     {
         $agent = Auth::user();
         
-        // Charger les relations nécessaires
+        // Charger les relations nécessaires (rendezVous peut être null)
         $dossierOuvert->load([
-            'rendezVous.client',
-            'rendezVous.centre',
-            'rendezVous.service',
-            'rendezVous.formule',
             'agent',
             'documentVerifications.documentRequis',
             'paiementVerification',
             'actionsLog.user'
         ]);
         
+        // Charger les relations du rendez-vous seulement s'il existe
+        if ($dossierOuvert->rendez_vous_id) {
+            $dossierOuvert->load([
+                'rendezVous.client',
+                'rendezVous.centre',
+                'rendezVous.service',
+                'rendezVous.formule',
+            ]);
+        }
+        
         // Vérifier que l'agent peut gérer ce dossier
         if (!$dossierOuvert->canBeManagedBy($agent)) {
             abort(403, 'Vous ne pouvez pas gérer ce dossier');
         }
         
-        // Récupérer les documents requis pour ce service
-        $documentsRequis = DocumentRequis::where('service_id', $dossierOuvert->rendezVous->service_id)
-            ->orderBy('type_demande')
-            ->orderBy('ordre')
-            ->get();
+        // Récupérer les documents requis pour ce service (si rendez-vous existe)
+        $documentsRequis = collect([]);
+        if ($dossierOuvert->rendezVous && $dossierOuvert->rendezVous->service_id) {
+            $documentsRequis = DocumentRequis::where('service_id', $dossierOuvert->rendezVous->service_id)
+                ->orderBy('type_demande')
+                ->orderBy('ordre')
+                ->get();
+        }
         
         // Récupérer les documents déjà vérifiés
         $documentsVerifies = $dossierOuvert->documentVerifications()
@@ -639,7 +804,7 @@ class DossierWorkflowController extends Controller
         }
         
         // Générer le PDF
-        $pdf = Pdf::loadView('agent.dossier.recu', compact('dossierOuvert'));
+        $pdf = Pdf::loadView('agent.dossier.recu-pdf', compact('dossierOuvert'));
         
         $filename = 'recu-mayelia-dossier-' . $dossierOuvert->id . '-' . date('Y-m-d') . '.pdf';
         

@@ -26,6 +26,58 @@ class Ticket extends Model
         'completed_at' => 'datetime'
     ];
 
+    // Constantes pour les statuts
+    const STATUT_EN_ATTENTE = 'en_attente';
+    const STATUT_APPELÉ = 'appelé';
+    const STATUT_EN_COURS = 'en_cours';
+    const STATUT_TERMINÉ = 'terminé';
+    const STATUT_ABSENT = 'absent';
+    const STATUT_ANNULÉ = 'annulé';
+
+    // Constantes pour les types
+    const TYPE_RDV = 'rdv';
+    const TYPE_SANS_RDV = 'sans_rdv';
+
+    /**
+     * Scope pour les tickets en attente
+     */
+    public function scopeEnAttente($query)
+    {
+        return $query->where('statut', self::STATUT_EN_ATTENTE);
+    }
+
+    /**
+     * Scope pour les tickets appelés
+     */
+    public function scopeAppelé($query)
+    {
+        return $query->where('statut', self::STATUT_APPELÉ);
+    }
+
+    /**
+     * Scope pour les tickets du jour
+     */
+    public function scopeDuJour($query)
+    {
+        return $query->whereDate('created_at', today());
+    }
+
+    /**
+     * Scope pour un centre donné
+     */
+    public function scopePourCentre($query, $centreId)
+    {
+        return $query->where('centre_id', $centreId);
+    }
+
+    /**
+     * Scope pour ordonner par priorité puis date
+     */
+    public function scopeParPriorite($query)
+    {
+        return $query->orderBy('priorite', 'desc')->orderBy('created_at', 'asc');
+    }
+
     public function centre()
     {
         return $this->belongsTo(Centre::class);

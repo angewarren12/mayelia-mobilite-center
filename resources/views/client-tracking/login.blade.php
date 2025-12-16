@@ -20,7 +20,7 @@
             <div class="mb-8">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Voir tous mes rendez-vous</h3>
                 <p class="text-sm text-gray-600 mb-4">Connectez-vous avec votre numéro de téléphone pour voir l'historique complet</p>
-                <form method="POST" action="{{ route('client.tracking.login') }}">
+                <form method="POST" action="{{ route('client.tracking.login.submit') }}">
                     @csrf
                     <div>
                         <label for="telephone" class="block text-sm font-medium text-gray-700">

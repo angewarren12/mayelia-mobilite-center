@@ -29,6 +29,14 @@ class ClientController extends Controller
 
         $query = Client::query();
 
+        // Filtrer par centre pour les non-admins (clients ayant eu RDV dans ce centre)
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user->role !== 'admin' && $user->centre_id) {
+            $query->whereHas('rendezVous', function($q) use ($user) {
+                $q->where('centre_id', $user->centre_id);
+            });
+        }
+
         // Recherche
         if ($request->has('search') && $request->search) {
             $query->recherche($request->search);
@@ -113,6 +121,14 @@ class ClientController extends Controller
     {
         try {
             $client = Client::withCount('rendezVous')->findOrFail($id);
+            
+            // Vérification accès centre
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user->role !== 'admin' && $user->centre_id) {
+                if (!$client->rendezVous()->where('centre_id', $user->centre_id)->exists()) {
+                    return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -140,6 +156,14 @@ class ClientController extends Controller
         $this->checkPermission('clients', 'update');
 
         $client = Client::findOrFail($id);
+
+        // Vérification accès centre
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user->role !== 'admin' && $user->centre_id) {
+            if (!$client->rendezVous()->where('centre_id', $user->centre_id)->exists()) {
+                return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
+            }
+        }
 
         $validator = Validator::make($request->all(), [
             'nom' => 'required|string|max:255',
@@ -196,6 +220,14 @@ class ClientController extends Controller
 
         try {
             $client = Client::findOrFail($id);
+
+            // Vérification accès centre
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user->role !== 'admin' && $user->centre_id) {
+                if (!$client->rendezVous()->where('centre_id', $user->centre_id)->exists()) {
+                    return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
+                }
+            }
             
             // Vérifier s'il y a des rendez-vous associés
             if ($client->rendezVous()->count() > 0) {
@@ -232,6 +264,15 @@ class ClientController extends Controller
     {
         try {
             $client = Client::findOrFail($id);
+            
+            // Vérification accès centre
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user->role !== 'admin' && $user->centre_id) {
+                if (!$client->rendezVous()->where('centre_id', $user->centre_id)->exists()) {
+                    return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
+                }
+            }
+
             $client->actif = !$client->actif;
             $client->save();
 
@@ -261,6 +302,14 @@ class ClientController extends Controller
     public function edit(Client $client)
     {
         $this->checkPermission('clients', 'update');
+
+        // Vérification accès centre
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user->role !== 'admin' && $user->centre_id) {
+            if (!$client->rendezVous()->where('centre_id', $user->centre_id)->exists()) {
+                abort(403, 'Accès non autorisé à ce client.');
+            }
+        }
 
         return view('clients.edit', compact('client'));
     }

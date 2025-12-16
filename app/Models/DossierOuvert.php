@@ -66,6 +66,14 @@ class DossierOuvert extends Model
      */
     public function canBeManagedBy(User $user)
     {
+        // Si l'utilisateur est un administrateur
+        if ($user->role === 'admin') {
+            // Il peut gérer le dossier si celui-ci est lié à un rendez-vous dans son centre
+            return $this->rendezVous && $this->rendezVous->centre_id === $user->centre_id;
+        }
+
+        // Si l'utilisateur est un agent (ou autre)
+        // Il peut gérer le dossier uniquement s'il lui est assigné (c'est lui qui l'a ouvert)
         return $this->agent_id === $user->id;
     }
 
@@ -118,6 +126,7 @@ class DossierOuvert extends Model
             'ouvert' => 'Ouvert',
             'en_cours' => 'En cours',
             'finalise' => 'Finalisé',
+            'annulé' => 'Rejeté',
             default => ucfirst($this->statut)
         };
     }

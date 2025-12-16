@@ -6,11 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- En-tête avec bouton d'ajout -->
-    <div class="flex justify-between items-center">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Clients</h2>
-            <p class="text-gray-600">Gérez les clients de votre centre</p>
-        </div>
+    <div class="flex justify-end items-center">
         @userCan('clients', 'create')
         <button onclick="openCreateModal()" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 flex items-center">
             <i class="fas fa-plus mr-2"></i>
@@ -579,43 +575,7 @@ document.getElementById('clientForm').addEventListener('submit', function(e) {
     });
 });
 
-// Fonctions de notification
-function showSuccessToast(message) {
-    // Créer un élément de notification
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-check-circle mr-2"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Supprimer après 3 secondes
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
-function showErrorToast(message) {
-    // Créer un élément de notification
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas fa-exclamation-circle mr-2"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // Supprimer après 3 secondes
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
+// Fonctions de notification (utilisent le composant toast unifié du layout)
+// Ces fonctions sont définies dans components/toast.blade.php qui est inclus dans layouts/dashboard.blade.php
 </script>
 @endsection

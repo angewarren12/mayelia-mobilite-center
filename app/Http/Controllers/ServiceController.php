@@ -19,7 +19,7 @@ class ServiceController extends Controller
         }
         
         // Récupérer tous les services globaux
-        $services = Service::where('statut', 'actif')
+        $services = Service::actif()
             ->with('formules')
             ->get();
             

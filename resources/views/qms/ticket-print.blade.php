@@ -15,11 +15,22 @@
             padding: 5mm 5mm 3mm 5mm;
             text-align: center;
         }
+        .logo-img {
+            width: 40px;
+            height: auto;
+            margin: 0 auto 5px;
+            display: block;
+        }
         .header {
             font-size: 10px;
             font-weight: bold;
             margin-bottom: 8px;
             line-height: 1.2;
+        }
+        .centre-name {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
         .ticket-num {
             font-size: 42px;
@@ -27,11 +38,8 @@
             margin: 8px 0;
             padding: 8px 0;
             letter-spacing: 2px;
-        }
-        .ticket-num-border {
             border-top: 2px dashed #000;
             border-bottom: 2px dashed #000;
-            padding: 8px 0;
         }
         .info {
             font-size: 11px;
@@ -39,9 +47,14 @@
             line-height: 1.3;
         }
         .qrcode {
-            margin: 6px auto;
+            margin: 8px auto;
             width: 70px;
             height: 70px;
+            border: 2px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
         }
         .qrcode img {
             width: 100%;
@@ -62,36 +75,33 @@
             font-size: 9px;
             padding-top: 6px;
             line-height: 1.3;
-        }
-        .separator {
-            border-top: 1px solid #000;
-            margin: 6px 0;
+            border-top: 1px dashed #000;
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        ONECI - {{ $ticket->centre->nom }}<br>
-        {{ now()->format('d/m/Y H:i') }}
+    <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia" class="logo-img" onerror="this.style.display='none';">
+    <div class="header">CENTRE</div>
+    <div class="centre-name">{{ $ticket->centre->nom }}</div>
+    <div class="header">TICKET : {{ $ticket->numero }}</div>
+    
+    <div class="ticket-num">
+        {{ $ticket->numero }}
     </div>
 
-    <div class="info">VOTRE NUMÉRO</div>
-    
-    <div class="ticket-num-border">
-        <div class="ticket-num">
-            {{ $ticket->numero }}
-        </div>
-    </div>
+    <div class="info">SERVICE<br>{{ $ticket->service->nom ?? 'Service Standard' }}</div>
+
+    <div class="info">TYPE<br>@if($ticket->type === 'rdv')Avec RDV @else Sans RDV @endif</div>
+
+    <div class="info">DATE<br>{{ now()->format('d/m/Y H:i') }}</div>
 
     @if(isset($qrCodeBase64))
     <div class="qrcode">
         <img src="{{ $qrCodeBase64 }}" alt="QR Code">
     </div>
+    @else
+    <div class="qrcode">QR CODE<br>{{ $ticket->numero }}</div>
     @endif
-
-    <div class="info">
-        {{ $ticket->service->nom ?? 'Service Standard' }}
-    </div>
 
     @if($ticket->type === 'rdv')
     <div class="priority">
@@ -99,11 +109,10 @@
     </div>
     @endif
     
-    <div class="separator"></div>
-    
     <div class="footer">
-        Veuillez patienter dans la salle d'attente.<br>
-        Votre numéro sera affiché à l'écran.
+        Merci de patienter<br>
+        Votre numéro sera appelé<br>
+        à l'écran d'affichage
     </div>
 
     <script>

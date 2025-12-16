@@ -296,27 +296,118 @@
 let currentStep = 1;
 let selectedClient = null;
 
-function nextStep(step) {
-    // Validation de l'étape actuelle
-    if (currentStep === 1) {
+function validateStep(step) {
+    if (step === 1) {
+        // Validation étape 1 : Client
         const clientId = document.getElementById('client_id').value;
-        const clientNom = document.getElementById('client_nom').value;
-        const clientEmail = document.getElementById('client_email').value;
+        const clientNom = document.getElementById('client_nom').value.trim();
+        const clientPrenom = document.getElementById('client_prenom').value.trim();
+        const clientEmail = document.getElementById('client_email').value.trim();
+        const clientTelephone = document.getElementById('client_telephone').value.trim();
         
-        if (!clientId && (!clientNom || !clientEmail)) {
-            alert('Veuillez sélectionner un client existant ou remplir au moins le nom et l\'email pour créer un nouveau client.');
-            return;
+        // Si un client est sélectionné, c'est bon
+        if (clientId) {
+            return { valid: true };
         }
-    } else if (currentStep === 2) {
+        
+        // Sinon, vérifier que tous les champs obligatoires sont remplis
+        const errors = [];
+        
+        if (!clientNom) {
+            errors.push('Le nom est obligatoire');
+            document.getElementById('client_nom').classList.add('border-red-500');
+        } else {
+            document.getElementById('client_nom').classList.remove('border-red-500');
+        }
+        
+        if (!clientPrenom) {
+            errors.push('Le prénom est obligatoire');
+            document.getElementById('client_prenom').classList.add('border-red-500');
+        } else {
+            document.getElementById('client_prenom').classList.remove('border-red-500');
+        }
+        
+        if (!clientEmail) {
+            errors.push('L\'email est obligatoire');
+            document.getElementById('client_email').classList.add('border-red-500');
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+            errors.push('L\'email n\'est pas valide');
+            document.getElementById('client_email').classList.add('border-red-500');
+        } else {
+            document.getElementById('client_email').classList.remove('border-red-500');
+        }
+        
+        if (!clientTelephone) {
+            errors.push('Le téléphone est obligatoire');
+            document.getElementById('client_telephone').classList.add('border-red-500');
+        } else {
+            document.getElementById('client_telephone').classList.remove('border-red-500');
+        }
+        
+        if (errors.length > 0) {
+            return { 
+                valid: false, 
+                message: 'Veuillez corriger les erreurs suivantes :\n' + errors.join('\n') 
+            };
+        }
+        
+        return { valid: true };
+        
+    } else if (step === 2) {
+        // Validation étape 2 : Service et Formule
         const serviceId = document.getElementById('service_id').value;
         const formuleId = document.getElementById('formule_id').value;
+        const errors = [];
         
-        if (!serviceId || !formuleId) {
-            alert('Veuillez sélectionner un service et une formule.');
-            return;
+        if (!serviceId) {
+            errors.push('Veuillez sélectionner un service');
+            document.getElementById('service_id').classList.add('border-red-500');
+        } else {
+            document.getElementById('service_id').classList.remove('border-red-500');
         }
         
-        // Afficher le récapitulatif
+        if (!formuleId) {
+            errors.push('Veuillez sélectionner une formule');
+            document.getElementById('formule_id').classList.add('border-red-500');
+        } else {
+            document.getElementById('formule_id').classList.remove('border-red-500');
+        }
+        
+        if (errors.length > 0) {
+            return { 
+                valid: false, 
+                message: errors.join('\n') 
+            };
+        }
+        
+        return { valid: true };
+    }
+    
+    return { valid: true };
+}
+
+function nextStep(step) {
+    // Validation de l'étape actuelle avant de passer à la suivante
+    const validation = validateStep(currentStep);
+    
+    if (!validation.valid) {
+        if (typeof showErrorToast === 'function') {
+            showErrorToast(validation.message);
+        } else {
+            alert(validation.message);
+        }
+        
+        // Faire défiler vers le premier champ en erreur
+        const firstErrorField = document.querySelector('.border-red-500');
+        if (firstErrorField) {
+            firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstErrorField.focus();
+        }
+        return;
+    }
+    
+    // Si on passe à l'étape 3, afficher le récapitulatif
+    if (step === 3) {
         showSummary();
     }
     
@@ -462,9 +553,18 @@ async function loadFormules() {
         return;
     }
     
+    // Afficher un indicateur de chargement
+    formuleSelect.disabled = true;
+    formuleSelect.innerHTML = '<option value="">Chargement...</option>';
+    
     try {
         // Utiliser l'API qui prend en compte le centre
         const response = await fetch(`/booking/formules/${centreId}/${serviceId}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         
         formuleSelect.innerHTML = '<option value="">Sélectionner une formule</option>';
@@ -476,27 +576,14 @@ async function loadFormules() {
                 formuleSelect.appendChild(option);
             });
         } else {
-            formuleSelect.innerHTML = '<option value="">Aucune formule disponible</option>';
+            formuleSelect.innerHTML = '<option value="">Aucune formule disponible pour ce service</option>';
         }
     } catch (error) {
         console.error('Erreur lors du chargement des formules:', error);
-        // Fallback sur l'API simple si l'autre ne fonctionne pas
-        try {
-            const response = await fetch(`/api/services/${serviceId}/formules`);
-            const formules = await response.json();
-            formuleSelect.innerHTML = '<option value="">Sélectionner une formule</option>';
-            if (formules && formules.length > 0) {
-                formules.forEach(formule => {
-                    const option = document.createElement('option');
-                    option.value = formule.id;
-                    option.textContent = formule.nom;
-                    formuleSelect.appendChild(option);
-                });
-            }
-        } catch (fallbackError) {
-            console.error('Erreur fallback:', fallbackError);
-            alert('Erreur lors du chargement des formules.');
-        }
+        formuleSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+        showErrorToast('Erreur lors du chargement des formules. Veuillez réessayer.');
+    } finally {
+        formuleSelect.disabled = false;
     }
 }
 

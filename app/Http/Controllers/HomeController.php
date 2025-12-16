@@ -14,8 +14,8 @@ class HomeController extends Controller
     public function index()
     {
         // Récupérer les services depuis la base de données
-        $services = Service::with(['formules', 'documentsRequis'])
-            ->where('statut', 'actif')
+        $services = Service::actif()
+            ->withRelations()
             ->orderBy('id', 'asc')
             ->take(4)
             ->get()

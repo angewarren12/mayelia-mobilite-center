@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Centre;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class CentreQmsSettingsController extends Controller
 {
@@ -40,6 +41,9 @@ class CentreQmsSettingsController extends Controller
             'qms_mode' => $request->qms_mode,
             'qms_fenetre_minutes' => $request->qms_fenetre_minutes ?? 15
         ]);
+
+        // Invalider le cache des infos du centre
+        Cache::forget("centre_info_{$centre->id}");
 
         return redirect()->back()->with('success', 'Paramètres QMS mis à jour avec succès');
     }

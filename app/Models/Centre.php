@@ -24,9 +24,21 @@ class Centre extends Model
     const QMS_MODE_FIFO = 'fifo';
     const QMS_MODE_FENETRE = 'fenetre_tolerance';
 
+    // Constantes pour les statuts
+    const STATUT_ACTIF = 'actif';
+    const STATUT_INACTIF = 'inactif';
+
     protected $casts = [
         'qms_fenetre_minutes' => 'integer'
     ];
+
+    /**
+     * Scope pour récupérer uniquement les centres actifs
+     */
+    public function scopeActif($query)
+    {
+        return $query->where('statut', self::STATUT_ACTIF);
+    }
 
     /**
      * Relation avec la ville

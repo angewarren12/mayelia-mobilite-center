@@ -54,12 +54,19 @@
     <!-- Alpine.js for dropdowns -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans antialiased bg-gray-100">
+<body class="font-sans antialiased bg-gray-100" x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false' }" 
+      x-init="$watch('sidebarOpen', value => localStorage.setItem('sidebarOpen', value))">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
-        <div class="w-64 bg-gradient-to-b from-mayelia-600 to-mayelia-800 shadow-lg flex flex-col">
-            <div class="p-6 flex justify-center items-center border-b border-gray-200 bg-white">
-                <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia Mobilité" class="h-16 w-auto">
+        <div class="bg-gradient-to-b from-mayelia-600 to-mayelia-800 shadow-lg flex flex-col transition-all duration-300 ease-in-out"
+             :class="sidebarOpen ? 'w-64' : 'w-20'">
+            <div class="p-6 flex justify-center items-center border-b border-gray-200 bg-white relative">
+                <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia Mobilité" 
+                     class="h-16 w-auto transition-all duration-300"
+                     :class="sidebarOpen ? 'opacity-100 block' : 'opacity-0 w-0 h-0 hidden'">
+                <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia Mobilité" 
+                     class="h-10 w-10 rounded transition-all duration-300 object-cover"
+                     :class="sidebarOpen ? 'opacity-0 w-0 h-0 hidden' : 'opacity-100 block'">
             </div>
             
             <nav class="mt-6 flex-1 overflow-y-auto">
@@ -67,71 +74,81 @@
                     $authService = app(\App\Services\AuthService::class);
                 @endphp
                 
-                <a href="{{ route('dashboard') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('dashboard') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-home w-5 h-5 mr-3"></i>
-                    Tableau de bord
+                <a href="{{ route('dashboard') }}" class="flex items-center px-6 py-3 group {{ request()->routeIs('dashboard') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Tableau de bord' : ''">
+                    <i class="fas fa-home w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Tableau de bord</span>
                 </a>
                 
                 @if($authService->isAdmin() || $authService->hasPermission('centres', 'view'))
-                <a href="{{ route('centres.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('centres.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-building w-5 h-5 mr-3"></i>
-                    Gestion du centre
+                <a href="{{ route('centres.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('centres.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Gestion du centre' : ''">
+                    <i class="fas fa-building w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Gestion du centre</span>
                 </a>
                 @endif
                 
                 @if($authService->isAdmin() || $authService->hasPermission('creneaux', 'view'))
-                <a href="{{ route('creneaux.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('creneaux.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-calendar-alt w-5 h-5 mr-3"></i>
-                    Gestion des créneaux
+                <a href="{{ route('creneaux.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('creneaux.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Gestion des créneaux' : ''">
+                    <i class="fas fa-calendar-alt w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Gestion des créneaux</span>
                 </a>
                 @endif
                 
                 @if($authService->isAdmin() || $authService->hasPermission('clients', 'view'))
-                <a href="{{ route('clients.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('clients.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-users w-5 h-5 mr-3"></i>
-                    Clients
+                <a href="{{ route('clients.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('clients.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Clients' : ''">
+                    <i class="fas fa-users w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Clients</span>
                 </a>
                 @endif
                 
                 @if($authService->isAdmin() || $authService->hasPermission('rendez-vous', 'view'))
-                <a href="{{ route('rendez-vous.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('rendez-vous.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-calendar-check w-5 h-5 mr-3"></i>
-                    Rendez-vous
+                <a href="{{ route('rendez-vous.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('rendez-vous.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Rendez-vous' : ''">
+                    <i class="fas fa-calendar-check w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Rendez-vous</span>
                 </a>
                 @endif
                 
                 @if($authService->isAdmin())
-                <a href="{{ route('agents.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('agents.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-user-tie w-5 h-5 mr-3"></i>
-                    Agents
+                <a href="{{ route('agents.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('agents.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Agents' : ''">
+                    <i class="fas fa-user-tie w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Agents</span>
                 </a>
                 @endif
                 
                 @if($authService->isAdmin() || $authService->hasPermission('dossiers', 'view'))
-                <a href="{{ route('dossiers.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('dossiers.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-folder-open w-5 h-5 mr-3"></i>
-                    Dossiers
+                <a href="{{ route('dossiers.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('dossiers.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Dossiers' : ''">
+                    <i class="fas fa-folder-open w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Dossiers</span>
                 </a>
                 @endif
                 
                 @if($authService->isAdmin())
-                <a href="{{ route('document-requis.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('document-requis.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-file-alt w-5 h-5 mr-3"></i>
-                    Documents requis
+                <a href="{{ route('document-requis.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('document-requis.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Documents requis' : ''">
+                    <i class="fas fa-file-alt w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Documents requis</span>
                 </a>
                 @endif
 
                 @if($authService->isAdmin() || $authService->hasPermission('oneci-transfers', 'view'))
-                <a href="{{ route('oneci-transfers.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('oneci-transfers.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-paper-plane w-5 h-5 mr-3"></i>
-                    Transferts ONECI
+                <a href="{{ route('oneci-transfers.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('oneci-transfers.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Transferts ONECI' : ''">
+                    <i class="fas fa-paper-plane w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Transferts ONECI</span>
                 </a>
                 @endif
 
                 @if($authService->isAdmin() || $authService->hasPermission('oneci-recuperation', 'view'))
-                <a href="{{ route('oneci-recuperation.cartes-prete') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('oneci-recuperation.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}">
-                    <i class="fas fa-archive w-5 h-5 mr-3"></i>
-                    Récupération cartes
+                <a href="{{ route('oneci-recuperation.cartes-prete') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('oneci-recuperation.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Récupération cartes' : ''">
+                    <i class="fas fa-archive w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Récupération cartes</span>
                 </a>
                 @endif
             </nav>
@@ -142,13 +159,18 @@
                         $currentUser = $authService->getAuthenticatedUser();
                         $userName = $currentUser ? ($currentUser instanceof \App\Models\Agent ? $currentUser->nom_complet : $currentUser->nom) : 'Utilisateur';
                     @endphp
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center mr-2">
+                    <div class="flex items-center" :class="sidebarOpen ? 'flex-row' : 'flex-col'">
+                        <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center" :class="sidebarOpen ? 'mr-2' : 'mx-auto mb-2'">
                             <i class="fas fa-user text-xs"></i>
                         </div>
-                        <span class="text-sm font-medium truncate max-w-[100px]">{{ $userName }}</span>
+                        <span class="text-sm font-medium transition-opacity duration-300 whitespace-nowrap" 
+                              :class="sidebarOpen ? 'opacity-100 truncate max-w-[100px]' : 'opacity-0 w-0 overflow-hidden'">{{ $userName }}</span>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                    <div class="flex items-center" :class="sidebarOpen ? '' : 'ml-auto'">
+                        <a href="{{ route('profile.edit') }}" class="text-white/70 hover:text-white transition-colors p-1 rounded hover:bg-white/10 mr-1" title="Paramètres">
+                            <i class="fas fa-cog"></i>
+                        </a>
+                        <form method="POST" action="{{ route('logout') }}" class="inline">
                         @csrf
                         <button type="submit" class="text-white/70 hover:text-white transition-colors p-1 rounded hover:bg-white/10" title="Déconnexion">
                             <i class="fas fa-sign-out-alt"></i>
@@ -164,11 +186,12 @@
             <header class="bg-white shadow-sm border-b">
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-gray-800">@yield('title', 'Dashboard')</h1>
-                            @hasSection('subtitle')
-                                <p class="text-gray-600 mt-1">@yield('subtitle')</p>
-                            @endif
+                        <div class="flex items-center space-x-4">
+                            <button @click="sidebarOpen = !sidebarOpen" 
+                                    class="p-2 rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+                                    :title="sidebarOpen ? 'Masquer la sidebar' : 'Afficher la sidebar'">
+                                <i class="fas" :class="sidebarOpen ? 'fa-chevron-left' : 'fa-chevron-right'"></i>
+                            </button>
                         </div>
                         <div class="flex items-center space-x-4">
                             @php
@@ -225,6 +248,16 @@
                 @if(session('error'))
                     <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         {{ session('error') }}
+                    </div>
+                @endif
+
+                <!-- Page Title -->
+                @hasSection('title')
+                    <div class="mb-6 pb-4 border-b border-gray-200">
+                        <h1 class="text-2xl font-bold text-mayelia-600">@yield('title')</h1>
+                        @hasSection('subtitle')
+                            <p class="text-gray-600 mt-1">@yield('subtitle')</p>
+                        @endif
                     </div>
                 @endif
 

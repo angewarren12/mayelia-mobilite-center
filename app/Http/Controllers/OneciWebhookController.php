@@ -87,7 +87,7 @@ class OneciWebhookController extends Controller
                     'statut_oneci' => $request->statut,
                     'donnees_oneci' => $request->all(),
                     'verified_at' => now(),
-                    'statut' => 'confirme' // Statut par défaut
+                    'statut' => RendezVous::STATUT_CONFIRME // Statut par défaut
                 ]);
 
                 Log::info('Nouveau rendez-vous créé via webhook ONECI', [

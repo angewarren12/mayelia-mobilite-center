@@ -11,9 +11,13 @@ use App\Models\Client;
 use App\Models\RendezVous;
 use App\Services\DisponibiliteService;
 use App\Services\OneciVerificationService;
+use App\Http\Requests\Booking\VerifyPreEnrollmentRequest;
+use App\Http\Requests\Booking\CreateRendezVousRequest;
+use App\Events\RendezVousCreated;
 use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
@@ -61,11 +65,9 @@ class BookingController extends Controller
     /**
      * Vérifier le numéro de pré-enrôlement ONECI
      */
-    public function verifyPreEnrollment(Request $request)
+    public function verifyPreEnrollment(VerifyPreEnrollmentRequest $request)
     {
-        $request->validate([
-            'numero_pre_enrolement' => 'required|string'
-        ]);
+        // Validation déjà effectuée par VerifyPreEnrollmentRequest
 
         try {
             $result = $this->oneciService->verifyPreEnrollmentNumber(
@@ -404,50 +406,45 @@ class BookingController extends Controller
      */
     public function getFormules($centreId, $serviceId)
     {
-        $centre = Centre::findOrFail($centreId);
-        $service = Service::findOrFail($serviceId);
-        
-        // Récupérer les formules liées à ce service et activées pour ce centre
-        $formules = $centre->formulesActives()
-                          ->where('service_id', $serviceId)
-                          ->get();
-        
-        return response()->json([
-            'success' => true,
-            'formules' => $formules,
-            'service' => $service
-        ]);
+        try {
+            $centre = Centre::findOrFail($centreId);
+            $service = Service::findOrFail($serviceId);
+            
+            // Récupérer les formules du service qui sont activées pour ce centre
+            // On part du service pour récupérer ses formules, puis on filtre par centre via la table pivot
+            $formuleIds = DB::table('centre_formules')
+                ->where('centre_id', $centreId)
+                ->where('actif', true)
+                ->pluck('formule_id');
+            
+            $formules = Formule::where('service_id', $serviceId)
+                ->where('statut', 'actif')
+                ->whereIn('id', $formuleIds)
+                ->get(['id', 'nom', 'prix', 'service_id']);
+            
+            return response()->json([
+                'success' => true,
+                'formules' => $formules,
+                'service' => $service
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Erreur lors de la récupération des formules: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des formules: ' . $e->getMessage(),
+                'error' => config('app.debug') ? $e->getMessage() : 'Une erreur est survenue'
+            ], 500);
+        }
     }
 
     /**
      * Créer un rendez-vous (AJAX)
      */
-    public function createRendezVous(Request $request)
+    public function createRendezVous(CreateRendezVousRequest $request)
     {
         try {
-            // Validation des données
-            $request->validate([
-                'centre_id' => 'required|exists:centres,id',
-                'service_id' => 'required|exists:services,id',
-                'formule_id' => 'required|exists:formules,id',
-                // 'client_id' => 'required|exists:clients,id', // On rend client_id optionnel car on peut stocker les infos directement
-                'date_rendez_vous' => 'required|date',
-                'tranche_horaire' => 'required|string',
-                'notes' => 'nullable|string|max:1000',
-                
-                // Infos client
-                'nom' => 'required|string',
-                'email' => 'required|email',
-                'telephone' => 'required|string',
-                'prenom' => 'nullable|string',
-                'date_naissance' => 'nullable|date',
-                'lieu_naissance' => 'nullable|string',
-                'sexe' => 'nullable|string',
-                'adresse' => 'nullable|string',
-                
-                // Infos ONECI
-                'oneci_data' => 'nullable|array'
-            ]);
+            // Validation déjà effectuée par CreateRendezVousRequest
 
             // Générer un numéro de suivi unique au format MAYELIA-YYYY-XXXXXX (où XXXXXX sont des chiffres)
             $annee = date('Y');
@@ -491,7 +488,7 @@ class BookingController extends Controller
                 
                 'date_rendez_vous' => $request->date_rendez_vous,
                 'tranche_horaire' => $request->tranche_horaire,
-                'statut' => 'confirme',
+                'statut' => RendezVous::STATUT_CONFIRME,
                 'numero_suivi' => $numeroSuivi,
                 'notes' => $request->notes,
                 
@@ -510,13 +507,8 @@ class BookingController extends Controller
             }
             $rendezVous->load($relationships);
 
-            \Log::info('Rendez-vous créé avec succès', [
-                'rendez_vous_id' => $rendezVous->id,
-                'numero_suivi' => $numeroSuivi,
-                'client' => $rendezVous->client_nom . ' ' . $rendezVous->client_prenom,
-                'centre' => $rendezVous->centre->nom,
-                'date' => $rendezVous->date_rendez_vous
-            ]);
+            // Déclencher l'événement
+            event(new RendezVousCreated($rendezVous));
 
             return response()->json([
                 'success' => true,
@@ -650,7 +642,7 @@ class BookingController extends Controller
                 'client_id' => $client->id,
                 'date_rendez_vous' => $request->date_rendez_vous,
                 'tranche_horaire' => $request->tranche_horaire,
-                'statut' => 'confirme',
+                'statut' => RendezVous::STATUT_CONFIRME,
                 'notes' => 'Réservation en ligne',
             ]);
 
@@ -659,6 +651,9 @@ class BookingController extends Controller
             $chiffresAleatoires = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
             $numeroSuivi = 'MAYELIA-' . $annee . '-' . $chiffresAleatoires;
             $rendezVous->update(['numero_suivi' => $numeroSuivi]);
+
+            // Déclencher l'événement
+            event(new RendezVousCreated($rendezVous->fresh()));
 
             return redirect()->route('booking.confirmation', $rendezVous->id)
                            ->with('success', 'Rendez-vous créé avec succès !');
@@ -677,7 +672,7 @@ class BookingController extends Controller
      */
     public function confirmation($rendezVousId)
     {
-        $rendezVous = RendezVous::with(['centre.ville', 'service', 'formule', 'client'])
+        $rendezVous = RendezVous::withRelations()
                                ->findOrFail($rendezVousId);
 
         return view('booking.confirmation', compact('rendezVous'));
@@ -688,7 +683,7 @@ class BookingController extends Controller
      */
     public function downloadReceipt($rendezVousId)
     {
-        $rendezVous = RendezVous::with(['centre.ville', 'service', 'formule', 'client'])
+        $rendezVous = RendezVous::withRelations()
                                ->findOrFail($rendezVousId);
 
         // Générer le QR code en SVG (ne nécessite pas ImageMagick)

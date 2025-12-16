@@ -26,25 +26,25 @@
         
         .header {
             text-align: center;
-            border-bottom: 2px solid #1E40AF;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            border-bottom: 3px solid #028339;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .logo-container {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
         
         .logo-img {
-            max-width: 150px;
+            max-width: 200px;
             height: auto;
         }
         
         .company-name {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: bold;
-            color: #1E40AF;
-            margin-bottom: 3px;
+            color: #028339;
+            margin-bottom: 5px;
         }
         
         .company-subtitle {
@@ -54,29 +54,36 @@
         }
         
         .receipt-title {
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
-            color: #1E40AF;
-            margin-top: 8px;
+            color: #028339;
+            margin-top: 10px;
         }
         
         .receipt-number {
-            font-size: 11px;
-            color: #666;
-            margin-top: 3px;
+            background: #028339;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 15px auto;
+            text-align: center;
+            display: inline-block;
+            width: 100%;
         }
         
         .section {
-            margin-bottom: 12px;
+            margin: 20px 0;
         }
         
         .section-title {
-            font-size: 12px;
             font-weight: bold;
-            color: #1E40AF;
-            border-bottom: 1px solid #E5E7EB;
-            padding-bottom: 4px;
-            margin-bottom: 8px;
+            color: #028339;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 14px;
         }
         
         .info-grid {
@@ -127,12 +134,18 @@
         }
         
         .amount-box {
-            background-color: #1E40AF;
-            color: white;
-            padding: 12px;
-            border-radius: 3px;
+            background: #f0f9f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
             text-align: center;
-            margin: 12px 0;
+        }
+        
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #028339;
+            margin-top: 10px;
         }
         
         .amount-label {
@@ -209,12 +222,20 @@
         <!-- En-tête -->
         <div class="header">
             <div class="logo-container">
-                <img src="https://www.mayeliamobilite.com/LOGO-MOBILITE.png" alt="Mayelia Mobilité" class="logo-img">
+                @php
+                    $logoPath = public_path('img/logo-oneci.jpg');
+                    $logoExists = file_exists($logoPath);
+                @endphp
+                @if($logoExists)
+                    <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($logoPath)) }}" alt="Mayelia Mobilité" class="logo-img">
+                @else
+                    <div class="company-name">MAYELIA MOBILITÉ</div>
+                @endif
             </div>
             <div class="company-name">MAYELIA MOBILITÉ</div>
             <div class="company-subtitle">Solutions de mobilité et d'identification</div>
-            <div class="receipt-title">REÇU DE TRAÇABILITÉ</div>
-            <div class="receipt-number">N° {{ $dossierOuvert->id }}/{{ now()->format('Y') }}</div>
+            <div class="receipt-title">REÇU DE TRAÇABILITÉ - DOSSIER FINALISÉ</div>
+            <div class="receipt-number">N° Dossier: {{ $dossierOuvert->id }}</div>
         </div>
         
         <div class="date-info">
@@ -350,8 +371,8 @@
         <!-- Montant total en pleine largeur -->
         @if($dossierOuvert->paiementVerification)
         <div class="amount-box">
-            <div class="amount-label">Montant Total</div>
-            <div class="amount-value">{{ number_format($dossierOuvert->paiementVerification->montant_paye, 0, ',', ' ') }} FCFA</div>
+            <div style="color: #666;">Montant payé</div>
+            <div class="total-amount">{{ number_format($dossierOuvert->paiementVerification->montant_paye, 0, ',', ' ') }} FCFA</div>
         </div>
         @endif
         

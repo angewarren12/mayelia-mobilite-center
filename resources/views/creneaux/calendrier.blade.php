@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Mettre à jour le calendrier
-function updateCalendar() {
+async function updateCalendar() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     
@@ -151,6 +151,9 @@ function updateCalendar() {
     
     // Générer les jours du mois
     generateCalendarDays(year, month);
+    
+    // Charger toutes les disponibilités du mois en une seule fois
+    await loadMonthAvailability(year, month + 1); // +1 car les mois JS commencent à 0
 }
 
 // Générer les jours du calendrier
@@ -215,9 +218,6 @@ function generateCalendarDays(year, month) {
             selectDate(dateCopy);
         };
         
-        // Charger la disponibilité pour ce jour
-        loadDayAvailability(dateCopy, dayElement);
-        
         container.appendChild(dayElement);
         
         // Passer au jour suivant
@@ -225,7 +225,63 @@ function generateCalendarDays(year, month) {
     }
 }
 
-// Charger la disponibilité pour un jour (optimisé avec cache)
+// Charger toutes les disponibilités du mois en une seule requête
+async function loadMonthAvailability(year, month) {
+    const cacheKey = `${window.centreId}-${year}-${month}`;
+    
+    // Vérifier le cache d'abord
+    if (availabilityCache.has(cacheKey)) {
+        const cachedData = availabilityCache.get(cacheKey);
+        updateAllDayIndicators(cachedData);
+        return;
+    }
+    
+    // Éviter les appels multiples
+    if (loadingStates.has(cacheKey)) {
+        return;
+    }
+    
+    loadingStates.add(cacheKey);
+    
+    try {
+        const response = await fetch(`/api/disponibilite-mois/${window.centreId}/${year}/${month}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Mettre en cache pour le mois
+            availabilityCache.set(cacheKey, data.data);
+            
+            // Mettre en cache chaque jour individuellement aussi
+            Object.keys(data.data).forEach(dateStr => {
+                const dayCacheKey = `${window.centreId}-${dateStr}`;
+                availabilityCache.set(dayCacheKey, data.data[dateStr]);
+            });
+            
+            // Mettre à jour tous les indicateurs
+            updateAllDayIndicators(data.data);
+        }
+    } catch (error) {
+        console.error('Erreur lors du chargement des disponibilités du mois:', error);
+    } finally {
+        loadingStates.delete(cacheKey);
+    }
+}
+
+// Mettre à jour tous les indicateurs des jours du calendrier
+function updateAllDayIndicators(disponibilites) {
+    Object.keys(disponibilites).forEach(dateStr => {
+        const date = new Date(dateStr + 'T00:00:00');
+        const elementId = `day-${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const element = document.getElementById(elementId);
+        
+        if (element) {
+            const data = disponibilites[dateStr];
+            updateDayIndicator(element, data);
+        }
+    });
+}
+
+// Charger la disponibilité pour un jour (conservé pour la compatibilité si nécessaire)
 async function loadDayAvailability(date, element) {
     if (date < new Date().setHours(0, 0, 0, 0)) {
         element.className += ' opacity-50';

@@ -250,29 +250,8 @@ function confirmOpenDossier() {
     });
 }
 
-function showSuccessToast(message) {
-    // Créer un toast de succès
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    toast.innerHTML = `<i class="fas fa-check mr-2"></i>${message}`;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
-function showErrorToast(message) {
-    // Créer un toast d'erreur
-    const toast = document.createElement('div');
-    toast.className = 'fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-    toast.innerHTML = `<i class="fas fa-exclamation-triangle mr-2"></i>${message}`;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
+// Fonctions de notification (utilisent le composant toast unifié du layout)
+// Ces fonctions sont définies dans components/toast.blade.php qui est inclus dans layouts/dashboard.blade.php
 
 // Fermer le modal en cliquant à l'extérieur
 document.getElementById('openDossierModal').addEventListener('click', function(e) {

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::table('tickets', function (Blueprint $table) {
             // Ajouter FK seulement si les tables dépendantes existent
+            /*
             if (Schema::hasTable('centres')) {
                 try {
                     $table->foreign('centre_id')
@@ -52,6 +53,7 @@ return new class extends Migration
                     // Ignorer si déjà existante
                 }
             }
+            */
         });
     }
 

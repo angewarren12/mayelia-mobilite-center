@@ -9,10 +9,15 @@ use App\Models\Service;
 use App\Models\Ticket;
 use App\Services\QmsPriorityService;
 use App\Services\ThermalPrintService;
+use App\Http\Requests\Qms\StoreTicketRequest;
+use App\Http\Requests\Qms\CheckRdvRequest;
+use App\Http\Requests\Qms\CallNextTicketRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use App\Events\TicketCreated;
 
 class QmsController extends Controller
 {
@@ -51,7 +56,7 @@ class QmsController extends Controller
     {
         $user = Auth::user();
         // Pour l'instant, on suppose que l'agent est lié à un guichet ou peut en choisir un
-        $guichets = Guichet::all(); // À filtrer par centre de l'agent si applicable
+        $guichets = Guichet::where('centre_id', $user->centre_id)->get();
         
         return view('qms.agent', compact('guichets'));
     }
@@ -59,14 +64,8 @@ class QmsController extends Controller
     /**
      * Création d'un ticket (depuis la borne)
      */
-    public function storeTicket(Request $request)
+    public function storeTicket(StoreTicketRequest $request)
     {
-        $request->validate([
-            'centre_id' => 'required|exists:centres,id',
-            'service_id' => 'nullable|exists:services,id',
-            'type' => 'required|in:rdv,sans_rdv',
-            'numero_rdv' => 'nullable|string' // Si c'est un RDV
-        ]);
 
         try {
             DB::beginTransaction();
@@ -88,7 +87,7 @@ class QmsController extends Controller
 
             // Récupérer l'heure du RDV si applicable
             $heureRdv = null;
-            if ($request->type === 'rdv' && $request->numero_rdv) {
+            if ($request->type === Ticket::TYPE_RDV && $request->numero_rdv) {
                 $rdv = RendezVous::where('numero_suivi', $request->numero_rdv)->first();
                 $heureRdv = $rdv?->tranche_horaire;
             }
@@ -100,7 +99,7 @@ class QmsController extends Controller
                 'type' => $request->type,
                 'heure_rdv' => $heureRdv,
                 'priorite' => 1, // Sera recalculée
-                'statut' => 'en_attente'
+                'statut' => Ticket::STATUT_EN_ATTENTE
             ]);
 
             // Calculer la priorité selon le mode du centre
@@ -108,6 +107,9 @@ class QmsController extends Controller
             $ticket->update(['priorite' => $priorite]);
 
             DB::commit();
+
+            // Déclencher l'événement
+            event(new TicketCreated($ticket->fresh()));
 
             return response()->json([
                 'success' => true,
@@ -129,8 +131,15 @@ class QmsController extends Controller
      */
     public function callTicket(Request $request, Ticket $ticket = null)
     {
+        $user = Auth::user();
+
         // Si un ticket spécifique est demandé (rappel)
         if ($ticket) {
+            // Sécurité : Vérifier que le ticket appartient au centre de l'agent
+            if (!$user->canAccessCentre($ticket->centre_id)) {
+                return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+            }
+
             $ticket->update([
                 'statut' => 'appelé',
                 'called_at' => now(),
@@ -139,27 +148,28 @@ class QmsController extends Controller
             return response()->json(['success' => true, 'ticket' => $ticket]);
         }
 
-        $centre = Centre::findOrFail($request->centre_id);
+        // Sécurité : Forcer le centre de l'agent s'il n'est pas admin
+        $centreId = ($user->role !== 'admin' && $user->centre_id) ? $user->centre_id : $request->centre_id;
+        $centre = Centre::findOrFail($centreId);
         
         // NETTOYAGE: Terminer automatiquement tout ticket encore en "appelé" pour ce guichet
         // Cela évite les "tickets zombies" qui réapparaissent sur la TV si l'agent a oublié de terminer
         Ticket::where('guichet_id', $request->guichet_id)
-              ->where('statut', 'appelé')
-              ->update(['statut' => 'terminé', 'completed_at' => now()]);
+              ->where('statut', Ticket::STATUT_APPELÉ)
+              ->update(['statut' => Ticket::STATUT_TERMINÉ, 'completed_at' => now()]);
 
         // Recalculer les priorités selon le mode actif du centre
         $this->priorityService->updateAllPriorities($centre);
 
         // Sélectionner le prochain ticket
-        $nextTicket = Ticket::where('centre_id', $centre->id)
-            ->where('statut', 'en_attente')
-            ->orderBy('priorite', 'desc')
-            ->orderBy('created_at', 'asc')
+        $nextTicket = Ticket::pourCentre($centre->id)
+            ->enAttente()
+            ->parPriorite()
             ->first();
 
         if ($nextTicket) {
             $nextTicket->update([
-                'statut' => 'appelé',
+                'statut' => Ticket::STATUT_APPELÉ,
                 'called_at' => now(),
                 'guichet_id' => $request->guichet_id,
                 'user_id' => Auth::id() // Agent qui appelle
@@ -183,7 +193,7 @@ class QmsController extends Controller
     public function completeTicket(Ticket $ticket)
     {
         $ticket->update([
-            'statut' => 'terminé',
+            'statut' => Ticket::STATUT_TERMINÉ,
             'completed_at' => now()
         ]);
 
@@ -196,7 +206,7 @@ class QmsController extends Controller
     public function cancelTicket(Ticket $ticket)
     {
         $ticket->update([
-            'statut' => 'absent',
+            'statut' => Ticket::STATUT_ABSENT,
             'completed_at' => now()
         ]);
 
@@ -209,7 +219,7 @@ class QmsController extends Controller
     public function recallTicket(Ticket $ticket)
     {
         $ticket->update([
-            'statut' => 'appelé',
+            'statut' => Ticket::STATUT_APPELÉ,
             'called_at' => now() // Met à jour l'heure d'appel pour le faire remonter sur la TV
         ]);
 
@@ -219,12 +229,9 @@ class QmsController extends Controller
     /**
      * Vérifier un numéro de RDV (Borne)
      */
-    public function checkRdv(Request $request)
+    public function checkRdv(CheckRdvRequest $request)
     {
-        $request->validate([
-            'numero' => 'required|string',
-            'centre_id' => 'required|exists:centres,id'
-        ]);
+        // Validation déjà effectuée par CheckRdvRequest
 
         // Rechercher le RDV
         // On suppose que le modèle RendezVous a les champs necessaires ou qu'on check dans une table externe
@@ -266,30 +273,42 @@ class QmsController extends Controller
 
     /**
      * Récupérer les informations d'un centre (pour le kiosk)
+     * Cache: 1 heure (les infos du centre changent rarement)
      */
     public function getCentreInfo($centreId)
     {
-        $centre = Centre::findOrFail($centreId);
+        $cacheKey = "centre_info_{$centreId}";
         
-        return response()->json([
-            'id' => $centre->id,
-            'nom' => $centre->nom,
-            'qms_mode' => $centre->qms_mode,
-            'qms_fenetre_minutes' => $centre->qms_fenetre_minutes,
-        ]);
+        $data = Cache::remember($cacheKey, 3600, function () use ($centreId) {
+            $centre = Centre::findOrFail($centreId);
+            
+            return [
+                'id' => $centre->id,
+                'nom' => $centre->nom,
+                'qms_mode' => $centre->qms_mode,
+                'qms_fenetre_minutes' => $centre->qms_fenetre_minutes,
+            ];
+        });
+        
+        return response()->json($data);
     }
 
     /**
      * Récupérer les services d'un centre (pour sélection dans le kiosk)
+     * Cache: 30 minutes (les services changent occasionnellement)
      */
     public function getServices($centreId)
     {
-        $centre = Centre::findOrFail($centreId);
-        // Utiliser servicesActives() qui filtre déjà par actif dans la table pivot
-        // et aussi filtrer par statut actif du service
-        $services = $centre->servicesActives()
-            ->where('statut', 'actif')
-            ->get(['services.id', 'services.nom']);
+        $cacheKey = "centre_services_{$centreId}";
+        
+        $services = Cache::remember($cacheKey, 1800, function () use ($centreId) {
+            $centre = Centre::findOrFail($centreId);
+            // Utiliser servicesActives() qui filtre déjà par actif dans la table pivot
+            // et aussi filtrer par statut actif du service
+            return $centre->servicesActives()
+                ->actif()
+                ->get(['services.id', 'services.nom']);
+        });
         
         return response()->json($services);
     }
@@ -299,10 +318,14 @@ class QmsController extends Controller
      */
     public function getQueueData($centreId)
     {
+        // Sécurité : Vérifier l'accès au centre
+        if (!Auth::user()->canAccessCentre($centreId)) {
+            return response()->json(['error' => 'Non autorisé'], 403);
+        }
         // Dernier appelé (pour la TV)
         $lastCalled = Ticket::select('id', 'numero', 'guichet_id', 'updated_at', 'type', 'statut')
-            ->where('centre_id', $centreId)
-            ->where('statut', 'appelé')
+            ->pourCentre($centreId)
+            ->appelé()
             ->whereDate('updated_at', Carbon::today())
             ->with('guichet:id,nom')
             ->orderBy('called_at', 'desc')
@@ -310,8 +333,8 @@ class QmsController extends Controller
 
         // Historique des appelés (3 derniers)
         $history = Ticket::select('id', 'numero', 'guichet_id', 'updated_at', 'statut')
-            ->where('centre_id', $centreId)
-            ->whereIn('statut', ['appelé', 'en_cours', 'terminé'])
+            ->pourCentre($centreId)
+            ->whereIn('statut', [Ticket::STATUT_APPELÉ, Ticket::STATUT_EN_COURS, Ticket::STATUT_TERMINÉ])
             ->whereDate('updated_at', Carbon::today())
             ->where('id', '!=', $lastCalled ? $lastCalled->id : 0)
             ->with('guichet:id,nom')
@@ -321,10 +344,10 @@ class QmsController extends Controller
 
         // File d'attente (pour l'agent)
         $waiting = Ticket::select('id', 'numero', 'service_id', 'type', 'created_at', 'priorite')
-            ->where('centre_id', $centreId)
-            ->where('statut', 'en_attente')
+            ->pourCentre($centreId)
+            ->enAttente()
             ->with('service:id,nom')
-            ->orderBy('priorite', 'desc')
+            ->parPriorite()
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -333,7 +356,7 @@ class QmsController extends Controller
             ->where('centre_id', $centreId)
             ->where('statut', 'appelé')
             ->whereDate('updated_at', Carbon::today())
-            ->with('service:id,nom')
+            ->with(['service:id,nom', 'guichet:id,nom'])
             ->get();
 
         return response()->json([

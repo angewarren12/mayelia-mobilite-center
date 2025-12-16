@@ -125,26 +125,7 @@
                 @endif
             </form>
             
-            <!-- Comptes de test (environnement de développement) -->
-            @if(config('app.env') !== 'production')
-            <div class="mt-8 pt-6 border-t border-white/20">
-                <p class="text-xs text-center text-white/70 mb-3">
-                    <i class="fas fa-flask mr-1"></i>Comptes de test disponibles
-                </p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    <button type="button" 
-                            onclick="fillCredentials('admin@mayelia.com', 'password')"
-                            class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition-all duration-200 border border-white/20">
-                        <i class="fas fa-user-shield mr-1"></i>Admin
-                    </button>
-                    <button type="button" 
-                            onclick="fillCredentials('agent@mayelia.com', 'password')"
-                            class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white px-3 py-2 rounded-lg transition-all duration-200 border border-white/20">
-                        <i class="fas fa-user mr-1"></i>Agent
-                    </button>
-                </div>
-            </div>
-            @endif
+           
         </div>
 
         <!-- Footer -->

@@ -273,11 +273,13 @@
                 })
                 .then(data => {
                     if (data.success) {
-                        // Petit délai pour transition visuelle fluide
-                        setTimeout(() => {
-                            this.currentTicket = data.ticket;
-                            this.loading = false;
-                        }, 200);
+                        // Mettre à jour le ticket immédiatement
+                        this.currentTicket = data.ticket;
+                        this.loading = false;
+                        
+                        // Jouer le son d'appel IMMÉDIATEMENT après la mise à jour
+                        this.playCallSound();
+                        
                         this.fetchQueueData();
                     } else {
                         this.currentTicket = null;
@@ -295,17 +297,35 @@
             },
 
             recallTicket() {
-                if (!this.currentTicket) return;
+                if (!this.currentTicket || this.loading) return;
                 
-                fetch(`/qms/tickets/${this.currentTicket.id}/recall`, {
+                this.loading = true;
+                const ticketId = this.currentTicket.id;
+                
+                fetch(`/qms/tickets/${ticketId}/recall`, {
                     method: 'POST',
                     headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
                 })
                 .then(res => res.json())
                 .then(data => {
+                    this.loading = false;
                     if (data.success) {
-                        // Ticket rappelé avec succès
+                        // Mettre à jour le ticket actuel avec le ticket rappelé
+                        if (data.ticket) {
+                            this.currentTicket = data.ticket;
+                            // Jouer le son d'appel
+                            this.playCallSound();
+                        }
+                        // Rafraîchir les données de la file d'attente
+                        this.fetchQueueData();
+                    } else {
+                        alert('Erreur lors du rappel du ticket.');
                     }
+                })
+                .catch(e => {
+                    this.loading = false;
+                    alert('Erreur de connexion lors du rappel.');
+                    console.error('Erreur recallTicket:', e);
                 });
             },
 
@@ -380,6 +400,20 @@
             formatTime(dateString) {
                 if (!dateString) return '';
                 return new Date(dateString).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            },
+            
+            playCallSound() {
+                try {
+                    // Utiliser le fichier audio beep.wav
+                    const audio = new Audio('/sounds/beep.wav');
+                    audio.volume = 0.7; // Volume à 70% (ajustable entre 0 et 1)
+                    audio.play().catch(err => {
+                        // Si l'auto-play est bloqué, on affiche juste un message en console
+                        console.log('Impossible de jouer le son automatiquement. L\'interaction utilisateur peut être requise.');
+                    });
+                } catch (e) {
+                    console.log('Erreur lors de la lecture du son:', e);
+                }
             }
         }
     }

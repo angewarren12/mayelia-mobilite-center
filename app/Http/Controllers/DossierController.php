@@ -10,6 +10,9 @@ use App\Models\Client;
 use App\Models\Service;
 use App\Models\Centre;
 use App\Services\BarcodeService;
+use App\Events\DossierOpened;
+use App\Http\Requests\Dossier\StoreDossierRequest;
+use App\Http\Requests\Dossier\CreateWalkinRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -31,6 +34,14 @@ class DossierController extends Controller
             'agent',
             'paiementVerification'
         ])->whereNotNull('rendez_vous_id'); // Exclure les dossiers sans rendez-vous
+
+        // Filtrer par centre pour les non-admins
+        $user = Auth::user();
+        if ($user->role !== 'admin' && $user->centre_id) {
+            $query->whereHas('rendezVous', function($q) use ($user) {
+                $q->where('centre_id', $user->centre_id);
+            });
+        }
 
         // Filtres
         if ($request->filled('search')) {
@@ -72,6 +83,10 @@ class DossierController extends Controller
             'actionsLog.user' // Eager load logs
         ]);
 
+        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         $documentsRequis = DocumentRequis::where('service_id', $dossier->rendezVous->service_id)->get();
 
         return view('dossiers.show', compact('dossier', 'documentsRequis'));
@@ -82,13 +97,9 @@ class DossierController extends Controller
     /**
      * Créer un nouveau dossier
      */
-    public function store(Request $request)
+    public function store(StoreDossierRequest $request)
     {
-        $request->validate([
-            'rendez_vous_id' => 'required|exists:rendez_vous,id',
-            'statut' => 'required|in:en_cours,complet,rejete',
-            'notes' => 'nullable|string|max:1000',
-        ]);
+        // Validation déjà effectuée par StoreDossierRequest
 
         try {
             // Vérifier qu'il n'y a pas déjà un dossier pour ce rendez-vous
@@ -110,6 +121,9 @@ class DossierController extends Controller
             
             $dossier->logAction('ouvert', 'Création du dossier');
 
+            // Déclencher l'événement
+            event(new DossierOpened($dossier));
+
             return redirect()->route('dossiers.show', $dossier)
                 ->with('success', 'Dossier créé avec succès');
 
@@ -127,6 +141,11 @@ class DossierController extends Controller
     public function edit(DossierOuvert $dossier)
     {
         $dossier->load(['rendezVous.client', 'rendezVous.service', 'rendezVous.formule', 'rendezVous.centre']);
+        
+        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         return view('dossiers.edit', compact('dossier'));
     }
 
@@ -135,6 +154,10 @@ class DossierController extends Controller
      */
     public function update(Request $request, DossierOuvert $dossier)
     {
+        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
+
         $request->validate([
             'statut' => 'required|in:en_cours,complet,rejete',
             'notes' => 'nullable|string|max:1000',
@@ -170,6 +193,9 @@ class DossierController extends Controller
      */
     public function destroy(DossierOuvert $dossier)
     {
+        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
         try {
             // Supprimer les fichiers associés
             foreach ($dossier->documentVerifications as $doc) {
@@ -196,6 +222,9 @@ class DossierController extends Controller
      */
     public function updateDocuments(Request $request, DossierOuvert $dossier)
     {
+        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
         $request->validate([
             'documents' => 'required|array',
             'documents.*.document_requis_id' => 'required|exists:document_requis,id',
@@ -252,6 +281,9 @@ class DossierController extends Controller
      */
     public function updatePayment(Request $request, DossierOuvert $dossier)
     {
+        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
         $request->validate([
             'statut_paiement' => 'required|in:en_attente,paye,partiel,rembourse',
             'montant_paye' => 'nullable|numeric|min:0',
@@ -333,7 +365,7 @@ class DossierController extends Controller
     /**
      * Créer un dossier "sur place" (walk-in) - Traitement complet
      */
-    public function storeWalkin(Request $request)
+    public function storeWalkin(CreateWalkinRequest $request)
     {
         $user = Auth::user();
         $centre = $user->centre;
@@ -345,26 +377,7 @@ class DossierController extends Controller
             ], 403);
         }
 
-        // Validation des données
-        $request->validate([
-            // Client (nouveau ou existant)
-            'client_id' => 'nullable|exists:clients,id',
-            'client_nom' => 'required_without:client_id|string|max:255',
-            'client_prenom' => 'required_without:client_id|string|max:255',
-            'client_email' => 'required_without:client_id|email|max:255',
-            'client_telephone' => 'required_without:client_id|string|max:20',
-            'client_date_naissance' => 'nullable|date',
-            'client_lieu_naissance' => 'nullable|string|max:255',
-            'client_adresse' => 'nullable|string|max:500',
-            'client_profession' => 'nullable|string|max:255',
-            'client_sexe' => 'nullable|in:M,F',
-            'client_numero_piece_identite' => 'nullable|string|max:50',
-            'client_type_piece_identite' => 'nullable|in:CNI,PASSEPORT,PERMIS',
-            
-            // Service et formule
-            'service_id' => 'required|exists:services,id',
-            'formule_id' => 'required|exists:formules,id',
-        ]);
+        // Validation déjà effectuée par CreateWalkinRequest
 
         try {
             \Illuminate\Support\Facades\DB::beginTransaction();
@@ -419,7 +432,7 @@ class DossierController extends Controller
                 'client_id' => $client->id,
                 'date_rendez_vous' => now()->toDateString(),
                 'tranche_horaire' => 'Sur place - ' . now()->format('H:i'),
-                'statut' => 'confirme',
+                'statut' => RendezVous::STATUT_CONFIRME,
                 'numero_suivi' => $numeroSuivi,
                 'notes' => 'Dossier créé sur place (walk-in)',
             ]);
@@ -439,6 +452,9 @@ class DossierController extends Controller
             ]);
 
             \Illuminate\Support\Facades\DB::commit();
+
+            // Déclencher l'événement
+            event(new DossierOpened($dossierOuvert));
 
             Log::info('Dossier walk-in créé avec succès', [
                 'dossier_id' => $dossierOuvert->id,
@@ -478,6 +494,9 @@ class DossierController extends Controller
      */
     public function imprimerEtiquette(DossierOuvert $dossierOuvert, BarcodeService $barcodeService)
     {
+        if (!Auth::user()->canAccessCentre($dossierOuvert->rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce dossier.');
+        }
         // Charger les relations nécessaires
         $dossierOuvert->load([
             'rendezVous.client',

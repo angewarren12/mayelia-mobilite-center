@@ -6,11 +6,7 @@
 @section('content')
 <div class="space-y-6">
     <!-- En-tête avec bouton d'ajout -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-            <h1 class="text-2xl font-bold text-gray-900">Documents Requis</h1>
-            <p class="text-gray-600">Gérez les documents requis pour chaque service</p>
-        </div>
+    <div class="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
         @isAdmin
         <button onclick="openCreateModal()" 
                 class="w-full sm:w-auto bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
@@ -151,7 +147,14 @@
                                     @endforeach
                     </tbody>
                 </table>
-        </div>
+                        </div>
+
+                        <!-- Pagination -->
+                        @if($documentsRequis->hasPages())
+                            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                                {{ $documentsRequis->links() }}
+                            </div>
+                        @endif
 
                         <!-- Version mobile -->
                         <div class="lg:hidden space-y-4">
@@ -224,6 +227,13 @@
                                 </div>
                             @endforeach
                         </div>
+
+                        <!-- Pagination mobile -->
+                        @if($documentsRequis->hasPages())
+                            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6 mt-4">
+                                {{ $documentsRequis->links() }}
+                            </div>
+                        @endif
                     @else
                         <div class="text-center py-12">
                             <i class="fas fa-file-alt text-6xl text-gray-300 mb-4"></i>

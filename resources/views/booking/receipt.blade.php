@@ -8,133 +8,116 @@
         body {
             font-family: Arial, sans-serif;
             margin: 0;
-            padding: 5px;
+            padding: 20px;
             background-color: #f5f5f5;
-            font-size: 11px;
         }
         .receipt-container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
-            padding: 15px;
+            padding: 30px;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #3b82f6;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            border-bottom: 3px solid #028339;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .logo-img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 10px;
         }
         .logo {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: bold;
-            color: #3b82f6;
-            margin-bottom: 3px;
+            color: #028339;
+            margin-bottom: 5px;
         }
         .receipt-title {
-            font-size: 16px;
-            color: #1f2937;
-            margin-bottom: 2px;
+            font-size: 18px;
+            color: #333;
+            margin: 10px 0;
         }
         .receipt-subtitle {
-            color: #6b7280;
-            font-size: 11px;
+            color: #666;
+            font-size: 12px;
         }
         .receipt-number {
-            background: #3b82f6;
+            background: #028339;
             color: white;
-            padding: 6px 12px;
+            padding: 8px 16px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: bold;
-            margin: 10px 0;
+            margin: 15px auto;
             text-align: center;
+            display: inline-block;
+            width: 100%;
         }
         .section {
-            margin-bottom: 15px;
+            margin: 20px 0;
         }
         .section-title {
-            font-size: 14px;
             font-weight: bold;
-            color: #1f2937;
-            margin-bottom: 8px;
-            border-bottom: 1px solid #e5e7eb;
-            padding-bottom: 3px;
+            color: #028339;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+            font-size: 14px;
         }
-        .info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .info-item {
+        .info-row {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ddd;
         }
         .info-label {
-            font-weight: bold;
-            color: #374151;
-            margin-bottom: 5px;
-            font-size: 14px;
+            font-weight: 600;
+            color: #666;
         }
         .info-value {
-            color: #1f2937;
-            font-size: 16px;
-        }
-        .client-info {
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #3b82f6;
-        }
-        .appointment-details {
-            background: #f0f9ff;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #0ea5e9;
+            color: #333;
+            text-align: right;
         }
         .total-section {
-            background: #f0fdf4;
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid #10b981;
-            text-align: center;
+            background: #f0f9f4;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
         }
         .total-amount {
             font-size: 24px;
             font-weight: bold;
-            color: #059669;
-        }
-        .footer {
-            margin-top: 15px;
+            color: #028339;
             text-align: center;
-            color: #6b7280;
-            font-size: 10px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 10px;
+            margin-top: 10px;
         }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .status-confirme {
-            background: #dcfce7;
-            color: #166534;
+        .qr-section {
+            text-align: center;
+            margin: 20px 0;
         }
         .qr-placeholder {
             width: 100px;
             height: 100px;
-            background: #f3f4f6;
-            border: 2px dashed #d1d5db;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 20px auto;
-            border-radius: 8px;
+            border: 2px solid #028339;
+            display: inline-block;
+            line-height: 100px;
+            border-radius: 5px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+            color: #666;
+            font-size: 12px;
+        }
+        @media print {
+            body { background: white; }
+            .receipt-container { box-shadow: none; }
         }
     </style>
 </head>
@@ -142,8 +125,16 @@
     <div class="receipt-container">
         <!-- En-tête -->
         <div class="header">
-            <div class="logo">MAYELIA</div>
-            <div class="receipt-title">Reçu de Réservation</div>
+            @php
+                $logoPath = public_path('img/logo-oneci.jpg');
+                $logoExists = file_exists($logoPath);
+            @endphp
+            @if($logoExists)
+                <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($logoPath)) }}" alt="Mayelia Mobilité" class="logo-img">
+            @else
+                <div class="logo">MAYELIA MOBILITÉ</div>
+            @endif
+            <div class="receipt-title">REÇU DE RÉSERVATION</div>
             <div class="receipt-subtitle">Confirmation de votre rendez-vous</div>
         </div>
 
@@ -152,92 +143,62 @@
             {{ $rendezVous->numero_suivi }}
         </div>
 
-        <!-- Informations client et détails du rendez-vous sur deux colonnes -->
-        <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
-            <tr>
-                <!-- Colonne gauche : Informations client -->
-                <td style="width: 50%; vertical-align: top; background: #f8fafc; padding: 10px; border-radius: 4px; border-left: 3px solid #3b82f6;">
-                    <div class="section-title">Informations Client</div>
-                    <div class="client-info">
-                        <div class="info-item">
-                            <div class="info-label">Nom complet</div>
-                            <div class="info-value">{{ $rendezVous->client->nom }} {{ $rendezVous->client->prenom }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Téléphone</div>
-                            <div class="info-value">{{ $rendezVous->client->telephone }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Email</div>
-                            <div class="info-value">{{ $rendezVous->client->email }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Date de naissance</div>
-                            <div class="info-value">{{ $rendezVous->client->date_naissance ? \Carbon\Carbon::parse($rendezVous->client->date_naissance)->format('d/m/Y') : 'Non renseignée' }}</div>
-                        </div>
-                    </div>
-                </td>
-                
-                <!-- Colonne droite : Détails du rendez-vous -->
-                <td style="width: 50%; vertical-align: top; background: #f0f9ff; padding: 10px; border-radius: 4px; border-left: 3px solid #0ea5e9;">
-                    <div class="section-title">Détails du Rendez-vous</div>
-                    <div class="appointment-details">
-                        <div class="info-item">
-                            <div class="info-label">Centre</div>
-                            <div class="info-value">{{ $rendezVous->centre->nom }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Service</div>
-                            <div class="info-value">{{ $rendezVous->service->nom }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Formule</div>
-                            <div class="info-value">{{ $rendezVous->formule->nom }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Statut</div>
-                            <div class="info-value">
-                                <span class="status-badge status-confirme">{{ $rendezVous->statut_formate }}</span>
-                            </div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Date</div>
-                            <div class="info-value">{{ \Carbon\Carbon::parse($rendezVous->date_rendez_vous)->format('l d F Y') }}</div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Heure</div>
-                            <div class="info-value">{{ $rendezVous->tranche_horaire }}</div>
-                        </div>
-                    </div>
-                </td>
-            </tr>
-        </table>
-
-        <!-- Montant -->
         <div class="section">
-            <div class="total-section">
-                <div class="info-label">Montant à payer</div>
-                <div class="total-amount">{{ number_format($rendezVous->formule->prix, 0, ',', ' ') }} FCFA</div>
+            <div class="section-title">DÉTAILS DE LA RÉSERVATION</div>
+            <div class="info-row">
+                <span class="info-label">Centre:</span>
+                <span class="info-value">{{ $rendezVous->centre->nom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Service:</span>
+                <span class="info-value">{{ $rendezVous->service->nom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Formule:</span>
+                <span class="info-value">{{ $rendezVous->formule->nom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value">{{ \Carbon\Carbon::parse($rendezVous->date_rendez_vous)->format('d/m/Y') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Heure:</span>
+                <span class="info-value">{{ $rendezVous->tranche_horaire }}</span>
             </div>
         </div>
-
-        <!-- QR Code -->
-        <div class="qr-section" style="text-align: center; margin: 15px 0;">
-            <div style="display: inline-block; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; background: white;">
-                @if(isset($qrCodeBase64))
-                    <img src="{{ $qrCodeBase64 }}" alt="QR Code" style="width: 80px; height: 80px;">
-                @else
-                    <div style="color: #6b7280; font-size: 12px;">QR Code</div>
-                    <div style="font-size: 10px;">{{ $rendezVous->numero_suivi }}</div>
-                @endif
+        
+        <div class="section">
+            <div class="section-title">INFORMATIONS CLIENT</div>
+            <div class="info-row">
+                <span class="info-label">Nom:</span>
+                <span class="info-value">{{ $rendezVous->client->nom }} {{ $rendezVous->client->prenom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">{{ $rendezVous->client->email }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Téléphone:</span>
+                <span class="info-value">{{ $rendezVous->client->telephone }}</span>
             </div>
         </div>
-
-        <!-- Pied de page -->
+        
+        <div class="total-section">
+            <div style="text-align: center; color: #666;">Montant à payer</div>
+            <div class="total-amount">{{ number_format($rendezVous->formule->prix, 0, ',', ' ') }} FCFA</div>
+        </div>
+        
+        <div class="qr-section">
+            <div class="qr-placeholder">QR CODE</div>
+            @if(isset($qrCodeBase64))
+                <img src="{{ $qrCodeBase64 }}" alt="QR Code" style="width: 100px; height: 100px; margin-top: 10px;">
+            @endif
+            <div style="margin-top: 5px; font-size: 10px; color: #666;">{{ $rendezVous->numero_suivi }}</div>
+        </div>
+        
         <div class="footer">
             <p><strong>Merci pour votre confiance !</strong></p>
             <p>Ce reçu confirme votre réservation. Veuillez le présenter lors de votre rendez-vous.</p>
-            <p>Pour toute question, contactez-nous au +225 XX XX XX XX</p>
             <p>Généré le {{ now()->format('d/m/Y à H:i') }}</p>
         </div>
     </div>

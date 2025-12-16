@@ -7,6 +7,8 @@ use App\Models\Centre;
 use App\Models\Service;
 use App\Models\Formule;
 use App\Models\Client;
+use App\Http\Requests\RendezVous\StoreRendezVousRequest;
+use App\Http\Requests\RendezVous\UpdateRendezVousRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\AuthService;
@@ -27,6 +29,12 @@ class RendezVousController extends Controller
         $this->checkPermission('rendez-vous', 'view');
 
         $query = RendezVous::with(['client', 'service', 'formule', 'centre', 'dossierOuvert.agent']);
+
+        // Filtrer par centre pour les non-admins
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if ($user->role !== 'admin' && $user->centre_id) {
+            $query->where('centre_id', $user->centre_id);
+        }
         
         // Filtre de recherche
         if ($request->filled('search')) {
@@ -58,18 +66,23 @@ class RendezVousController extends Controller
             $query->where('statut', $request->statut);
         }
         
-        $rendezVous = $query->orderBy('date_rendez_vous', 'desc')
+        $rendezVous = $query->withRelations()
+                           ->orderBy('date_rendez_vous', 'desc')
                            ->orderBy('tranche_horaire', 'asc')
                            ->paginate(15)
                            ->appends($request->query());
         
-        $centres = Centre::all();
+        $centres = Centre::actif()->get();
         
         return view('rendez-vous.index', compact('rendezVous', 'centres'));
     }
 
     public function show(RendezVous $rendezVous)
     {
+        if (!\Illuminate\Support\Facades\Auth::user()->canAccessCentre($rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce rendez-vous.');
+        }
+
         $rendezVous->load(['client', 'service', 'formule', 'centre']);
         return view('rendez-vous.show', compact('rendezVous'));
     }
@@ -78,28 +91,19 @@ class RendezVousController extends Controller
     {
         $this->checkPermission('rendez-vous', 'create');
 
-        $centres = Centre::where('statut', 'actif')->get();
-        $services = Service::where('statut', 'actif')->get();
-        $formules = Formule::where('statut', 'actif')->get();
-        $clients = Client::where('actif', true)->get();
+        $centres = Centre::actif()->get();
+        $services = Service::actif()->get();
+        $formules = Formule::actif()->get();
+        $clients = Client::actifs()->get();
         
         return view('rendez-vous.create', compact('centres', 'services', 'formules', 'clients'));
     }
 
-    public function store(Request $request)
+    public function store(StoreRendezVousRequest $request)
     {
         $this->checkPermission('rendez-vous', 'create');
 
-        $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'centre_id' => 'required|exists:centres,id',
-            'service_id' => 'required|exists:services,id',
-            'formule_id' => 'required|exists:formules,id',
-            'date_rendez_vous' => 'required|date|after:today',
-            'tranche_horaire' => 'required|string',
-            'statut' => 'required|in:confirme,annule,termine',
-            'notes' => 'nullable|string'
-        ]);
+        // Validation déjà effectuée par StoreRendezVousRequest
 
         try {
             // Générer un numéro de suivi unique au format MAYELIA-YYYY-XXXXXX (où XXXXXX sont des chiffres)
@@ -133,29 +137,28 @@ class RendezVousController extends Controller
     {
         $this->checkPermission('rendez-vous', 'update');
 
+        if (!\Illuminate\Support\Facades\Auth::user()->canAccessCentre($rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce rendez-vous.');
+        }
+
         $rendezVous->load(['client', 'service', 'formule', 'centre']);
-        $centres = Centre::where('statut', 'actif')->get();
-        $services = Service::where('statut', 'actif')->get();
-        $formules = Formule::where('statut', 'actif')->get();
-        $clients = Client::where('actif', true)->get();
+        $centres = Centre::actif()->get();
+        $services = Service::actif()->get();
+        $formules = Formule::actif()->get();
+        $clients = Client::actifs()->get();
         
         return view('rendez-vous.edit', compact('rendezVous', 'centres', 'services', 'formules', 'clients'));
     }
 
-    public function update(Request $request, RendezVous $rendezVous)
+    public function update(UpdateRendezVousRequest $request, RendezVous $rendezVous)
     {
         $this->checkPermission('rendez-vous', 'update');
 
-        $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'centre_id' => 'required|exists:centres,id',
-            'service_id' => 'required|exists:services,id',
-            'formule_id' => 'required|exists:formules,id',
-            'date_rendez_vous' => 'required|date',
-            'tranche_horaire' => 'required|string',
-            'statut' => 'required|in:confirme,annule,termine',
-            'notes' => 'nullable|string'
-        ]);
+        if (!\Illuminate\Support\Facades\Auth::user()->canAccessCentre($rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce rendez-vous.');
+        }
+
+        // Validation déjà effectuée par UpdateRendezVousRequest
 
         try {
             $rendezVous->update($request->all());
@@ -173,6 +176,10 @@ class RendezVousController extends Controller
     public function destroy(RendezVous $rendezVous)
     {
         $this->checkPermission('rendez-vous', 'delete');
+
+        if (!\Illuminate\Support\Facades\Auth::user()->canAccessCentre($rendezVous->centre_id)) {
+            abort(403, 'Accès non autorisé à ce rendez-vous.');
+        }
 
         try {
             $rendezVous->delete();
@@ -192,7 +199,7 @@ class RendezVousController extends Controller
     {
         try {
             $formules = $service->formules()
-                             ->where('statut', 'actif')
+                             ->actif()
                              ->get(['id', 'nom', 'prix', 'description']);
 
             return response()->json($formules);
