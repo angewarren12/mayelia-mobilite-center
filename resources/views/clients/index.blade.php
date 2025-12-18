@@ -322,7 +322,7 @@ function viewClient(id) {
                                         <i class="fas fa-user text-2xl"></i>
                                     </div>
                                     <div>
-                                        <h2 class="text-2xl font-bold">${client.nom_complet}</h2>
+                                        <h2 class="text-2xl font-bold">${client.nom} ${client.prenom}</h2>
                                         <p class="text-mayelia-100">${client.profession || 'Profession non renseignée'}</p>
                                         <div class="flex items-center mt-2">
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${client.actif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
@@ -351,7 +351,7 @@ function viewClient(id) {
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label class="text-sm font-medium text-gray-500 block mb-1">Nom complet</label>
-                                            <p class="text-gray-900 font-medium">${client.nom_complet}</p>
+                                            <p class="text-gray-900 font-medium">${client.nom} ${client.prenom}</p>
                                         </div>
                                         <div>
                                             <label class="text-sm font-medium text-gray-500 block mb-1">Email</label>
@@ -371,7 +371,7 @@ function viewClient(id) {
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <label class="text-sm font-medium text-gray-500 block mb-1">Sexe</label>
-                                            <p class="text-gray-900">${client.sexe_formate || 'Non renseigné'}</p>
+                                            <p class="text-gray-900">${client.sexe === 'M' ? 'Masculin' : (client.sexe === 'F' ? 'Féminin' : 'Non renseigné')}</p>
                                         </div>
                                         <div>
                                             <label class="text-sm font-medium text-gray-500 block mb-1">Lieu de naissance</label>

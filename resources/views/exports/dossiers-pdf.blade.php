@@ -88,11 +88,10 @@
             display: inline-block;
         }
         
-        .statut-en_attente { background: #FEF3C7; color: #92400E; }
-        .statut-recu { background: #DBEAFE; color: #1E40AF; }
-        .statut-traite { background: #E9D5FF; color: #5B21B6; }
-        .statut-carte_prete { background: #D1FAE5; color: #065F46; }
-        .statut-recupere { background: #F3F4F6; color: #374151; }
+        .statut-ouvert { background: #E0F2FE; color: #0369A1; }
+        .statut-en_cours { background: #FEF3C7; color: #B45309; }
+        .statut-finalise { background: #D1FAE5; color: #047857; }
+        .statut-annulé { background: #FEE2E2; color: #B91C1C; }
         
         .footer {
             margin-top: 40px;
@@ -120,25 +119,33 @@
     <table>
         <thead>
             <tr>
-                <th>Code-barres</th>
+                <th>N° Dossier</th>
                 <th>Client</th>
                 <th>Service</th>
                 <th>Centre</th>
-                <th>Date réception</th>
+                <th>Date ouverture</th>
+                <th>Date RDV</th>
                 <th>Statut</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($dossiers as $item)
+            @foreach($dossiers as $dossier)
                 <tr>
-                    <td style="font-family: monospace;">{{ $item->code_barre }}</td>
-                    <td>{{ $item->dossierOuvert->rendezVous->client->nom_complet ?? 'N/A' }}</td>
-                    <td>{{ $item->dossierOuvert->rendezVous->service->nom ?? 'N/A' }}</td>
-                    <td>{{ $item->transfer->centre->nom ?? 'N/A' }}</td>
-                    <td>{{ $item->date_reception ? $item->date_reception->format('d/m/Y H:i') : '-' }}</td>
+                    <td style="font-family: monospace;">{{ str_pad($dossier->id, 5, '0', STR_PAD_LEFT) }}</td>
+                    <td>{{ $dossier->rendezVous->client->nom_complet ?? 'N/A' }}</td>
+                    <td>{{ $dossier->rendezVous->service->nom ?? 'N/A' }}</td>
+                    <td>{{ $dossier->rendezVous->centre->nom ?? 'N/A' }}</td>
+                    <td>{{ $dossier->date_ouverture ? $dossier->date_ouverture->format('d/m/Y H:i') : '-' }}</td>
                     <td>
-                        <span class="statut-badge statut-{{ $item->statut }}">
-                            {{ $item->statut_formate }}
+                        @if($dossier->rendezVous)
+                            {{ $dossier->rendezVous->date_rendez_vous->format('d/m/Y') }} {{ $dossier->rendezVous->tranche_horaire }}
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td>
+                        <span class="statut-badge statut-{{ $dossier->statut }}">
+                            {{ $dossier->statut_formate }}
                         </span>
                     </td>
                 </tr>

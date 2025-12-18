@@ -72,6 +72,11 @@ class DossierOuvert extends Model
             return $this->rendezVous && $this->rendezVous->centre_id === $user->centre_id;
         }
 
+        // Si le dossier est rejeté, un agent ne peut plus le gérer
+        if ($this->statut === 'annulé') {
+            return false;
+        }
+
         // Si l'utilisateur est un agent (ou autre)
         // Il peut gérer le dossier uniquement s'il lui est assigné (c'est lui qui l'a ouvert)
         return $this->agent_id === $user->id;

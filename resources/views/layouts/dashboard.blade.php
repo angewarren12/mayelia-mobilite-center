@@ -54,12 +54,26 @@
     <!-- Alpine.js for dropdowns -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="font-sans antialiased bg-gray-100" x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false' }" 
-      x-init="$watch('sidebarOpen', value => localStorage.setItem('sidebarOpen', value))">
+<body class="font-sans antialiased bg-gray-100" x-data="{ 
+    sidebarOpen: window.innerWidth >= 1024 ? (localStorage.getItem('sidebarOpen') !== 'false') : false,
+    mobileOpen: false 
+}" 
+      x-init="$watch('sidebarOpen', value => { if(window.innerWidth >= 1024) localStorage.setItem('sidebarOpen', value) });">
     <div class="min-h-screen flex">
+        <!-- Mobile Sidebar Overlay -->
+        <div x-show="sidebarOpen && window.innerWidth < 1024" 
+             @click="sidebarOpen = false"
+             x-transition:enter="transition-opacity ease-linear duration-300"
+             x-transition:enter-start="opacity-0"
+             x-transition:enter-end="opacity-100"
+             x-transition:leave="transition-opacity ease-linear duration-300"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-gray-600 bg-opacity-75 z-40 lg:hidden"></div>
+
         <!-- Sidebar -->
-        <div class="bg-gradient-to-b from-mayelia-600 to-mayelia-800 shadow-lg flex flex-col transition-all duration-300 ease-in-out"
-             :class="sidebarOpen ? 'w-64' : 'w-20'">
+        <div class="bg-gradient-to-b from-mayelia-600 to-mayelia-800 shadow-lg flex flex-col transition-all duration-300 ease-in-out fixed lg:static inset-y-0 left-0 z-50 min-h-screen"
+             :class="sidebarOpen ? 'w-64 translate-x-0' : '-translate-x-full lg:translate-x-0 w-64 lg:w-20'">
             <div class="p-6 flex justify-center items-center border-b border-gray-200 bg-white relative">
                 <img src="{{ asset('img/logo-oneci.jpg') }}" alt="Mayelia Mobilité" 
                      class="h-16 w-auto transition-all duration-300"
@@ -128,6 +142,14 @@
                 </a>
                 @endif
                 
+                @if($authService->isAdmin() || $authService->hasPermission('statistics', 'view'))
+                <a href="{{ route('statistics.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('statistics.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Statistiques' : ''">
+                    <i class="fas fa-chart-line w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Statistiques</span>
+                </a>
+                @endif
+                
                 @if($authService->isAdmin())
                 <a href="{{ route('document-requis.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('document-requis.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
                    :title="!sidebarOpen ? 'Documents requis' : ''">
@@ -136,6 +158,7 @@
                 </a>
                 @endif
 
+                {{--
                 @if($authService->isAdmin() || $authService->hasPermission('oneci-transfers', 'view'))
                 <a href="{{ route('oneci-transfers.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('oneci-transfers.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
                    :title="!sidebarOpen ? 'Transferts ONECI' : ''">
@@ -151,6 +174,7 @@
                     <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Récupération cartes</span>
                 </a>
                 @endif
+                --}}
             </nav>
             
             <div class="p-4 border-t border-white/10">
@@ -179,9 +203,10 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col">
             <!-- Header -->
             <header class="bg-white shadow-sm border-b">
                 <div class="px-6 py-4">

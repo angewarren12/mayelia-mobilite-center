@@ -17,21 +17,21 @@
 <div class="space-y-6">
     <!-- Informations du centre -->
     <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
             <div class="flex items-center">
                 <i class="fas fa-building text-mayelia-600 text-xl mr-3"></i>
                 <h3 class="text-lg font-semibold text-gray-900">{{ $centre->nom }}</h3>
             </div>
             @isAdmin
-            <div class="flex items-center space-x-3">
+            <div class="flex flex-wrap items-center gap-3">
                 <a href="{{ route('qms.display', $centre) }}" 
                    target="_blank"
-                   class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors">
+                   class="inline-flex items-center px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg transition-colors text-sm">
                     <i class="fas fa-tv mr-2"></i>
                     Écran TV
                 </a>
                 <a href="{{ route('admin.centres.qms.edit', $centre) }}" 
-                   class="inline-flex items-center px-4 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white font-medium rounded-lg transition-colors">
+                   class="inline-flex items-center px-4 py-2 bg-mayelia-600 hover:bg-mayelia-700 text-white font-medium rounded-lg transition-colors text-sm">
                     <i class="fas fa-users-cog mr-2"></i>
                     Paramètres QMS
                 </a>

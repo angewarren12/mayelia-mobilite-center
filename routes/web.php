@@ -240,6 +240,9 @@ Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, '
     // Routes resource déjà définies manuellement ci-dessus (lignes 160-166)
     // Route::resource('rendez-vous', RendezVousController::class); // Commenté pour éviter duplication
     
+    // Statistiques
+    Route::get('/statistics', [App\Http\Controllers\StatisticsController::class, 'index'])->name('statistics.index');
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

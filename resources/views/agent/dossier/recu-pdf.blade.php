@@ -228,12 +228,8 @@
                 @endphp
                 @if($logoExists)
                     <img src="data:image/jpeg;base64,{{ base64_encode(file_get_contents($logoPath)) }}" alt="Mayelia Mobilité" class="logo-img">
-                @else
-                    <div class="company-name">MAYELIA MOBILITÉ</div>
                 @endif
             </div>
-            <div class="company-name">MAYELIA MOBILITÉ</div>
-            <div class="company-subtitle">Solutions de mobilité et d'identification</div>
             <div class="receipt-title">REÇU DE TRAÇABILITÉ - DOSSIER FINALISÉ</div>
             <div class="receipt-number">N° Dossier: {{ $dossierOuvert->id }}</div>
         </div>
@@ -263,15 +259,10 @@
                                 <div class="info-label">Téléphone :</div>
                                 <div class="info-value">{{ $dossierOuvert->rendezVous->client->telephone ?? 'N/A' }}</div>
                             </div>
-                            @if($dossierOuvert->rendezVous->client->date_naissance)
                             <div class="info-row">
-                                <div class="info-label">Date de naissance :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->client->date_naissance->format('d/m/Y') }}</div>
+                                <div class="info-label">Adresse :</div>
+                                <div class="info-value">{{ $dossierOuvert->rendezVous->client->adresse ?? 'N/A' }}</div>
                             </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- Informations du service -->
                 <div class="section">
@@ -403,11 +394,9 @@
         <!-- Pied de page -->
         <div class="footer">
             <p><strong>MAYELIA MOBILITÉ</strong></p>
-            <p>Solutions de mobilité et d'identification</p>
             <p>Ce document est généré automatiquement et certifie le traitement du dossier.</p>
             <p style="margin-top: 10px;">Document généré le {{ now()->format('d/m/Y à H:i') }}</p>
         </div>
     </div>
 </body>
-</html>
 

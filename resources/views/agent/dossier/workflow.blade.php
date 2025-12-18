@@ -685,7 +685,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                            <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->client->date_naissance ?? '' }}" 
+                            <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->client->date_naissance ? \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('Y-m-d') : '' }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div class="md:col-span-2">
@@ -1526,13 +1526,13 @@ function updateClientInfoDisplay(clientData = null) {
     }
     
     // Récupérer les informations du client depuis les champs du modal
-    const nom = document.getElementById('clientNom')?.value || '{{ $dossierOuvert->rendezVous->client->nom }}';
-    const prenom = document.getElementById('clientPrenom')?.value || '{{ $dossierOuvert->rendezVous->client->prenom }}';
-    const email = document.getElementById('clientEmail')?.value || '{{ $dossierOuvert->rendezVous->client->email }}';
-    const telephone = document.getElementById('clientTelephone')?.value || '{{ $dossierOuvert->rendezVous->client->telephone ?? "" }}';
-    const dateNaissance = document.getElementById('clientDateNaissance')?.value || '{{ $dossierOuvert->rendezVous->client->date_naissance ?? "" }}';
-    const adresse = document.getElementById('clientAdresse')?.value || '{{ $dossierOuvert->rendezVous->client->adresse ?? "" }}';
-    const profession = document.getElementById('clientProfession')?.value || '{{ $dossierOuvert->rendezVous->client->profession ?? "" }}';
+    const nom = document.getElementById('clientNom')?.value || @json($dossierOuvert->rendezVous->client->nom);
+    const prenom = document.getElementById('clientPrenom')?.value || @json($dossierOuvert->rendezVous->client->prenom);
+    const email = document.getElementById('clientEmail')?.value || @json($dossierOuvert->rendezVous->client->email);
+    const telephone = document.getElementById('clientTelephone')?.value || @json($dossierOuvert->rendezVous->client->telephone ?? "");
+    const dateNaissance = document.getElementById('clientDateNaissance')?.value || @json($dossierOuvert->rendezVous->client->date_naissance ?? "");
+    const adresse = document.getElementById('clientAdresse')?.value || @json($dossierOuvert->rendezVous->client->adresse ?? "");
+    const profession = document.getElementById('clientProfession')?.value || @json($dossierOuvert->rendezVous->client->profession ?? "");
     
     // Formater la date
     let dateFormatee = '';
@@ -1797,10 +1797,10 @@ function validerRejet() {
 function finaliserDossier() {
     // Vérifier que toutes les étapes sont validées (utiliser les vrais noms d'attributs)
     const etapes = [
-        { nom: 'Fiche de pré-enrôlement', valide: {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'true' : 'false' }} },
-        { nom: 'Documents', valide: {{ $dossierOuvert->documents_verifies ? 'true' : 'false' }} },
-        { nom: 'Informations client', valide: {{ $dossierOuvert->informations_client_verifiees ? 'true' : 'false' }} },
-        { nom: 'Paiement', valide: {{ $dossierOuvert->paiement_verifie ? 'true' : 'false' }} }
+        { nom: 'Fiche de pré-enrôlement', valide: @json((bool)$dossierOuvert->fiche_pre_enrolement_verifiee) },
+        { nom: 'Documents', valide: @json((bool)$dossierOuvert->documents_verifies) },
+        { nom: 'Informations client', valide: @json((bool)$dossierOuvert->informations_client_verifiees) },
+        { nom: 'Paiement', valide: @json((bool)$dossierOuvert->paiement_verifie) }
     ];
     
     const etapesNonValidees = etapes.filter(e => !e.valide);

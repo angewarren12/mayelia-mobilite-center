@@ -148,6 +148,9 @@ class ExportController extends Controller
     /**
      * Exporter les dossiers selon les critères
      */
+    /**
+     * Exporter les dossiers ouverts selon les critères
+     */
     public function exportDossiers(Request $request)
     {
         \Log::info('=== DÉBUT EXPORT DOSSIERS ===');
@@ -177,13 +180,38 @@ class ExportController extends Controller
             return back()->withErrors($e->errors());
         }
 
-        $query = DossierOneciItem::with([
-            'dossierOuvert.rendezVous.client',
-            'dossierOuvert.rendezVous.service',
-            'dossierOuvert.rendezVous.formule',
-            'transfer.centre',
-            'agentOneci'
+        // Récupérer le centre de l'utilisateur connecté
+        $user = auth()->user();
+        $centre = $user->centre;
+        
+        // Si l'utilisateur est un admin global (sans centre), il peut exporter tous les dossiers ou un centre spécifique
+        if (!$centre && $user->role !== 'admin') {
+            if ($request->ajax()) {
+                return response()->json(['error' => 'Aucun centre assigné à votre compte.'], 403);
+            }
+            return back()->with('error', 'Aucun centre assigné à votre compte.');
+        }
+
+        $query = \App\Models\DossierOuvert::with([
+            'rendezVous.client',
+            'rendezVous.service',
+            'rendezVous.formule',
+            'rendezVous.centre',
+            'agent',
+            'paiementVerification'
         ]);
+        
+        // Filtrer par centre : si un centre_id est spécifié, l'utiliser, sinon utiliser le centre de l'utilisateur
+        if ($request->filled('centre_id')) {
+            $query->whereHas('rendezVous', function($q) use ($request) {
+                $q->where('centre_id', $request->centre_id);
+            });
+        } elseif ($centre) {
+            $query->whereHas('rendezVous', function($q) use ($centre) {
+                $q->where('centre_id', $centre->id);
+            });
+        }
+        // Si admin sans centre et pas de centre_id, on exporte tout (comportement par défaut)
 
         // Initialiser les variables
         $titre = 'Export des dossiers';
@@ -191,26 +219,26 @@ class ExportController extends Controller
 
         switch ($request->type_export) {
             case 'aujourdhui':
-                $query->whereDate('date_reception', Carbon::today());
+                $query->whereDate('date_ouverture', Carbon::today());
                 $filename = 'dossiers-aujourdhui-' . Carbon::today()->format('Y-m-d') . '.pdf';
-                $titre = 'Dossiers reçus aujourd\'hui (' . Carbon::today()->format('d/m/Y') . ')';
+                $titre = 'Dossiers ouverts aujourd\'hui (' . Carbon::today()->format('d/m/Y') . ')';
                 break;
                 
             case 'date':
-                $query->whereDate('date_reception', $request->date);
+                $query->whereDate('date_ouverture', $request->date);
                 $filename = 'dossiers-' . Carbon::parse($request->date)->format('Y-m-d') . '.pdf';
-                $titre = 'Dossiers reçus le ' . Carbon::parse($request->date)->format('d/m/Y');
+                $titre = 'Dossiers ouverts le ' . Carbon::parse($request->date)->format('d/m/Y');
                 break;
                 
             case 'plage':
-                $query->whereBetween('date_reception', [
+                $query->whereBetween('date_ouverture', [
                     Carbon::parse($request->date_debut)->startOfDay(),
                     Carbon::parse($request->date_fin)->endOfDay()
                 ]);
                 $filename = 'dossiers-' . 
                     Carbon::parse($request->date_debut)->format('Y-m-d') . '-' . 
                     Carbon::parse($request->date_fin)->format('Y-m-d') . '.pdf';
-                $titre = 'Dossiers reçus du ' . 
+                $titre = 'Dossiers ouverts du ' . 
                     Carbon::parse($request->date_debut)->format('d/m/Y') . ' au ' . 
                     Carbon::parse($request->date_fin)->format('d/m/Y');
                 break;
@@ -221,7 +249,7 @@ class ExportController extends Controller
             $query->where('statut', $request->statut);
         }
 
-        $dossiers = $query->orderBy('date_reception', 'desc')->get();
+        $dossiers = $query->orderBy('date_ouverture', 'desc')->get();
 
         \Log::info('Nombre de dossiers trouvés:', ['count' => $dossiers->count()]);
 
