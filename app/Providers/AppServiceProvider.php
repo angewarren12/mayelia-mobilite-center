@@ -59,5 +59,8 @@ class AppServiceProvider extends ServiceProvider
             DossierOpened::class,
             UpdateRendezVousStatus::class
         );
+
+        // Observers
+        \App\Models\DossierOuvert::observe(\App\Observers\DossierOuvertObserver::class);
     }
 }

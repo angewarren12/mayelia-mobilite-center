@@ -132,6 +132,12 @@
                     <i class="fas fa-user-tie w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
                     <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Agents</span>
                 </a>
+                
+                <a href="{{ route('admin.guichets.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('admin.guichets.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Guichets' : ''">
+                    <i class="fas fa-desktop w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Gestion des Guichets</span>
+                </a>
                 @endif
                 
                 @if($authService->isAdmin() || $authService->hasPermission('dossiers', 'view'))
@@ -264,18 +270,6 @@
 
             <!-- Page Content -->
             <main class="flex-1 p-6 animate-page-enter">
-                @if(session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if(session('error'))
-                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                        {{ session('error') }}
-                    </div>
-                @endif
-
                 <!-- Page Title -->
                 @hasSection('title')
                     <div class="mb-6 pb-4 border-b border-gray-200">
@@ -290,11 +284,43 @@
             </main>
         </div>
     </div>
-    
+
     <!-- Toast Notifications -->
     @include('components.toast')
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if(session('success'))
+                showSuccessToast(@json(session('success')));
+            @endif
+
+            @if(session('error'))
+                showErrorToast(@json(session('error')));
+            @endif
+
+            @if(session('warning'))
+                showWarningToast(@json(session('warning')));
+            @endif
+
+            @if(session('info'))
+                showInfoToast(@json(session('info')));
+            @endif
+
+            @if(session('status') === 'password-updated')
+                showSuccessToast("Mot de passe mis à jour avec succès.");
+            @elseif(session('status') === 'profile-updated')
+                showSuccessToast("Profil mis à jour avec succès.");
+            @elseif(session('status') === 'verification-link-sent')
+                showInfoToast("Un nouveau lien de vérification a été envoyé à votre adresse email.");
+            @elseif(session('status'))
+                showInfoToast(@json(session('status')));
+            @endif
+        });
+    </script>
+
     <!-- Global QMS Widget -->
     @include('partials.qms-widget')
+
+    @stack('scripts')
 </body>
 </html>

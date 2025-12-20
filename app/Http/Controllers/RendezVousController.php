@@ -30,9 +30,9 @@ class RendezVousController extends Controller
 
         $query = RendezVous::with(['client', 'service', 'formule', 'centre', 'dossierOuvert.agent']);
 
-        // Filtrer par centre pour les non-admins
+        // Filtrer par centre : les agents et les administrateurs de centre ne voient que leur centre
         $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user->role !== 'admin' && $user->centre_id) {
+        if ($user->centre_id) {
             $query->where('centre_id', $user->centre_id);
         }
         
@@ -51,8 +51,8 @@ class RendezVousController extends Controller
             });
         }
         
-        // Filtre par centre
-        if ($request->filled('centre_id')) {
+        // Filtre par centre (uniquement accessible au Super Admin car les autres sont verrouillés)
+        if (!$user->centre_id && $request->filled('centre_id')) {
             $query->where('centre_id', $request->centre_id);
         }
         

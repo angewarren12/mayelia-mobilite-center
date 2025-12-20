@@ -115,7 +115,8 @@
                                         $statutColors = [
                                             'ouvert' => 'bg-mayelia-100 text-mayelia-800',
                                             'en_cours' => 'bg-yellow-100 text-yellow-800',
-                                            'finalise' => 'bg-green-100 text-green-800'
+                                            'finalise' => 'bg-green-100 text-green-800',
+                                            'annulé' => 'bg-red-100 text-red-800'
                                         ];
                                         $color = $statutColors[$dossier->statut] ?? 'bg-gray-100 text-gray-800';
                                     @endphp
@@ -152,7 +153,7 @@
                                            title="Imprimer le reçu">
                                             <i class="fas fa-print"></i>
                                         </a>
-                                        <a href="{{ route('dossiers.imprimer-etiquette', $dossier) }}" 
+                                        <a href="{{ route('dossier.imprimer-etiquette', $dossier) }}" 
                                            target="_blank"
                                            class="text-purple-600 hover:text-purple-900" 
                                            title="Imprimer l'étiquette">

@@ -22,12 +22,10 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    <select x-model="selectedGuichet" class="form-select rounded-lg border-gray-300 focus:border-mayelia-500 focus:ring focus:ring-mayelia-200 transition duration-200">
-                        <option value="">Sélectionner un guichet</option>
-                        @foreach($guichets as $guichet)
-                        <option value="{{ $guichet->id }}">{{ $guichet->nom }} ({{ $guichet->centre->nom }})</option>
-                        @endforeach
-                    </select>
+                    <div class="flex items-center bg-mayelia-50 text-mayelia-700 px-4 py-2 rounded-lg border border-mayelia-100 font-bold">
+                        <i class="fas fa-desktop mr-2 text-mayelia-500"></i>
+                        <span>{{ $assignedGuichet->nom }}</span>
+                    </div>
                     
                     <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium flex items-center" x-show="selectedGuichet">
                         <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -42,7 +40,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6" x-show="selectedGuichet">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Colonne Gauche: Contrôles & Ticket Actuel -->
             <div class="lg:col-span-2 space-y-6">
                 <!-- Ticket Actuel -->
@@ -153,14 +151,6 @@
                 </div>
             </div>
         </div>
-        
-        <div x-show="!selectedGuichet" class="text-center py-20">
-            <div class="bg-white p-10 rounded-xl shadow-lg inline-block max-w-md">
-                <i class="fas fa-store-alt text-6xl text-gray-300 mb-6"></i>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Bienvenue</h2>
-                <p class="text-gray-500 mb-6">Veuillez sélectionner votre guichet pour commencer à travailler.</p>
-            </div>
-        </div>
     </div>
 </div>
 
@@ -169,11 +159,12 @@
 <script>
     function agentDashboard() {
         return {
-            selectedGuichet: '',
+            selectedGuichet: {{ $assignedGuichet->id }},
             currentTicket: null,
             waitingList: [],
             waitingCount: 0,
-            centreId: 1,
+            centreId: {{ $centreId }},
+            assignedGuichetId: {{ $assignedGuichet ? $assignedGuichet->id : 'null' }},
             currentTime: '',
             isMiniMode: false,
             loading: false,
@@ -182,21 +173,8 @@
             cancelingTicket: false,
             
             init() {
-                // Restaurer la sélection du guichet
-                const savedGuichet = localStorage.getItem('qms_agent_guichet');
-                if (savedGuichet) {
-                    this.selectedGuichet = savedGuichet;
-                    this.fetchQueueData();
-                }
-
-                // Initialiser mode mini depuis localStorage
                 this.isMiniMode = localStorage.getItem('qms_mini_mode') === 'true';
-
-                // Watcher pour le guichet
-                this.$watch('selectedGuichet', (value) => {
-                    if (value) localStorage.setItem('qms_agent_guichet', value);
-                    else localStorage.removeItem('qms_agent_guichet');
-                });
+                this.fetchQueueData();
                 
                 // Polling pour vérifier si le mode mini a changé (par le widget global)
                 setInterval(() => {

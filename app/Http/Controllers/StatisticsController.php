@@ -32,24 +32,33 @@ class StatisticsController extends Controller
             ? Carbon::parse($request->input('end_date'))->endOfDay() 
             : Carbon::today()->endOfDay();
 
-        // Récupérer les agents
+        // Récupérer les agents selon le rôle et le centre de l'utilisateur
         $query = User::where('role', 'agent')
             ->where('statut', 'actif');
         
-        // Si l'utilisateur est admin mais lié à un centre spécifique (cas rare mais possible)
-        // ou si on voulait filtrer par centre via request pour le super admin
-        if ($user->role === 'admin' && $request->filled('centre_id')) {
-            $query->where('centre_id', $request->centre_id);
-        } elseif ($user->role !== 'admin' && $user->centre_id) {
-            // Si gestionnaire de centre (non implémenté pour l'instant mais au cas où)
+        if ($user->role === 'agent') {
+            // Un agent ne voit que ses propres statistiques
+            $query->where('id', $user->id);
+        } elseif ($user->centre_id) {
+            // Un administrateur de centre ne voit que les agents de son propre centre
             $query->where('centre_id', $user->centre_id);
+        } elseif ($user->role === 'admin' && $request->filled('centre_id')) {
+            // Un super-administrateur peut filtrer par n'importe quel centre
+            $query->where('centre_id', $request->centre_id);
         }
         
         $agents = $query->with('centre')->get();
+        
+        // Liste des centres pour le filtre (seulement pour le super-admin ou limitée au centre de l'admin)
+        $centres = \App\Models\Centre::all();
+        if ($user->centre_id) {
+            $centres = \App\Models\Centre::where('id', $user->centre_id)->get();
+        }
+
         $stats = [];
         
         foreach ($agents as $agent) {
-            // 1. Dossiers ouverts dans la période
+             // 1. Dossiers ouverts dans la période
             $dossiersOuverts = DossierOuvert::where('agent_id', $agent->id)
                 ->whereBetween('date_ouverture', [$startDate, $endDate])
                 ->count();

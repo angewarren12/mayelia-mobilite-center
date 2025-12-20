@@ -84,15 +84,11 @@
         }
         
         .barcode {
-            font-family: 'Courier New', monospace;
-            font-size: 24px;
+            font-size: 14px;
             font-weight: bold;
-            letter-spacing: 2px;
             color: #2D3748;
-            margin: 3mm 0;
-            padding: 2mm;
-            background: white;
-            border: 1px solid #CBD5E0;
+            margin: 1mm 0;
+            text-align: center;
         }
         
         .barcode-label {
@@ -167,7 +163,14 @@
         <!-- Code-barres -->
         <div class="barcode-section">
             <div class="barcode-label">Code de traçabilité</div>
-            <div class="barcode">{{ $dossierOuvert->code_barre }}</div>
+            <div style="margin: 3mm 0; text-align: center;">
+                @php
+                    $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+                    $barcode = base64_encode($generator->getBarcode($dossierOuvert->code_barre, $generator::TYPE_CODE_128));
+                @endphp
+                <img src="data:image/png;base64,{{ $barcode }}" style="width: 60mm; height: 15mm; display: block; margin: 0 auto;">
+            </div>
+            <div class="barcode" style="border: none; font-size: 14px; margin: 1mm 0;">{{ $dossierOuvert->code_barre }}</div>
             <div class="barcode-label">Scannez pour suivre le dossier</div>
         </div>
         

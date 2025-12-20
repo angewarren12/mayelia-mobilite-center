@@ -213,10 +213,12 @@ class User extends Authenticatable
      */
     public function canAccessCentre($centreId)
     {
-        if ($this->role === 'admin') {
+        // Un administrateur global (sans centre_id) a accès à tout
+        if ($this->role === 'admin' && !$this->centre_id) {
             return true;
         }
         
+        // Les agents et les administrateurs de centre sont limités à leur centre respectif
         return $this->centre_id == $centreId;
     }
 }

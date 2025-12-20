@@ -35,9 +35,12 @@ class DossierController extends Controller
             'paiementVerification'
         ])->whereNotNull('rendez_vous_id'); // Exclure les dossiers sans rendez-vous
 
-        // Filtrer par centre pour les non-admins
+        // Restriction de la liste : les agents ne voient que les dossiers qu'ils ont créés
         $user = Auth::user();
-        if ($user->role !== 'admin' && $user->centre_id) {
+        if ($user->role === 'agent') {
+            $query->where('agent_id', $user->id);
+        } elseif ($user->role === 'admin' && $user->centre_id) {
+            // Un administrateur de centre voit tous les dossiers de son centre
             $query->whereHas('rendezVous', function($q) use ($user) {
                 $q->where('centre_id', $user->centre_id);
             });

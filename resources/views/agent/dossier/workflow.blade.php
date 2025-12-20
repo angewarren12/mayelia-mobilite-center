@@ -58,13 +58,19 @@
                     @endif
                 </div>
             </div>
-            
             <div class="ml-6 text-right">
-                <div class="mb-4">
+                <div class="mb-4 flex flex-col items-end space-y-2">
+                    @if($dossierOuvert->statut === 'annulé' && Auth::user()->role === 'admin')
+                        <button onclick="resetDossier()" class="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors font-medium">
+                            <i class="fas fa-undo mr-2"></i>Remettre en attente
+                        </button>
+                    @endif
+
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium
                         @if($dossierOuvert->statut === 'ouvert') bg-mayelia-100 text-mayelia-800
                         @elseif($dossierOuvert->statut === 'en_cours') bg-yellow-100 text-yellow-800
                         @elseif($dossierOuvert->statut === 'finalise') bg-green-100 text-green-800
+                        @elseif($dossierOuvert->statut === 'annulé') bg-red-100 text-red-800
                         @endif">
                         <i class="fas fa-circle mr-2 text-xs"></i>
                         {{ $dossierOuvert->statut_formate }}
@@ -129,8 +135,11 @@
                 </div>
             @endif
             
+            @php $isAnnule = $dossierOuvert->statut === 'annulé'; @endphp
             @userCan('dossiers', 'update')
-            <button id="btn-verifier-fiche" onclick="verifierFichePreEnrolement()" class="w-full {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-mayelia-600 text-white hover:bg-mayelia-700' }} px-4 py-3 rounded-lg transition-colors font-medium">
+            <button id="btn-verifier-fiche" onclick="verifierFichePreEnrolement()" 
+                class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ($dossierOuvert->fiche_pre_enrolement_verifiee ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-mayelia-600 text-white hover:bg-mayelia-700') }} px-4 py-3 rounded-lg transition-colors font-medium"
+                {{ $isAnnule ? 'disabled' : '' }}>
                 <i class="fas {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'fa-edit' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'Modifier la vérification' : 'Vérifier la fiche' }}
             </button>
             @enduserCan
@@ -179,10 +188,10 @@
                                         {{ $docVerif->documentRequis->nom_document }}
                                     </span>
                                 </div>
-                                @if($docVerif->present && $docVerif->nom_fichier)
-                                    <span class="text-xs text-gray-500">
-                                        <i class="fas fa-paperclip mr-1"></i>Fichier joint
-                                    </span>
+                                @if($docVerif->present && $docVerif->chemin_fichier)
+                                    <a href="{{ route('dossier.view-document', $docVerif->id) }}" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded transition-colors">
+                                        <i class="fas fa-eye mr-1"></i>Prévisualiser
+                                    </a>
                                 @endif
                             </div>
                         @endforeach
@@ -191,7 +200,9 @@
             @endif
             
             @userCan('dossiers', 'update')
-            <button onclick="verifierDocuments()" class="w-full {{ $dossierOuvert->documents_verifies ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-green-600 text-white hover:bg-green-700' }} px-4 py-3 rounded-lg transition-colors font-medium">
+            <button onclick="verifierDocuments()" 
+                class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ($dossierOuvert->documents_verifies ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-green-600 text-white hover:bg-green-700') }} px-4 py-3 rounded-lg transition-colors font-medium"
+                {{ $isAnnule ? 'disabled' : '' }}>
                 <i class="fas {{ $dossierOuvert->documents_verifies ? 'fa-edit' : 'fa-list-check' }} mr-2"></i>{{ $dossierOuvert->documents_verifies ? 'Modifier les documents' : 'Vérifier les documents' }}
             </button>
             @enduserCan
@@ -325,7 +336,9 @@
             @endif 
             
             @userCan('dossiers', 'update')
-            <button onclick="modifierInformationsClient()" class="w-full {{ $dossierOuvert->informations_client_verifiees ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-purple-600 text-white hover:bg-purple-700' }} px-4 py-3 rounded-lg transition-colors font-medium">
+            <button onclick="modifierInformationsClient()" 
+                class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ($dossierOuvert->informations_client_verifiees ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-purple-600 text-white hover:bg-purple-700') }} px-4 py-3 rounded-lg transition-colors font-medium"
+                {{ $isAnnule ? 'disabled' : '' }}>
                 <i class="fas {{ $dossierOuvert->informations_client_verifiees ? 'fa-edit' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->informations_client_verifiees ? 'Modifier les informations' : 'Modifier les informations' }}
             </button>
             @enduserCan
@@ -424,13 +437,17 @@
                 </div>
                 
                 @userCan('dossiers', 'update')
-                <button onclick="verifierPaiement()" class="w-full bg-green-100 text-green-800 px-4 py-3 rounded-lg font-medium hover:bg-green-200 transition-colors">
+                <button onclick="verifierPaiement()" 
+                    class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-green-100 text-green-800 hover:bg-green-200' }} px-4 py-3 rounded-lg font-medium transition-colors"
+                    {{ $isAnnule ? 'disabled' : '' }}>
                     <i class="fas fa-edit mr-2"></i>Modifier le paiement
                 </button>
                 @enduserCan
             @else
                 @userCan('dossiers', 'update')
-                <button onclick="verifierPaiement()" class="w-full bg-orange-600 text-white px-4 py-3 rounded-lg hover:bg-orange-700 transition-colors font-medium">
+                <button onclick="verifierPaiement()" 
+                    class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-orange-600 text-white hover:bg-orange-700' }} px-4 py-3 rounded-lg transition-colors font-medium"
+                    {{ $isAnnule ? 'disabled' : '' }}>
                     <i class="fas fa-receipt mr-2"></i>Vérifier le paiement
                 </button>
                 @enduserCan
@@ -851,6 +868,14 @@
 
 <script>
 
+// État global pour suivre la validation des étapes
+const etapeState = {
+    1: @json((bool)$dossierOuvert->fiche_pre_enrolement_verifiee),
+    2: @json((bool)$dossierOuvert->documents_verifies),
+    3: @json((bool)$dossierOuvert->informations_client_verifiees),
+    4: @json((bool)$dossierOuvert->paiement_verifie)
+};
+
 // Formater le montant et afficher en lettres
 function formatMontant(input) {
     const montant = parseInt(input.value) || 0;
@@ -1199,8 +1224,15 @@ function updateDocumentsDisplay(documentsSelectionnes, documentsManquants, typeD
                 </h5>
                 <div class="space-y-1">
                     ${documentsSelectionnes.map(doc => `
-                        <div class="text-xs text-gray-600 bg-green-50 p-2 rounded">
-                            <i class="fas fa-file mr-1"></i>${doc.nom}
+                        <div class="flex items-center justify-between text-xs text-gray-600 bg-green-50 p-2 rounded">
+                            <div class="flex items-center">
+                                <i class="fas fa-file mr-1"></i>${doc.nom}
+                            </div>
+                            ${doc.fichier_uploade ? `
+                                <a href="/document-verification/${doc.dv_id}/view" target="_blank" class="text-[10px] text-blue-600 hover:text-blue-800 bg-blue-100 px-1.5 py-0.5 rounded font-medium">
+                                    <i class="fas fa-eye mr-1"></i>Voir
+                                </a>
+                            ` : ''}
                         </div>
                     `).join('')}
                 </div>
@@ -1387,6 +1419,11 @@ function validerPaiement() {
 // Fonction pour mettre à jour le statut des étapes
 function updateEtapeStatus(etape, valide, progression) {
     console.log(`Étape ${etape} ${valide ? 'validée' : 'invalidée'}, progression: ${progression}%`);
+    
+    // Mettre à jour l'état global
+    if (etapeState.hasOwnProperty(etape)) {
+        etapeState[etape] = valide;
+    }
     
     // Mettre à jour la barre de progression (utiliser les IDs pour être plus précis)
     if (progression !== undefined && progression !== null) {
@@ -1794,13 +1831,55 @@ function validerRejet() {
     });
 }
 
+function resetDossier() {
+    if (!confirm('Êtes-vous sûr de vouloir remettre ce dossier en attente (annuler le rejet) ?')) {
+        return;
+    }
+    
+    // Afficher un indicateur de chargement
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Traitement...';
+    button.disabled = true;
+    
+    // Appeler l'API pour reset le dossier
+    fetch(`/dossier/{{ $dossierOuvert->id }}/reset`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessToast('Dossier remis en attente avec succès');
+            // Recharger la page après 1.5 secondes
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showErrorToast(data.message || 'Erreur lors de la remise en attente');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showErrorToast('Erreur lors de la requête');
+        button.innerHTML = originalText;
+        button.disabled = false;
+    });
+}
+
 function finaliserDossier() {
-    // Vérifier que toutes les étapes sont validées (utiliser les vrais noms d'attributs)
+    // Vérifier que toutes les étapes sont validées (utiliser l'état global mis à jour en temps réel)
     const etapes = [
-        { nom: 'Fiche de pré-enrôlement', valide: @json((bool)$dossierOuvert->fiche_pre_enrolement_verifiee) },
-        { nom: 'Documents', valide: @json((bool)$dossierOuvert->documents_verifies) },
-        { nom: 'Informations client', valide: @json((bool)$dossierOuvert->informations_client_verifiees) },
-        { nom: 'Paiement', valide: @json((bool)$dossierOuvert->paiement_verifie) }
+        { nom: 'Fiche de pré-enrôlement', valide: etapeState[1] },
+        { nom: 'Documents', valide: etapeState[2] },
+        { nom: 'Informations client', valide: etapeState[3] },
+        { nom: 'Paiement', valide: etapeState[4] }
     ];
     
     const etapesNonValidees = etapes.filter(e => !e.valide);

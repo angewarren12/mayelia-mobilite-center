@@ -19,12 +19,13 @@ class DashboardController extends Controller
         $stats = [
             'rdv_aujourdhui' => 0,
             'utilisateurs_actifs' => 0,
-            'documents_traites' => 0,
-            'croissance_mensuelle' => 0
+            'documents_traites' => 0
         ];
         
         if ($centre) {
-            // Rendez-vous d'aujourd'hui
+            $isAgent = $user->role === 'agent';
+            
+            // Rendez-vous d'aujourd'hui (planning global du centre)
             $stats['rdv_aujourdhui'] = RendezVous::where('centre_id', $centre->id)
                 ->whereDate('date_rendez_vous', Carbon::today())
                 ->count();
@@ -34,23 +35,22 @@ class DashboardController extends Controller
                 ->where('statut', 'actif')
                 ->count();
             
-            // Documents traités (rendez-vous terminés ce mois)
-            $stats['documents_traites'] = RendezVous::where('centre_id', $centre->id)
-                ->where('statut', 'completed')
-                ->whereMonth('created_at', Carbon::now()->month)
-                ->count();
-            
-            // Croissance mensuelle (comparaison avec le mois dernier)
-            $rdvCeMois = RendezVous::where('centre_id', $centre->id)
-                ->whereMonth('created_at', Carbon::now()->month)->count();
-            
-            $rdvMoisDernier = RendezVous::where('centre_id', $centre->id)
-                ->whereMonth('created_at', Carbon::now()->subMonth()->month)->count();
-            
-            if ($rdvMoisDernier > 0) {
-                $stats['croissance_mensuelle'] = round((($rdvCeMois - $rdvMoisDernier) / $rdvMoisDernier) * 100);
+            // Mes dossiers / Dossiers du centre (Dossiers finalisés ce mois)
+            $queryDocuments = \App\Models\DossierOuvert::where('statut', 'finalise');
+            if ($isAgent) {
+                $queryDocuments->where('agent_id', $user->id);
             } else {
-                $stats['croissance_mensuelle'] = $rdvCeMois > 0 ? 100 : 0;
+                $queryDocuments->whereHas('rendezVous', function($q) use ($centre) {
+                    $q->where('centre_id', $centre->id);
+                });
+            }
+            $stats['documents_traites'] = $queryDocuments->whereMonth('updated_at', Carbon::now()->month)->count();
+
+            // Statistique supplémentaire pour l'agent
+            if ($isAgent) {
+                $stats['mes_dossiers_en_cours'] = \App\Models\DossierOuvert::where('agent_id', $user->id)
+                    ->where('statut', 'en_cours')
+                    ->count();
             }
         }
         

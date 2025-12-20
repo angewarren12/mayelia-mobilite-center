@@ -176,7 +176,9 @@ Route::post('/dossier/{dossierOuvert}/etape2-documents', [DossierWorkflowControl
 Route::post('/dossier/{dossierOuvert}/etape3-infos', [DossierWorkflowController::class, 'validerEtape3'])->name('dossier.etape3');
 Route::post('/dossier/{dossierOuvert}/etape4-paiement', [DossierWorkflowController::class, 'validerEtape4'])->name('dossier.etape4');
 Route::post('/dossier/{dossierOuvert}/rejeter', [DossierWorkflowController::class, 'rejeter'])->name('dossier.rejeter');
+Route::post('/dossier/{dossierOuvert}/reset', [DossierWorkflowController::class, 'resetDossier'])->name('dossier.reset');
 Route::post('/dossier/{dossierOuvert}/finaliser', [DossierWorkflowController::class, 'finaliser'])->name('dossier.finaliser');
+Route::get('/document-verification/{documentVerification}/view', [DossierWorkflowController::class, 'viewDocument'])->name('dossier.view-document');
 
 // Routes pour les documents requis
 Route::resource('document-requis', DocumentRequisController::class);
@@ -313,6 +315,15 @@ Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, '
     Route::prefix('admin/centres')->name('admin.centres.')->group(function () {
         Route::get('/{centre}/qms-settings', [App\Http\Controllers\CentreQmsSettingsController::class, 'edit'])->name('qms.edit');
         Route::put('/{centre}/qms-settings', [App\Http\Controllers\CentreQmsSettingsController::class, 'update'])->name('qms.update');
+    });
+
+    // Routes Admin - Gestion des Guichets
+    Route::prefix('admin/guichets')->name('admin.guichets.')->group(function () {
+        Route::get('/', [App\Http\Controllers\GuichetManagementController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\GuichetManagementController::class, 'store'])->name('store');
+        Route::put('/{guichet}', [App\Http\Controllers\GuichetManagementController::class, 'update'])->name('update');
+        Route::delete('/{guichet}', [App\Http\Controllers\GuichetManagementController::class, 'destroy'])->name('destroy');
+        Route::post('/{guichet}/toggle-status', [App\Http\Controllers\GuichetManagementController::class, 'toggleStatus'])->name('toggle-status');
     });
 });
 

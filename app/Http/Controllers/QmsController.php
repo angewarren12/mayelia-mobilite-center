@@ -55,10 +55,20 @@ class QmsController extends Controller
     public function agent()
     {
         $user = Auth::user();
-        // Pour l'instant, on suppose que l'agent est lié à un guichet ou peut en choisir un
-        $guichets = Guichet::where('centre_id', $user->centre_id)->get();
         
-        return view('qms.agent', compact('guichets'));
+        // L'agent ne sélectionne plus son guichet, il utilise celui assigné par l'admin
+        $assignedGuichet = Guichet::where('user_id', $user->id)
+            ->where('centre_id', $user->centre_id)
+            ->with(['centre'])
+            ->first();
+            
+        if (!$assignedGuichet) {
+            return redirect()->route('dashboard')->with('error', 'Accès refusé : Aucun guichet ne vous est assigné pour le moment. Veuillez demander à votre administrateur de vous assigner à un guichet.');
+        }
+        
+        $centreId = $user->centre_id;
+        
+        return view('qms.agent', compact('assignedGuichet', 'centreId'));
     }
 
     /**
@@ -148,24 +158,44 @@ class QmsController extends Controller
             return response()->json(['success' => true, 'ticket' => $ticket]);
         }
 
-        // Sécurité : Forcer le centre de l'agent s'il n'est pas admin
-        $centreId = ($user->role !== 'admin' && $user->centre_id) ? $user->centre_id : $request->centre_id;
+        // Filtrer par centre : 
+        // 1. Si l'utilisateur est rattaché à un centre, on force ce centre (Isolation)
+        // 2. Si c'est un Super Admin (pas de centre), il peut choisir via centre_id ou utiliser un centre par défaut
+        $centreId = null;
+        if ($user->centre_id) {
+            $centreId = $user->centre_id;
+        } elseif ($request->filled('centre_id')) {
+            $centreId = $request->centre_id;
+        }
+
+        if (!$centreId) {
+            return response()->json(['success' => false, 'message' => 'Aucun centre spécifié'], 400);
+        }
+
         $centre = Centre::findOrFail($centreId);
+        
+        $guichet = Guichet::findOrFail($request->guichet_id);
         
         // NETTOYAGE: Terminer automatiquement tout ticket encore en "appelé" pour ce guichet
         // Cela évite les "tickets zombies" qui réapparaissent sur la TV si l'agent a oublié de terminer
-        Ticket::where('guichet_id', $request->guichet_id)
+        Ticket::where('guichet_id', $guichet->id)
               ->where('statut', Ticket::STATUT_APPELÉ)
               ->update(['statut' => Ticket::STATUT_TERMINÉ, 'completed_at' => now()]);
 
         // Recalculer les priorités selon le mode actif du centre
         $this->priorityService->updateAllPriorities($centre);
 
-        // Sélectionner le prochain ticket
-        $nextTicket = Ticket::pourCentre($centre->id)
+        // Sélectionner le prochain ticket en respectant les restrictions de services du guichet
+        $query = Ticket::pourCentre($centre->id)
             ->enAttente()
-            ->parPriorite()
-            ->first();
+            ->parPriorite();
+            
+        // Si le guichet a des types de services spécifiques autorisés
+        if ($guichet->type_services && is_array($guichet->type_services) && count($guichet->type_services) > 0) {
+            $query->whereIn('service_id', $guichet->type_services);
+        }
+
+        $nextTicket = $query->first();
 
         if ($nextTicket) {
             $nextTicket->update([

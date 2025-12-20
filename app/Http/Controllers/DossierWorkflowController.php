@@ -16,10 +16,11 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\AuthService;
 use App\Http\Controllers\Concerns\ChecksPermissions;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class DossierWorkflowController extends Controller
 {
-    use ChecksPermissions;
+    use ChecksPermissions, AuthorizesRequests;
 
     protected $authService;
 
@@ -216,10 +217,8 @@ class DossierWorkflowController extends Controller
         try {
             $agent = Auth::user();
             
-            // Vérifier que l'agent peut gérer ce dossier
-            if (!$dossierOuvert->canBeManagedBy($agent)) {
-                return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
-            }
+            // Vérifier la permission via la Policy
+            $this->authorize('update', $dossierOuvert);
 
             $updateData = [
                 'fiche_pre_enrolement_verifiee' => true,
@@ -279,12 +278,11 @@ class DossierWorkflowController extends Controller
         try {
             $agent = Auth::user();
             
-            if (!$dossierOuvert->canBeManagedBy($agent)) {
-                return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
-            }
+            $this->authorize('update', $dossierOuvert);
 
             $typeDemande = $request->input('type_demande');
-            $documentsCoches = $request->input('documents', []);
+            $documentsInput = $request->input('documents', []);
+            $documentsFiles = $request->file('documents', []);
             
             if (!$typeDemande) {
                 return response()->json(['success' => false, 'message' => 'Type de demande requis'], 400);
@@ -308,25 +306,22 @@ class DossierWorkflowController extends Controller
                 $present = false;
                 $fichierData = [];
                 
-                // Vérifier si le document est coché
-                foreach ($documentsCoches as $docCoche) {
-                    if (is_array($docCoche) && $docCoche['id'] == $document->id) {
-                        $present = true;
-                        break;
-                    } elseif (is_numeric($docCoche) && $docCoche == $document->id) {
+                // Trouver l'index correspondant dans les données envoyées
+                $foundIndex = -1;
+                foreach ($documentsInput as $idx => $input) {
+                    if (isset($input['id']) && $input['id'] == $document->id) {
+                        $foundIndex = $idx;
                         $present = true;
                         break;
                     }
                 }
                 
-                // Gérer l'upload du fichier si présent
-                if ($present && $request->hasFile("documents.{$document->id}.fichier")) {
-                    $file = $request->file("documents.{$document->id}.fichier");
+                // Gérer l'upload du fichier si présent à cet index
+                if ($present && $foundIndex !== -1 && isset($documentsFiles[$foundIndex]['fichier'])) {
+                    $file = $documentsFiles[$foundIndex]['fichier'];
                     
                     // Valider le fichier
-                    $request->validate([
-                        "documents.{$document->id}.fichier" => 'file|mimes:pdf,jpg,jpeg,png|max:10240' // 10MB max
-                    ]);
+                    // Note: La validation globale au début serait mieux mais on reste granulaire pour l'instant
                     
                     // Stocker le fichier
                     $filename = time() . '_' . $document->id . '_' . $file->getClientOriginalName();
@@ -341,7 +336,7 @@ class DossierWorkflowController extends Controller
                 }
                 
                 // Créer ou mettre à jour la vérification
-                DocumentVerification::updateOrCreate(
+                $verification = DocumentVerification::updateOrCreate(
                     [
                         'dossier_ouvert_id' => $dossierOuvert->id,
                         'document_requis_id' => $document->id
@@ -356,9 +351,10 @@ class DossierWorkflowController extends Controller
                 if ($present) {
                     $documentsSelectionnes[] = [
                         'id' => $document->id,
+                        'dv_id' => $verification->id,
                         'nom' => $document->nom_document,
                         'obligatoire' => $document->obligatoire,
-                        'fichier_uploade' => !empty($fichierData)
+                        'fichier_uploade' => !empty($fichierData) || !empty($verification->chemin_fichier)
                     ];
                 } else {
                     $documentsManquantsList[] = [
@@ -414,9 +410,7 @@ class DossierWorkflowController extends Controller
         try {
             $agent = Auth::user();
             
-            if (!$dossierOuvert->canBeManagedBy($agent)) {
-                return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
-            }
+            $this->authorize('update', $dossierOuvert);
 
             // Si R.A.S, on valide directement sans modification
             if ($request->input('ras')) {
@@ -490,9 +484,7 @@ class DossierWorkflowController extends Controller
         try {
             $agent = Auth::user();
             
-            if (!$dossierOuvert->canBeManagedBy($agent)) {
-                return response()->json(['success' => false, 'message' => 'Accès non autorisé'], 403);
-            }
+            $this->authorize('update', $dossierOuvert);
 
             // Gérer le reçu de paiement (optionnel mais recommandé)
             $recuPath = null;
@@ -533,12 +525,7 @@ class DossierWorkflowController extends Controller
                 'paiement_verifie' => true
             ]);
 
-            // Mettre à jour le statut du rendez-vous s'il existe
-            if ($dossierOuvert->rendezVous) {
-                $dossierOuvert->rendezVous->update([
-                    'statut' => 'paiement_effectue'
-                ]);
-            }
+
 
             $this->updateDossierStatus($dossierOuvert);
             
@@ -573,13 +560,8 @@ class DossierWorkflowController extends Controller
         try {
             $agent = $this->authService->getAuthenticatedUser();
 
-            // Vérifier que l'agent peut gérer ce dossier
-            if (!$dossierOuvert->canBeManagedBy($agent)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous ne pouvez pas gérer ce dossier'
-                ], 403);
-            }
+            // Vérifier la permission
+            $this->authorize('update', $dossierOuvert);
 
             // Vérifier que le dossier n'est pas déjà finalisé
             if ($dossierOuvert->statut === 'finalise') {
@@ -615,12 +597,7 @@ class DossierWorkflowController extends Controller
                 'notes' => $notes
             ]);
 
-            // Mettre à jour le statut du rendez-vous s'il existe
-            if ($dossierOuvert->rendezVous) {
-                $dossierOuvert->rendezVous->update([
-                    'statut' => 'annule'
-                ]);
-            }
+
 
             // Logger l'action
             $dossierOuvert->logAction('rejete', 'Dossier rejeté', [
@@ -654,8 +631,59 @@ class DossierWorkflowController extends Controller
     }
 
     /**
-     * Finaliser un dossier
+     * Remettre un dossier en attente (Un-reject)
+     * Réservé aux administrateurs
      */
+    public function resetDossier(Request $request, DossierOuvert $dossierOuvert)
+    {
+        try {
+            // Vérifier la permission via la Policy (Seuls les admins du même centre)
+            $this->authorize('reset', $dossierOuvert);
+
+            // Vérifier que le dossier est bien rejeté (annulé)
+            if ($dossierOuvert->statut !== 'annulé') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce dossier n\'est pas rejeté.'
+                ], 400);
+            }
+
+            $user = Auth::user();
+            // Mettre à jour les notes
+            $notes = $dossierOuvert->notes ? $dossierOuvert->notes . "\n\n[RESET] " . now()->format('d/m/Y H:i') . " - Remis en attente par l'administrateur " . $user->nom : "[RESET] " . now()->format('d/m/Y H:i') . " - Remis en attente par l'administrateur " . $user->nom;
+
+            // Réinitialiser le dossier (statut = en_cours ou ouvert)
+            // On le met 'en_cours' par défaut car s'il est là c'est qu'il a déjà été ouvert
+            $dossierOuvert->update([
+                'statut' => 'en_cours',
+                'notes' => $notes
+            ]);
+
+
+
+            // Logger l'action
+            $dossierOuvert->logAction('reset', 'Dossier remis en attente (Un-reject)', [
+                'admin_id' => $user->id
+            ]);
+
+            Log::info('Dossier remis en attente', [
+                'dossier_id' => $dossierOuvert->id,
+                'admin_id' => $user->id
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Le dossier a été remis en attente avec succès.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Erreur lors du reset du dossier: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la remise en attente du dossier: ' . $e->getMessage()
+            ], 500);
+        }
+    }
     public function finaliser(DossierOuvert $dossierOuvert)
     {
         // Vérifier la permission (pas de delete pour les agents)
@@ -664,13 +692,8 @@ class DossierWorkflowController extends Controller
         try {
             $agent = $this->authService->getAuthenticatedUser();
 
-            // Vérifier que l'agent peut gérer ce dossier
-            if (!$dossierOuvert->canBeManagedBy($agent)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Vous ne pouvez pas gérer ce dossier'
-                ], 403);
-            }
+            // Vérifier la permission
+            $this->authorize('update', $dossierOuvert);
 
             // Vérifier que toutes les étapes sont validées
             if (!$dossierOuvert->fiche_pre_enrolement_verifiee) {
@@ -707,12 +730,7 @@ class DossierWorkflowController extends Controller
                 'date_finalisation' => now()
             ]);
 
-            // Mettre à jour le statut du rendez-vous s'il existe
-            if ($dossierOuvert->rendezVous) {
-                $dossierOuvert->rendezVous->update([
-                    'statut' => 'finalise'
-                ]);
-            }
+
 
             $dossierOuvert->logAction('finalise', 'Dossier finalisé');
 
@@ -760,10 +778,7 @@ class DossierWorkflowController extends Controller
             ]);
         }
         
-        // Vérifier que l'agent peut gérer ce dossier
-        if (!$dossierOuvert->canBeManagedBy($agent)) {
-            abort(403, 'Vous ne pouvez pas gérer ce dossier');
-        }
+        $this->authorize('view', $dossierOuvert);
         
         // Récupérer les documents requis pour ce service (si rendez-vous existe)
         $documentsRequis = collect([]);
@@ -784,10 +799,25 @@ class DossierWorkflowController extends Controller
     }
 
     /**
+     * Voir un document uploadé
+     */
+    public function viewDocument(DocumentVerification $documentVerification)
+    {
+        $this->authorize('view', $documentVerification->dossierOuvert);
+
+        if (!$documentVerification->chemin_fichier || !Storage::disk('public')->exists($documentVerification->chemin_fichier)) {
+            abort(404, 'Fichier non trouvé');
+        }
+
+        return Storage::disk('public')->response($documentVerification->chemin_fichier);
+    }
+
+    /**
      * Imprimer le reçu de traçabilité
      */
     public function imprimerRecu(DossierOuvert $dossierOuvert)
     {
+        $this->authorize('view', $dossierOuvert);
         // Charger les relations nécessaires
         $dossierOuvert->load([
             'rendezVous.client',
@@ -816,6 +846,7 @@ class DossierWorkflowController extends Controller
      */
     public function imprimerEtiquette(DossierOuvert $dossierOuvert)
     {
+        $this->authorize('view', $dossierOuvert);
         // Charger les relations nécessaires
         $dossierOuvert->load([
             'rendezVous.client',
@@ -855,16 +886,18 @@ class DossierWorkflowController extends Controller
         $etapes = [
             $dossierOuvert->fiche_pre_enrolement_verifiee,
             $dossierOuvert->documents_verifies,
-            true, // Informations client toujours considérées comme validées
+            $dossierOuvert->informations_client_verifiees,
             $dossierOuvert->paiement_verifie
         ];
 
         $etapesCompletes = count(array_filter($etapes));
 
-        if ($etapesCompletes === 4) {
-            $dossierOuvert->update(['statut' => 'finalise']);
-        } elseif ($etapesCompletes > 0) {
-            $dossierOuvert->update(['statut' => 'en_cours']);
+        // On ne met jamais en 'finalise' automatiquement via cette fonction
+        // pour laisser l'agent cliquer sur le bouton Finaliser.
+        if ($dossierOuvert->statut !== 'finalise' && $dossierOuvert->statut !== 'annulé') {
+            if ($etapesCompletes > 0) {
+                $dossierOuvert->update(['statut' => 'en_cours']);
+            }
         }
     }
 

@@ -51,25 +51,19 @@ class ExportController extends Controller
             return back()->withErrors($e->errors());
         }
 
-        // Récupérer le centre de l'utilisateur connecté
+        // Récupérer le centre cible
         $user = auth()->user();
-        $centre = $user->centre;
+        $targetCentreId = $user->centre_id ?? $request->centre_id;
         
-        if (!$centre) {
+        if (!$targetCentreId) {
             if ($request->ajax()) {
-                return response()->json(['error' => 'Aucun centre assigné à votre compte.'], 403);
+                return response()->json(['error' => 'Veuillez sélectionner un centre ou aucun centre assigné à votre compte.'], 403);
             }
-            return back()->with('error', 'Aucun centre assigné à votre compte.');
+            return back()->with('error', 'Veuillez sélectionner un centre.');
         }
 
         $query = RendezVous::with(['client', 'service', 'formule', 'centre']);
-        
-        // Filtrer par centre : si un centre_id est spécifié, l'utiliser, sinon utiliser le centre de l'utilisateur
-        if ($request->filled('centre_id')) {
-            $query->where('centre_id', $request->centre_id);
-        } else {
-            $query->where('centre_id', $centre->id);
-        }
+        $query->where('centre_id', $targetCentreId);
 
         // Initialiser les variables
         $titre = 'Export des rendez-vous';
@@ -180,17 +174,7 @@ class ExportController extends Controller
             return back()->withErrors($e->errors());
         }
 
-        // Récupérer le centre de l'utilisateur connecté
         $user = auth()->user();
-        $centre = $user->centre;
-        
-        // Si l'utilisateur est un admin global (sans centre), il peut exporter tous les dossiers ou un centre spécifique
-        if (!$centre && $user->role !== 'admin') {
-            if ($request->ajax()) {
-                return response()->json(['error' => 'Aucun centre assigné à votre compte.'], 403);
-            }
-            return back()->with('error', 'Aucun centre assigné à votre compte.');
-        }
 
         $query = \App\Models\DossierOuvert::with([
             'rendezVous.client',
@@ -200,18 +184,19 @@ class ExportController extends Controller
             'agent',
             'paiementVerification'
         ]);
-        
-        // Filtrer par centre : si un centre_id est spécifié, l'utiliser, sinon utiliser le centre de l'utilisateur
-        if ($request->filled('centre_id')) {
+
+        // Filtrer par centre : 
+        // 1. Si l'utilisateur est rattaché à un centre, on force ce centre (Isolation)
+        // 2. Si c'est un Super Admin (pas de centre), il peut choisir via centre_id ou exporter tout par défaut
+        if ($user->centre_id) {
+            $query->whereHas('rendezVous', function($q) use ($user) {
+                $q->where('centre_id', $user->centre_id);
+            });
+        } elseif ($request->filled('centre_id')) {
             $query->whereHas('rendezVous', function($q) use ($request) {
                 $q->where('centre_id', $request->centre_id);
             });
-        } elseif ($centre) {
-            $query->whereHas('rendezVous', function($q) use ($centre) {
-                $q->where('centre_id', $centre->id);
-            });
         }
-        // Si admin sans centre et pas de centre_id, on exporte tout (comportement par défaut)
 
         // Initialiser les variables
         $titre = 'Export des dossiers';

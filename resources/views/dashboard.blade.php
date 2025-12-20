@@ -13,14 +13,26 @@
 @section('content')
 <div class="space-y-6">
     <!-- Statistiques principales -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="bg-white p-6 rounded-lg shadow">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i class="fas fa-check-double text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">{{ Auth::user()->role === 'agent' ? 'Mes dossiers finalisés' : 'Dossiers finalisés (Centre)' }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['documents_traites'] ?? 0 }}</p>
+                </div>
+            </div>
+        </div>
+
         <div class="bg-white p-6 rounded-lg shadow">
             <div class="flex items-center">
                 <div class="p-3 rounded-full bg-mayelia-100 text-mayelia-600">
                     <i class="fas fa-calendar-day text-xl"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Rendez-vous aujourd'hui</p>
+                    <p class="text-sm font-medium text-gray-600">Planning aujourd'hui</p>
                     <p class="text-2xl font-bold text-gray-900">{{ $stats['rdv_aujourdhui'] ?? 0 }}</p>
                 </div>
             </div>
@@ -28,36 +40,12 @@
         
         <div class="bg-white p-6 rounded-lg shadow">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <i class="fas fa-users text-xl"></i>
+                <div class="p-3 rounded-full {{ Auth::user()->role === 'agent' ? 'bg-purple-100 text-purple-600' : 'bg-green-100 text-green-600' }}">
+                    <i class="fas {{ Auth::user()->role === 'agent' ? 'fa-folder-open' : 'fa-users' }} text-xl"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Utilisateurs actifs</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['utilisateurs_actifs'] ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                    <i class="fas fa-file-alt text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Documents traités</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['documents_traites'] ?? 0 }}</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="bg-white p-6 rounded-lg shadow">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                    <i class="fas fa-chart-line text-xl"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Croissance mensuelle</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $stats['croissance_mensuelle'] ?? 0 }}%</p>
+                    <p class="text-sm font-medium text-gray-600">{{ Auth::user()->role === 'agent' ? 'Mes dossiers en cours' : 'Utilisateurs actifs' }}</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ Auth::user()->role === 'agent' ? ($stats['mes_dossiers_en_cours'] ?? 0) : ($stats['utilisateurs_actifs'] ?? 0) }}</p>
                 </div>
             </div>
         </div>
@@ -409,6 +397,16 @@
             </a>
             @endisAdmin
             
+            <a href="{{ route('dossiers.index') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                <div class="p-2 bg-blue-100 text-blue-600 rounded-lg mr-3">
+                    <i class="fas fa-folder-open"></i>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-900">Gérer les dossiers</h4>
+                    <p class="text-sm text-gray-600">Suivi et traitement</p>
+                </div>
+            </a>
+
             <a href="{{ route('rendez-vous.index') }}" class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <div class="p-2 bg-purple-100 text-purple-600 rounded-lg mr-3">
                     <i class="fas fa-calendar-check"></i>

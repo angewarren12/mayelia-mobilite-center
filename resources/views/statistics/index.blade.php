@@ -22,7 +22,8 @@
                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-mayelia-500 focus:ring-mayelia-500">
             </div>
             
-            @if(Auth::user()->role === 'admin')
+            {{-- Le filtre par centre n'est visible que pour le Super Admin (Admin sans centre_id) --}}
+            @if(Auth::user()->role === 'admin' && !Auth::user()->centre_id)
             <div>
                 <label for="centre_id" class="block text-sm font-medium text-gray-700 mb-2">Centre</label>
                 <select name="centre_id" id="centre_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-mayelia-500 focus:ring-mayelia-500">

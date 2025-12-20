@@ -29,9 +29,9 @@ class ClientController extends Controller
 
         $query = Client::query();
 
-        // Filtrer par centre pour les non-admins (clients ayant eu RDV dans ce centre)
+        // Filtrer par centre pour les utilisateurs rattachés (Agents et Admins de centre)
         $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user->role !== 'admin' && $user->centre_id) {
+        if ($user->centre_id) {
             $query->whereHas('rendezVous', function($q) use ($user) {
                 $q->where('centre_id', $user->centre_id);
             });
