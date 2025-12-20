@@ -487,7 +487,7 @@
                     </div>
                 @endif
                 
-                @if($dossierOuvert->statut === 'finalise')
+                @if($dossierOuvert->paiement_verifie)
                 <a href="{{ route('dossier.imprimer-recu', $dossierOuvert) }}" 
                    target="_blank"
                    class="flex items-center space-x-2 bg-mayelia-600 text-white px-6 py-3 rounded-lg hover:bg-mayelia-700 transition-colors font-medium">

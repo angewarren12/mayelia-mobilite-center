@@ -827,9 +827,9 @@ class DossierWorkflowController extends Controller
             'paiementVerification'
         ]);
         
-        // Vérifier que le dossier est finalisé
-        if ($dossierOuvert->statut !== 'finalise') {
-            abort(403, 'Le dossier doit être finalisé pour imprimer le reçu');
+        // Vérifier que le paiement est validé pour permettre la prévisualisation/impression
+        if (!$dossierOuvert->paiement_verifie) {
+            abort(403, 'Le paiement doit être vérifié pour imprimer le reçu');
         }
         
         // Générer le PDF
@@ -837,7 +837,7 @@ class DossierWorkflowController extends Controller
         
         $filename = 'recu-mayelia-dossier-' . $dossierOuvert->id . '-' . date('Y-m-d') . '.pdf';
         
-        return $pdf->download($filename);
+        return $pdf->stream($filename);
     }
 
     /**
@@ -854,9 +854,9 @@ class DossierWorkflowController extends Controller
             'agent'
         ]);
         
-        // Vérifier que le dossier est finalisé
-        if ($dossierOuvert->statut !== 'finalise') {
-            abort(403, 'Le dossier doit être finalisé pour imprimer l\'étiquette');
+        // Vérifier que le paiement est au moins vérifié
+        if (!$dossierOuvert->paiement_verifie) {
+            abort(403, 'Le paiement doit être vérifié pour imprimer l\'étiquette');
         }
         
         // Générer le code-barres si non existant
@@ -869,12 +869,13 @@ class DossierWorkflowController extends Controller
         // Générer le PDF
         $pdf = Pdf::loadView('agent.dossier.etiquette', compact('dossierOuvert'));
         
-        // Format A6 pour étiquette (105 x 148 mm)
-        $pdf->setPaper([0, 0, 297.64, 419.53], 'portrait'); // A6 en points
+        // Format personnalisé pour étiquette (80 x 60 mm)
+        // 1mm = 2.8346 pt
+        $pdf->setPaper([0, 0, 226.77, 170.08], 'portrait');
         
         $filename = 'etiquette-dossier-' . $dossierOuvert->id . '-' . date('Y-m-d') . '.pdf';
         
-        return $pdf->download($filename);
+        return $pdf->stream($filename);
     }
 
     /**

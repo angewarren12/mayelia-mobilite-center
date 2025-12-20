@@ -11,172 +11,126 @@
             box-sizing: border-box;
         }
         
+        @page {
+            margin: 0;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
-            padding: 10mm;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            margin: 0;
+            padding: 2mm;
+            width: 80mm;
+            height: 60mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             background: white;
         }
         
-        .etiquette {
-            width: 95mm;
-            height: 138mm;
-            border: 2px solid #2D3748;
-            padding: 8mm;
-            position: relative;
-            background: white;
+        .container {
+            width: 76mm;
+            height: 56mm;
+            border: 1px solid #000;
+            padding: 2mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
         }
         
         .header {
-            text-align: center;
-            border-bottom: 2px solid #4299E1;
-            padding-bottom: 5mm;
-            margin-bottom: 5mm;
-        }
-        
-        .logo {
-            font-size: 20px;
-            font-weight: bold;
-            color: #4299E1;
-            margin-bottom: 2mm;
-        }
-        
-        .titre {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2D3748;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 0.5px solid #000;
+            padding-bottom: 1mm;
             margin-bottom: 1mm;
         }
         
-        .numero-dossier {
-            font-size: 18px;
+        .logo-img {
+            height: 10mm;
+            width: auto;
+        }
+        
+        .dossier-id {
+            font-size: 14pt;
             font-weight: bold;
-            color: #4299E1;
-            margin-top: 2mm;
         }
         
-        .info-section {
-            margin-bottom: 4mm;
+        .content {
+            width: 100%;
+            text-align: left;
+            flex-grow: 1;
         }
         
-        .info-label {
-            font-size: 9px;
-            color: #718096;
-            text-transform: uppercase;
+        .client-name {
+            font-size: 11pt;
+            font-weight: bold;
             margin-bottom: 1mm;
-            font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
-        .info-value {
-            font-size: 11px;
-            color: #2D3748;
-            font-weight: 600;
-            padding: 2mm;
-            background: #F7FAFC;
-            border-left: 3px solid #4299E1;
+        .service-info {
+            font-size: 9pt;
+            margin-bottom: 1mm;
+        }
+        
+        .center-info {
+            font-size: 8pt;
+            color: #444;
         }
         
         .barcode-section {
+            width: 100%;
             text-align: center;
-            margin-top: 5mm;
-            padding: 3mm;
-            background: #F7FAFC;
-            border: 1px dashed #CBD5E0;
+            margin-top: 1mm;
         }
         
-        .barcode {
-            font-size: 14px;
-            font-weight: bold;
-            color: #2D3748;
-            margin: 1mm 0;
-            text-align: center;
+        .barcode-img {
+            width: 60mm;
+            height: 12mm;
         }
         
-        .barcode-label {
-            font-size: 8px;
-            color: #718096;
-            text-transform: uppercase;
-        }
-        
-        .footer {
-            position: absolute;
-            bottom: 5mm;
-            left: 8mm;
-            right: 8mm;
-            text-align: center;
-            font-size: 7px;
-            color: #A0AEC0;
-            border-top: 1px solid #E2E8F0;
-            padding-top: 2mm;
-        }
-        
-        .service-badge {
-            display: inline-block;
-            background: #4299E1;
-            color: white;
-            padding: 1mm 3mm;
-            border-radius: 3mm;
-            font-size: 9px;
-            font-weight: bold;
-            margin-top: 2mm;
+        .barcode-value {
+            font-size: 9pt;
+            font-family: monospace;
+            margin-top: 0.5mm;
         }
     </style>
 </head>
 <body>
-    <div class="etiquette">
-        <!-- Header -->
+    <div class="container">
         <div class="header">
-            <div class="logo">MAYELIA MOBILITÉ</div>
-            <div class="titre">ÉTIQUETTE DE TRAÇABILITÉ</div>
-            <div class="numero-dossier">#{{ str_pad($dossierOuvert->id, 6, '0', STR_PAD_LEFT) }}</div>
+            @php
+                $logoPath = public_path('img/logo.png');
+                if (!file_exists($logoPath)) {
+                    $logoPath = public_path('img/logo-oneci.jpg');
+                }
+                $logoBase64 = base64_encode(file_get_contents($logoPath));
+                $mimeType = mime_content_type($logoPath);
+            @endphp
+            <img src="data:{{ $mimeType }};base64,{{ $logoBase64 }}" class="logo-img">
+            <div class="dossier-id">#{{ str_pad($dossierOuvert->id, 6, '0', STR_PAD_LEFT) }}</div>
         </div>
         
-        <!-- Informations Client -->
-        <div class="info-section">
-            <div class="info-label">Client</div>
-            <div class="info-value">
-                {{ strtoupper($dossierOuvert->rendezVous->client->nom) }} 
-                {{ ucfirst($dossierOuvert->rendezVous->client->prenom) }}
-            </div>
+        <div class="content">
+            <div class="client-name">{{ strtoupper($dossierOuvert->rendezVous->client->nom) }} {{ strtoupper($dossierOuvert->rendezVous->client->prenom) }}</div>
+            <div class="service-info">{{ $dossierOuvert->rendezVous->service->nom }} ({{ $dossierOuvert->rendezVous->formule->nom }})</div>
+            <div class="center-info">Centre: {{ $dossierOuvert->rendezVous->centre->nom }} | {{ now()->format('d/m/Y H:i') }}</div>
         </div>
         
-        <!-- Service -->
-        <div class="info-section">
-            <div class="info-label">Service</div>
-            <div class="info-value">
-                {{ $dossierOuvert->rendezVous->service->nom }}
-                <div class="service-badge">{{ $dossierOuvert->rendezVous->formule->nom }}</div>
-            </div>
-        </div>
-        
-        <!-- Centre -->
-        <div class="info-section">
-            <div class="info-label">Centre</div>
-            <div class="info-value">{{ $dossierOuvert->rendezVous->centre->nom }}</div>
-        </div>
-        
-        <!-- Date -->
-        <div class="info-section">
-            <div class="info-label">Date de finalisation</div>
-            <div class="info-value">{{ now()->format('d/m/Y à H:i') }}</div>
-        </div>
-        
-        <!-- Code-barres -->
         <div class="barcode-section">
-            <div class="barcode-label">Code de traçabilité</div>
-            <div style="margin: 3mm 0; text-align: center;">
-                @php
-                    $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
-                    $barcode = base64_encode($generator->getBarcode($dossierOuvert->code_barre, $generator::TYPE_CODE_128));
-                @endphp
-                <img src="data:image/png;base64,{{ $barcode }}" style="width: 60mm; height: 15mm; display: block; margin: 0 auto;">
-            </div>
-            <div class="barcode" style="border: none; font-size: 14px; margin: 1mm 0;">{{ $dossierOuvert->code_barre }}</div>
-            <div class="barcode-label">Scannez pour suivre le dossier</div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-            Document généré le {{ now()->format('d/m/Y à H:i') }} par {{ Auth::user()->nom }}
+            @php
+                $generator = new \Picqer\Barcode\BarcodeGeneratorPNG();
+                $barcode = base64_encode($generator->getBarcode($dossierOuvert->code_barre, $generator::TYPE_CODE_128));
+            @endphp
+            <img src="data:image/png;base64,{{ $barcode }}" class="barcode-img">
+            <div class="barcode-value">{{ $dossierOuvert->code_barre }}</div>
         </div>
     </div>
 </body>
