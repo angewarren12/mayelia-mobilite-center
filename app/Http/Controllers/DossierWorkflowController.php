@@ -726,8 +726,7 @@ class DossierWorkflowController extends Controller
 
             // Finaliser le dossier
             $dossierOuvert->update([
-                'statut' => 'finalise',
-                'date_finalisation' => now()
+                'statut' => 'finalise'
             ]);
 
 

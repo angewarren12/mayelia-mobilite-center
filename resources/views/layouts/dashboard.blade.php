@@ -126,6 +126,14 @@
                 </a>
                 @endif
                 
+                @if($authService->isAdmin() || $authService->getAuthenticatedUser()->role === 'agent')
+                <a href="{{ route('qms.agent') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('qms.agent') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Guichet Agent' : ''">
+                    <i class="fas fa-desktop w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Guichet Agent</span>
+                </a>
+                @endif
+                
                 @if($authService->isAdmin())
                 <a href="{{ route('agents.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('agents.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
                    :title="!sidebarOpen ? 'Agents' : ''">
@@ -135,7 +143,7 @@
                 
                 <a href="{{ route('admin.guichets.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('admin.guichets.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
                    :title="!sidebarOpen ? 'Guichets' : ''">
-                    <i class="fas fa-desktop w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <i class="fas fa-columns w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
                     <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Gestion des Guichets</span>
                 </a>
                 @endif

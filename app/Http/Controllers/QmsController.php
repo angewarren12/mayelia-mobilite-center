@@ -62,11 +62,23 @@ class QmsController extends Controller
             ->with(['centre'])
             ->first();
             
+        // Si c'est un admin et qu'il n'a pas de guichet assigné, on lui permet d'utiliser le premier guichet 
+        // de son centre, ou le tout premier guichet existant s'il n'a pas de centre assigné.
+        if (!$assignedGuichet && $user->role === 'admin') {
+            if ($user->centre_id) {
+                $assignedGuichet = Guichet::where('centre_id', $user->centre_id)
+                    ->with(['centre'])
+                    ->first();
+            } else {
+                $assignedGuichet = Guichet::with(['centre'])->first();
+            }
+        }
+            
         if (!$assignedGuichet) {
             return redirect()->route('dashboard')->with('error', 'Accès refusé : Aucun guichet ne vous est assigné pour le moment. Veuillez demander à votre administrateur de vous assigner à un guichet.');
         }
         
-        $centreId = $user->centre_id;
+        $centreId = $assignedGuichet->centre_id;
         
         return view('qms.agent', compact('assignedGuichet', 'centreId'));
     }

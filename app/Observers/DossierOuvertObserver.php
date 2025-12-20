@@ -61,7 +61,7 @@ class DossierOuvertObserver
                 break;
             
             case 'finalise':
-                $newStatus = 'finalise';
+                $newStatus = 'termine';
                 break;
             
             case 'ouvert':
