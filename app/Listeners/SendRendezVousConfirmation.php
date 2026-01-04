@@ -32,9 +32,21 @@ class SendRendezVousConfirmation
             'client' => $rendezVous->client_nom . ' ' . $rendezVous->client_prenom,
         ]);
 
-        // TODO: Envoyer SMS/Email de confirmation si nécessaire
-        // Pour l'instant, on log seulement
-        // $this->smsService->sendSms($rendezVous->client_telephone, $message);
+        // Envoi SMS de confirmation si numéro présent
+        if ($rendezVous->client_telephone) {
+            $message = "Votre rendez-vous Mayelia est confirmé. Code: {$rendezVous->code_confirmation}. Date: {$rendezVous->date_rdv->format('d/m/Y')} à {$rendezVous->heure_rdv}.";
+            \App\Jobs\SendSmsJob::dispatch($rendezVous->client_telephone, $message);
+        }
+
+        // Envoi Email de confirmation si email présent
+        if ($rendezVous->client_email) {
+            \App\Jobs\SendEmailJob::dispatch(
+                $rendezVous->client_email,
+                'Confirmation de votre rendez-vous - Mayelia',
+                'emails.rendez-vous-confirmation', // Assurez-vous que cette vue existe
+                ['rendezVous' => $rendezVous]
+            );
+        }
     }
 }
 

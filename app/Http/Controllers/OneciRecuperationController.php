@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DossierOneciItem;
 use App\Services\SmsService;
+use App\Jobs\SendSmsJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -185,7 +186,7 @@ class OneciRecuperationController extends Controller
             $centre = $rendezVous->centre;
 
             $message = "Votre carte est prête et récupérable à l'agence {$centre->nom}. Merci de passer la récupérer.";
-            $this->smsService->sendSms($client->telephone, $message);
+            SendSmsJob::dispatch($client->telephone, $message);
 
             DB::commit();
 
@@ -268,7 +269,7 @@ class OneciRecuperationController extends Controller
                 
                 if ($client && $client->telephone) {
                     $message = "Votre carte est prête et récupérable à l'agence {$centre->nom}. Merci de passer la récupérer.";
-                    $this->smsService->sendSms($client->telephone, $message);
+                    SendSmsJob::dispatch($client->telephone, $message);
                     $smsSent++;
                 }
 

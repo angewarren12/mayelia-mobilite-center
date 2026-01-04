@@ -64,33 +64,23 @@ class StatisticsController extends Controller
                 ->count();
                 
             // 2. Dossiers finalisés dans la période (via logs pour avoir la date exacte de l'action)
-            $finalizedLogs = DossierActionLog::where('user_id', $agent->id)
+            $finalizedCount = DossierActionLog::where('user_id', $agent->id)
                 ->where('action', 'finalise')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->with('dossierOuvert')
-                ->get();
-                
-            $finalizedCount = $finalizedLogs->count();
+                ->count();
             
-            // 3. Durée moyenne de traitement (Ouverture -> Finalisation)
-            $totalMinutes = 0;
-            $countWithDuration = 0;
+            // 3. Durée moyenne de traitement (Ouverture -> Finalisation) - Optimisation SQL
+            $avgDuration = \Illuminate\Support\Facades\DB::table('dossier_actions_log')
+                ->join('dossier_ouvert', 'dossier_actions_log.dossier_ouvert_id', '=', 'dossier_ouvert.id')
+                ->where('dossier_actions_log.user_id', $agent->id)
+                ->where('dossier_actions_log.action', 'finalise')
+                ->whereBetween('dossier_actions_log.created_at', [$startDate, $endDate])
+                // On s'assure que la date de fin est après la date de début pour éviter des valeurs négatives aberrantes
+                ->whereRaw('dossier_actions_log.created_at > dossier_ouvert.date_ouverture')
+                ->selectRaw('AVG(TIMESTAMPDIFF(MINUTE, dossier_ouvert.date_ouverture, dossier_actions_log.created_at)) as avg_duration')
+                ->value('avg_duration');
             
-            foreach ($finalizedLogs as $log) {
-                $dossier = $log->dossierOuvert;
-                // On a besoin de la date d'ouverture du dossier
-                if ($dossier && $dossier->date_ouverture) {
-                    $ouverture = $dossier->date_ouverture;
-                    $finalisation = $log->created_at;
-                    
-                    if ($finalisation->gt($ouverture)) {
-                        $totalMinutes += $ouverture->diffInMinutes($finalisation);
-                        $countWithDuration++;
-                    }
-                }
-            }
-            
-            $avgDuration = $countWithDuration > 0 ? round($totalMinutes / $countWithDuration) : 0;
+            $avgDuration = $avgDuration ? round($avgDuration) : 0;
             
             $stats[] = (object) [
                 'agent_id' => $agent->id,

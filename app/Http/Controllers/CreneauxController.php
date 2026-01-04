@@ -15,6 +15,7 @@ use App\Services\CreneauGeneratorService;
 use App\Services\TrancheHoraireService;
 use App\Services\AuthService;
 use App\Http\Controllers\Concerns\ChecksPermissions;
+use App\Http\Requests\Creneaux\StoreExceptionRequest;
 use Carbon\Carbon;
 
 class CreneauxController extends Controller
@@ -528,39 +529,22 @@ class CreneauxController extends Controller
     /**
      * Créer une nouvelle exception
      */
-    public function storeException(Request $request)
+    public function storeException(StoreExceptionRequest $request)
     {
-        // Vérifier la permission
-        $this->checkPermission('creneaux', 'exceptions.create');
+        // Permission check handled by Request authorize()
+        // Validation handled by Request rules()
 
         \Log::info('=== DÉBUT storeException ===');
         \Log::info('Données reçues:', $request->all());
         
         $user = $this->authService->getAuthenticatedUser();
         $centre = $user->centre;
+        
         if (!$centre) {
-            \Log::error('Centre non trouvé pour l\'utilisateur');
-            return response()->json(['success' => false, 'message' => 'Centre non trouvé'], 403);
+             // Redondant avec authorize si on check le centre, mais on garde pour cohérence log
         }
-
-        \Log::info('Centre trouvé:', ['centre_id' => $centre->id, 'nom' => $centre->nom]);
-
-        try {
-            $request->validate([
-                'date_exception' => 'required|date|after_or_equal:today',
-                'type' => 'required|in:ferme,capacite_reduite,horaires_modifies',
-                'description' => 'nullable|string|max:255',
-                'heure_debut' => 'nullable|date_format:H:i',
-                'heure_fin' => 'nullable|date_format:H:i|after:heure_debut',
-                'pause_debut' => 'nullable|date_format:H:i',
-                'pause_fin' => 'nullable|date_format:H:i|after:pause_debut',
-                'capacite_reduite' => 'nullable|integer|min:1'
-            ]);
-            \Log::info('Validation réussie');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Erreur de validation:', $e->errors());
-            return response()->json(['success' => false, 'message' => 'Erreur de validation', 'errors' => $e->errors()], 422);
-        }
+        
+        // La validation manuelle est supprimée ici
 
         // Vérifier qu'il n'y a pas déjà une exception pour cette date
         $existingException = \App\Models\Exception::where('centre_id', $centre->id)

@@ -18,6 +18,7 @@ use Carbon\Carbon;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class BookingController extends Controller
 {
@@ -308,8 +309,10 @@ class BookingController extends Controller
      */
     public function index()
     {
-        // Récupérer tous les services actifs avec leurs formules
-        $services = Service::where('statut', 'actif')->with('formules')->get();
+        // Récupérer tous les services actifs avec leurs formules (Cache 60min)
+        $services = Cache::remember('active_services_with_formules', 60*60, function () {
+            return Service::where('statut', 'actif')->with('formules')->get();
+        });
         
         return view('booking.index', compact('services'));
     }
@@ -319,21 +322,23 @@ class BookingController extends Controller
      */
     public function getLocationsForService($serviceId)
     {
-        // Récupérer les centres qui proposent ce service
-        $centres = Centre::whereHas('services', function($query) use ($serviceId) {
-            $query->where('services.id', $serviceId)
-                  ->where('centre_services.actif', true);
-        })->with('ville')->get();
+        $locations = Cache::remember('locations_for_service_' . $serviceId, 60*60, function () use ($serviceId) {
+            // Récupérer les centres qui proposent ce service
+            $centres = Centre::whereHas('services', function($query) use ($serviceId) {
+                $query->where('services.id', $serviceId)
+                      ->where('centre_services.actif', true);
+            })->with('ville')->get();
 
-        // Organiser par pays (pour l'instant on suppose CI, mais structure prête pour multi-pays)
-        $locations = [
-            'pays' => [
-                'id' => 1,
-                'nom' => 'Côte d\'Ivoire',
-                'code' => 'CI',
-                'villes' => $centres->pluck('ville')->unique('id')->values()
-            ]
-        ];
+            // Organiser par pays (pour l'instant on suppose CI, mais structure prête pour multi-pays)
+            return [
+                'pays' => [
+                    'id' => 1,
+                    'nom' => 'Côte d\'Ivoire',
+                    'code' => 'CI',
+                    'villes' => $centres->pluck('ville')->unique('id')->values()
+                ]
+            ];
+        });
         
         return response()->json([
             'success' => true,
@@ -346,12 +351,14 @@ class BookingController extends Controller
      */
     public function getCentresForService($villeId, $serviceId)
     {
-        $centres = Centre::where('ville_id', $villeId)
+        $centres = Cache::remember('centres_for_service_' . $villeId . '_' . $serviceId, 60*60, function () use ($villeId, $serviceId) {
+            return Centre::where('ville_id', $villeId)
                         ->whereHas('services', function($query) use ($serviceId) {
                             $query->where('services.id', $serviceId)
                                   ->where('centre_services.actif', true);
                         })
                         ->get();
+        });
         
         return response()->json([
             'success' => true,
@@ -364,7 +371,9 @@ class BookingController extends Controller
      */
     public function getVilles($paysId)
     {
-        $villes = Ville::with('centres')->get();
+        $villes = Cache::remember('villes_with_centres_' . $paysId, 60*60, function () use ($paysId) {
+            return Ville::with('centres')->get();
+        });
         
         return response()->json([
             'success' => true,
@@ -377,9 +386,11 @@ class BookingController extends Controller
      */
     public function getCentres($villeId)
     {
-        $centres = Centre::where('ville_id', $villeId)
+        $centres = Cache::remember('centres_for_ville_' . $villeId, 60*60, function () use ($villeId) {
+            return Centre::where('ville_id', $villeId)
                         ->with('ville')
                         ->get();
+        });
         
         return response()->json([
             'success' => true,
@@ -392,8 +403,10 @@ class BookingController extends Controller
      */
     public function getServices($centreId)
     {
-        $centre = Centre::findOrFail($centreId);
-        $services = $centre->servicesActives()->with('formules')->get();
+        $services = Cache::remember('services_for_centre_' . $centreId, 60*60, function () use ($centreId) {
+            $centre = Centre::findOrFail($centreId);
+            return $centre->servicesActives()->with('formules')->get();
+        });
         
         return response()->json([
             'success' => true,
@@ -407,25 +420,31 @@ class BookingController extends Controller
     public function getFormules($centreId, $serviceId)
     {
         try {
-            $centre = Centre::findOrFail($centreId);
-            $service = Service::findOrFail($serviceId);
-            
-            // Récupérer les formules du service qui sont activées pour ce centre
-            // On part du service pour récupérer ses formules, puis on filtre par centre via la table pivot
-            $formuleIds = DB::table('centre_formules')
-                ->where('centre_id', $centreId)
-                ->where('actif', true)
-                ->pluck('formule_id');
-            
-            $formules = Formule::where('service_id', $serviceId)
-                ->where('statut', 'actif')
-                ->whereIn('id', $formuleIds)
-                ->get(['id', 'nom', 'prix', 'service_id']);
+            $data = Cache::remember('formules_for_centre_' . $centreId . '_service_' . $serviceId, 60*60, function () use ($centreId, $serviceId) {
+                $centre = Centre::findOrFail($centreId);
+                $service = Service::findOrFail($serviceId);
+                
+                // Récupérer les formules du service qui sont activées pour ce centre
+                $formuleIds = DB::table('centre_formules')
+                    ->where('centre_id', $centreId)
+                    ->where('actif', true)
+                    ->pluck('formule_id');
+                
+                $formules = Formule::where('service_id', $serviceId)
+                    ->where('statut', 'actif')
+                    ->whereIn('id', $formuleIds)
+                    ->get(['id', 'nom', 'prix', 'service_id']);
+
+                return [
+                    'formules' => $formules,
+                    'service' => $service
+                ];
+            });
             
             return response()->json([
                 'success' => true,
-                'formules' => $formules,
-                'service' => $service
+                'formules' => $data['formules'],
+                'service' => $data['service']
             ]);
         } catch (\Exception $e) {
             Log::error('Erreur lors de la récupération des formules: ' . $e->getMessage());

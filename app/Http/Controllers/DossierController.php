@@ -12,7 +12,9 @@ use App\Models\Centre;
 use App\Services\BarcodeService;
 use App\Events\DossierOpened;
 use App\Http\Requests\Dossier\StoreDossierRequest;
+
 use App\Http\Requests\Dossier\CreateWalkinRequest;
+use App\Http\Requests\Dossier\UpdateDossierRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -155,17 +157,12 @@ class DossierController extends Controller
     /**
      * Mettre à jour un dossier
      */
-    public function update(Request $request, DossierOuvert $dossier)
+    public function update(UpdateDossierRequest $request, DossierOuvert $dossier)
     {
-        if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
-            abort(403, 'Accès non autorisé à ce dossier.');
-        }
-
-        $request->validate([
-            'statut' => 'required|in:en_cours,complet,rejete',
-            'notes' => 'nullable|string|max:1000',
-        ]);
-
+        // Validation et autorisation gérées par UpdateDossierRequest
+        // Note: Le check canAccessCentre est déjà fait dans le Request authorize()
+        // On peut suppriemr l'ancien check ou le laisser par sécurité, mais le request throw 403 avnt.
+        
         try {
             $oldStatut = $dossier->statut;
             

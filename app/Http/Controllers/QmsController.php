@@ -12,6 +12,8 @@ use App\Services\ThermalPrintService;
 use App\Http\Requests\Qms\StoreTicketRequest;
 use App\Http\Requests\Qms\CheckRdvRequest;
 use App\Http\Requests\Qms\CallNextTicketRequest;
+use App\Http\Requests\Qms\CompleteTicketRequest;
+use App\Http\Requests\Qms\CancelTicketRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -79,15 +81,7 @@ class QmsController extends Controller
         
         $centreId = $assignedGuichet->centre_id;
         
-        // Debug temporaire
-        \Log::info('QMS Agent Access', [
-            'user_id' => $user->id,
-            'user_role' => $user->role,
-            'user_centre_id' => $user->centre_id,
-            'assigned_guichet_id' => $assignedGuichet->id,
-            'assigned_guichet_name' => $assignedGuichet->nom,
-            'centre_id' => $centreId
-        ]);
+
         
         return view('qms.agent', [
             'assignedGuichet' => $assignedGuichet,
@@ -255,7 +249,7 @@ class QmsController extends Controller
     /**
      * Terminer un ticket
      */
-    public function completeTicket(Ticket $ticket)
+    public function completeTicket(CompleteTicketRequest $request, Ticket $ticket)
     {
         $user = Auth::user();
 
@@ -281,7 +275,7 @@ class QmsController extends Controller
     /**
      * Annuler un ticket (Client absent)
      */
-    public function cancelTicket(Ticket $ticket)
+    public function cancelTicket(CancelTicketRequest $request, Ticket $ticket)
     {
         $ticket->update([
             'statut' => Ticket::STATUT_ABSENT,

@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\RendezVous;
 use App\Models\DossierOneciItem;
 use Carbon\Carbon;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Jobs\GeneratePdfJob;
 
 class ExportController extends Controller
 {
@@ -118,15 +118,31 @@ class ExportController extends Controller
         }
 
         try {
-            \Log::info('Génération du PDF...');
-            $pdf = Pdf::loadView('exports.rendez-vous-pdf', [
-                'rendezVous' => $rendezVous,
-                'titre' => $titre ?? 'Export des rendez-vous',
-                'date_export' => Carbon::now()->format('d/m/Y H:i')
-            ]);
+            \Log::info('Lancement de la génération PDF asynchrone...');
             
-            \Log::info('PDF généré avec succès, téléchargement...');
-            return $pdf->download($filename);
+            GeneratePdfJob::dispatch(
+                'exports.rendez-vous-pdf',
+                [
+                    'rendezVous' => $rendezVous,
+                    'titre' => $titre ?? 'Export des rendez-vous',
+                    'date_export' => Carbon::now()->format('d/m/Y H:i')
+                ],
+                $filename,
+                'public',
+                'exports'
+            );
+            
+            \Log::info('Job de génération PDF lancé avec succès');
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Export en cours de génération. Le fichier sera disponible dans quelques instants.',
+                    'filename' => $filename
+                ]);
+            }
+            
+            return back()->with('success', 'Export en cours de génération. Le fichier sera disponible dans quelques instants.');
         } catch (\Exception $e) {
             \Log::error('Erreur export PDF:', [
                 'message' => $e->getMessage(),
@@ -247,15 +263,31 @@ class ExportController extends Controller
         }
 
         try {
-            \Log::info('Génération du PDF...');
-            $pdf = Pdf::loadView('exports.dossiers-pdf', [
-                'dossiers' => $dossiers,
-                'titre' => $titre ?? 'Export des dossiers',
-                'date_export' => Carbon::now()->format('d/m/Y H:i')
-            ]);
+            \Log::info('Lancement de la génération PDF asynchrone...');
             
-            \Log::info('PDF généré avec succès, téléchargement...');
-            return $pdf->download($filename);
+            GeneratePdfJob::dispatch(
+                'exports.dossiers-pdf',
+                [
+                    'dossiers' => $dossiers,
+                    'titre' => $titre ?? 'Export des dossiers',
+                    'date_export' => Carbon::now()->format('d/m/Y H:i')
+                ],
+                $filename,
+                'public',
+                'exports'
+            );
+            
+            \Log::info('Job de génération PDF lancé avec succès');
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Export en cours de génération. Le fichier sera disponible dans quelques instants.',
+                    'filename' => $filename
+                ]);
+            }
+            
+            return back()->with('success', 'Export en cours de génération. Le fichier sera disponible dans quelques instants.');
         } catch (\Exception $e) {
             \Log::error('Erreur export PDF:', [
                 'message' => $e->getMessage(),
