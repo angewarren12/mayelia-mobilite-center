@@ -86,6 +86,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Accessor pour vérifier si l'utilisateur est agent biométrie
+     */
+    public function getIsAgentBiometrieAttribute()
+    {
+        return $this->role === 'agent_biometrie';
+    }
+
+    /**
      * Accessor pour le nom complet
      */
     public function getNomCompletAttribute(): string
@@ -191,7 +199,7 @@ class User extends Authenticatable
      */
     public function scopeAgents($query)
     {
-        return $query->where('role', 'agent');
+        return $query->whereIn('role', ['agent', 'agent_biometrie']);
     }
 
     public function scopeOneci($query)

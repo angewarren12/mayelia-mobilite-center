@@ -4,13 +4,39 @@
 @section('subtitle', 'Gestion des documents requis par service')
 
 @section('content')
-<div class="space-y-6">
-    <!-- En-tête avec bouton d'ajout -->
-    <div class="flex flex-col sm:flex-row justify-end items-start sm:items-center gap-4">
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .tab-button.active {
+        box-shadow: inset 0 -2px 0 0 #009639;
+    }
+    
+    .card-hover:hover {
+        transform: translateY(-2px);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out forwards;
+    }
+</style>
+<div class="space-y-6 animate-fadeIn">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Documents Requis</h1>
+            <p class="text-gray-500 text-sm">Gérez la liste des pièces à fournir pour chaque type de prestation</p>
+        </div>
         @isAdmin
         <button onclick="openCreateModal()" 
-                class="w-full sm:w-auto bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
-            <i class="fas fa-plus mr-2"></i>Ajouter un document
+                class="w-full sm:w-auto bg-mayelia-600 text-white px-5 py-2.5 rounded-xl hover:bg-mayelia-700 transition-all shadow-lg shadow-mayelia-200 flex items-center justify-center group">
+            <div class="bg-white/20 p-1 rounded-md mr-3 group-hover:scale-110 transition-transform">
+                <i class="fas fa-plus text-sm"></i>
+            </div>
+            <span class="font-semibold">Nouveau document</span>
         </button>
         @endisAdmin
     </div>
@@ -18,16 +44,16 @@
     <!-- Système d'onglets par service -->
     <div class="bg-white rounded-lg shadow">
         <!-- Onglets -->
-    <div class="border-b border-gray-200">
-            <nav class="flex overflow-x-auto" aria-label="Tabs">
+    <div class="border-b border-gray-100 bg-white sticky top-0 z-10 rounded-t-lg">
+        <nav class="flex overflow-x-auto no-scrollbar scroll-smooth" aria-label="Tabs">
             <button onclick="switchTab('all')" 
-                        class="tab-button active flex-shrink-0 py-4 px-6 border-b-2 border-mayelia-500 font-medium text-sm text-mayelia-600 whitespace-nowrap">
-                    <i class="fas fa-list mr-2"></i>Tous les services
-                </button>
-                @foreach($services as $service)
-                    <button onclick="switchTab('{{ $service->id }}')" 
-                            class="tab-button flex-shrink-0 py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap">
-                        <i class="fas fa-file-alt mr-2"></i>{{ $service->nom }}
+                    class="tab-button active flex-shrink-0 py-4 px-6 border-b-2 border-mayelia-500 font-bold text-sm text-mayelia-600 whitespace-nowrap transition-all flex items-center bg-mayelia-50/50">
+                <i class="fas fa-list-ul mr-2 text-xs"></i>Tous les services
+            </button>
+            @foreach($services as $service)
+                <button onclick="switchTab('{{ $service->id }}')" 
+                        class="tab-button flex-shrink-0 py-4 px-6 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-mayelia-600 hover:bg-gray-50 whitespace-nowrap transition-all flex items-center">
+                    <i class="fas fa-folder-open mr-2 text-xs opacity-60"></i>{{ $service->nom }}
                 </button>
             @endforeach
         </nav>
@@ -36,34 +62,45 @@
         <!-- Contenu des onglets -->
         <div class="p-4 sm:p-6">
             <!-- Filtres pour chaque onglet -->
-            <div class="mb-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Type de demande</label>
-                        <select id="filterTypeDemande" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
-                            <option value="">Tous les types</option>
-                            @foreach($typesDemande as $key => $label)
-                                <option value="{{ $key }}">{{ $key }}</option>
-                            @endforeach
-                        </select>
+            <div class="mb-8 bg-gray-50/80 backdrop-blur-sm p-5 rounded-2xl border border-gray-100">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Type de demande</label>
+                        <div class="relative">
+                            <select id="filterTypeDemande" class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500 transition-all appearance-none cursor-pointer">
+                                <option value="">Tous les types</option>
+                                @foreach($typesDemande as $key => $label)
+                                    <option value="{{ $key }}">{{ $key }}</option>
+                                @endforeach
+                            </select>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fas fa-tags text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                            
+                    <div>
+                        <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Statut d'importance</label>
+                        <div class="relative">
+                            <select id="filterStatut" class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500 transition-all appearance-none cursor-pointer">
+                                <option value="">Tous les niveaux</option>
+                                <option value="1">Obligatoire uniquement</option>
+                                <option value="0">Facultatif uniquement</option>
+                            </select>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <i class="fas fa-shield-alt text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                            
+                    <div class="flex items-end">
+                        <button onclick="applyFilters()" class="w-full bg-white text-gray-700 font-bold border-2 border-gray-100 py-2.5 rounded-xl hover:bg-gray-50 hover:border-gray-200 transition-all flex items-center justify-center group shadow-sm">
+                            <i class="fas fa-filter mr-2 text-mayelia-600 group-hover:rotate-12 transition-transform"></i>
+                            Rechercher / Filtrer
+                        </button>
+                    </div>
+                </div>
             </div>
-                    
-            <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                        <select id="filterStatut" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
-                    <option value="">Tous</option>
-                    <option value="1">Obligatoire</option>
-                            <option value="0">Facultatif</option>
-                </select>
-            </div>
-                    
-            <div class="flex items-end">
-                        <button onclick="applyFilters()" class="w-full bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">
-                            <i class="fas fa-search mr-2"></i>Filtrer
-                </button>
-            </div>
-        </div>
-    </div>
 
             <!-- Contenu des documents par service -->
             <div id="documentsContent">
@@ -91,14 +128,16 @@
                                                 {{ $document->service->nom }}
                                 </td>
                                             <td class="px-4 py-4 whitespace-nowrap">
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                    @if($document->type_demande === 'Première demande') bg-mayelia-100 text-mayelia-800
-                                                    @elseif($document->type_demande === 'Renouvellement') bg-green-100 text-green-800
-                                                    @elseif($document->type_demande === 'Modification') bg-yellow-100 text-yellow-800
-                                                    @else bg-purple-100 text-purple-800
-                                                    @endif">
-                                        {{ $document->type_demande }}
-                                    </span>
+                                        <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full
+                                            @if($document->type_demande === 'Première demande') bg-blue-100 text-blue-700
+                                            @elseif($document->type_demande === 'Renouvellement') bg-green-100 text-green-700
+                                            @elseif($document->type_demande === 'Renouvellement avec modification') bg-orange-100 text-orange-700
+                                            @elseif($document->type_demande === 'Modification') bg-yellow-100 text-yellow-700
+                                            @else bg-purple-100 text-purple-700
+                                            @endif shadow-sm border border-black/5">
+                                            <i class="fas fa-tag mr-1.5 opacity-70"></i>
+                                            {{ $document->type_demande }}
+                                        </span>
                                 </td>
                                             <td class="px-4 py-4 text-sm font-medium text-gray-900">
                                                 {{ $document->nom_document }}
@@ -156,64 +195,77 @@
                             </div>
                         @endif
 
-                        <!-- Version mobile -->
-                        <div class="lg:hidden space-y-4">
+                        <!-- Version mobile cards -->
+                        <div class="lg:hidden grid grid-cols-1 gap-4">
                             @foreach($documentsRequis as $document)
-                                <div class="bg-gray-50 rounded-lg p-4">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <h3 class="text-sm font-medium text-gray-900">{{ $document->nom_document }}</h3>
-                                        <div class="flex space-x-2">
+                                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 hover:shadow-md transition-shadow">
+                                    <div class="flex justify-between items-start gap-4 mb-4">
+                                        <div class="flex-1">
+                                            <h3 class="text-base font-bold text-gray-900 leading-tight mb-1">{{ $document->nom_document }}</h3>
+                                            <p class="text-xs text-mayelia-600 font-medium uppercase tracking-tight">{{ $document->service->nom }}</p>
+                                        </div>
+                                        <div class="flex gap-2">
                                             <a href="{{ route('document-requis.show', $document) }}" 
-                                               class="text-mayelia-600 hover:text-mayelia-900">
-                                                <i class="fas fa-eye"></i>
+                                               class="w-8 h-8 rounded-lg bg-mayelia-50 text-mayelia-600 flex items-center justify-center hover:bg-mayelia-100 transition-colors">
+                                                <i class="fas fa-eye text-xs"></i>
                                             </a>
                                             @isAdmin
                                             <button onclick="openEditModal({{ $document->id }})" 
-                                                    class="text-indigo-600 hover:text-indigo-900">
-                                                <i class="fas fa-edit"></i>
+                                                    class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors">
+                                                <i class="fas fa-edit text-xs"></i>
                                             </button>
-                                            <form action="{{ route('document-requis.destroy', $document) }}" 
-                                                  method="POST" class="inline"
-                                                  onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce document requis ?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
                                             @endisAdmin
                                         </div>
                                     </div>
                                     
-                                    <div class="space-y-2 text-sm text-gray-600">
-                                        <div class="flex justify-between">
-                                            <span class="font-medium">Service:</span>
-                                            <span>{{ $document->service->nom }}</span>
-                                        </div>
-                                        <div class="flex justify-between">
-                                            <span class="font-medium">Type:</span>
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                                @if($document->type_demande === 'Première demande') bg-mayelia-100 text-mayelia-800
-                                                @elseif($document->type_demande === 'Renouvellement') bg-green-100 text-green-800
-                                                @elseif($document->type_demande === 'Modification') bg-yellow-100 text-yellow-800
-                                                @else bg-purple-100 text-purple-800
-                                                @endif">
+                                    <div class="space-y-3 pt-3 border-t border-gray-50">
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-gray-400 uppercase">Type de demande</span>
+                                            <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full
+                                                @if($document->type_demande === 'Première demande') bg-blue-100 text-blue-700
+                                                @elseif($document->type_demande === 'Renouvellement') bg-green-100 text-green-700
+                                                @elseif($document->type_demande === 'Renouvellement avec modification') bg-orange-100 text-orange-700
+                                                @elseif($document->type_demande === 'Modification') bg-yellow-100 text-yellow-700
+                                                @else bg-purple-100 text-purple-700
+                                                @endif border border-black/5">
                                                 {{ $document->type_demande }}
                                             </span>
                                         </div>
-                                        <div class="flex justify-between">
-                                            <span class="font-medium">Statut:</span>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-bold text-gray-400 uppercase">Importance</span>
                                             @if($document->obligatoire)
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                                    <i class="fas fa-exclamation-circle mr-1"></i>Obligatoire
+                                                <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200">
+                                                    <i class="fas fa-exclamation-triangle mr-1 spinner text-[10px]"></i>Obligatoire
                                                 </span>
                                             @else
-                                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-600 border border-gray-200">
                                                     <i class="fas fa-info-circle mr-1"></i>Facultatif
                                                 </span>
                                             @endif
                                         </div>
-                                        <div class="flex justify-between">
+                                        @if($document->description)
+                                            <div class="bg-gray-50 rounded-xl p-3 mt-2">
+                                                <p class="text-xs text-gray-600 italic leading-relaxed">"{{ Str::limit($document->description, 120) }}"</p>
+                                            </div>
+                                        @endif
+                                    </div>
+                                    
+                                    @isAdmin
+                                    <div class="mt-4 flex justify-end">
+                                        <form action="{{ route('document-requis.destroy', $document) }}" 
+                                              method="POST" class="w-full"
+                                              onsubmit="return confirm('Supprimer ce document ?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="w-full py-2 bg-red-50 text-red-600 text-xs font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center">
+                                                <i class="fas fa-trash-alt mr-2"></i>Supprimer le document
+                                            </button>
+                                        </form>
+                                    </div>
+                                    @endisAdmin
+                                </div>
+                            @endforeach
+                        </div>
                                             <span class="font-medium">Ordre:</span>
                                             <span>{{ $document->ordre }}</span>
                                         </div>
@@ -533,8 +585,13 @@ setTimeout(() => {
     if (errorToast) errorToast.remove();
 }, 5000);
 
+// Variable pour suivre le service actif
+let currentActiveServiceId = 'all';
+
 // Gestion des onglets
 function switchTab(serviceId) {
+    currentActiveServiceId = serviceId;
+    
     // Masquer tous les contenus d'onglets
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.add('hidden');
@@ -542,14 +599,14 @@ function switchTab(serviceId) {
     
     // Désactiver tous les boutons d'onglets
     document.querySelectorAll('.tab-button').forEach(button => {
-        button.classList.remove('active', 'border-mayelia-500', 'text-mayelia-600');
+        button.classList.remove('active', 'border-mayelia-500', 'text-mayelia-600', 'bg-mayelia-50/50');
         button.classList.add('border-transparent', 'text-gray-500');
     });
     
     // Activer l'onglet sélectionné
     const activeButton = document.querySelector(`[onclick="switchTab('${serviceId}')"]`);
     if (activeButton) {
-        activeButton.classList.add('active', 'border-mayelia-500', 'text-mayelia-600');
+        activeButton.classList.add('active', 'border-mayelia-500', 'text-mayelia-600', 'bg-mayelia-50/50');
         activeButton.classList.remove('border-transparent', 'text-gray-500');
     }
     
@@ -582,13 +639,15 @@ function loadServiceDocuments(serviceId) {
         .then(documents => {
             if (documents.length === 0) {
                 container.innerHTML = `
-                    <div class="text-center py-12">
-                        <i class="fas fa-file-alt text-6xl text-gray-300 mb-4"></i>
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun document requis</h3>
-                        <p class="text-gray-500 mb-4">Aucun document requis pour ce service.</p>
+                    <div class="text-center py-16 bg-gray-50/50 rounded-2xl border-2 border-dashed border-gray-200">
+                        <div class="bg-white w-16 h-16 rounded-full shadow-sm flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-file-invoice text-2xl text-gray-300"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 mb-1">Aucun document configuré</h3>
+                        <p class="text-gray-500 mb-6 max-w-xs mx-auto">La liste des pièces pour ce service n'a pas encore été définie.</p>
                         <button onclick="openCreateModal()" 
-                                class="bg-mayelia-600 text-white px-4 py-2 rounded-lg hover:bg-mayelia-700 transition-colors">
-                            <i class="fas fa-plus mr-2"></i>Ajouter un document
+                                class="inline-flex items-center px-4 py-2 bg-mayelia-600 text-white rounded-xl hover:bg-mayelia-700 transition-all font-semibold">
+                            <i class="fas fa-plus mr-2 text-xs"></i>Configurer maintenant
                         </button>
                     </div>
                 `;
@@ -617,11 +676,13 @@ function loadServiceDocuments(serviceId) {
                     html += `
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                    ${doc.type_demande === 'Première demande' ? 'bg-mayelia-100 text-mayelia-800' :
-                                      doc.type_demande === 'Renouvellement' ? 'bg-green-100 text-green-800' :
-                                      doc.type_demande === 'Modification' ? 'bg-yellow-100 text-yellow-800' :
-                                      'bg-purple-100 text-purple-800'}">
+                                <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full
+                                    ${doc.type_demande === 'Première demande' ? 'bg-blue-100 text-blue-700' :
+                                      doc.type_demande === 'Renouvellement' ? 'bg-green-100 text-green-700' :
+                                      doc.type_demande === 'Renouvellement avec modification' ? 'bg-orange-100 text-orange-700' :
+                                      doc.type_demande === 'Modification' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-purple-100 text-purple-700'} shadow-sm border border-black/5">
+                                    <i class="fas fa-tag mr-1.5 opacity-70"></i>
                                     ${doc.type_demande}
                                 </span>
                             </td>
@@ -662,63 +723,67 @@ function loadServiceDocuments(serviceId) {
                         </table>
                     </div>
                     
-                    <!-- Version mobile -->
-                    <div class="lg:hidden space-y-4">
+                    <!-- Version mobile cards -->
+                    <div class="lg:hidden grid grid-cols-1 gap-4">
                 `;
                 
                 documents.forEach(doc => {
+                    const badgeClass = doc.type_demande === 'Première demande' ? 'bg-blue-100 text-blue-700' :
+                                     doc.type_demande === 'Renouvellement' ? 'bg-green-100 text-green-700' :
+                                     doc.type_demande === 'Renouvellement avec modification' ? 'bg-orange-100 text-orange-700' :
+                                     doc.type_demande === 'Modification' ? 'bg-yellow-100 text-yellow-700' :
+                                     'bg-purple-100 text-purple-700';
+
                     html += `
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <div class="flex justify-between items-start mb-3">
-                                <h3 class="text-sm font-medium text-gray-900">${doc.nom_document}</h3>
-                                <div class="flex space-x-2">
-                                    <a href="/document-requis/${doc.id}" class="text-mayelia-600 hover:text-mayelia-900">
-                                        <i class="fas fa-eye"></i>
+                        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+                            <div class="flex justify-between items-start gap-4 mb-4">
+                                <h3 class="text-base font-bold text-gray-900 leading-tight">${doc.nom_document}</h3>
+                                <div class="flex gap-2">
+                                    <a href="/document-requis/${doc.id}" 
+                                       class="w-8 h-8 rounded-lg bg-mayelia-50 text-mayelia-600 flex items-center justify-center">
+                                        <i class="fas fa-eye text-xs"></i>
                                     </a>
                                     ${window.isAdmin ? `
-                                    <button onclick="openEditModal(${doc.id})" class="text-indigo-600 hover:text-indigo-900">
-                                        <i class="fas fa-edit"></i>
+                                    <button onclick="openEditModal(${doc.id})" 
+                                            class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                        <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    <form action="/document-requis/${doc.id}" method="POST" class="inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce document requis ?')">
-                                        <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                        <input type="hidden" name="_method" value="DELETE">
-                                        <button type="submit" class="text-red-600 hover:text-red-900">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
                                     ` : ''}
                                 </div>
                             </div>
                             
-                            <div class="space-y-2 text-sm text-gray-600">
-                                <div class="flex justify-between">
-                                    <span class="font-medium">Type:</span>
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
-                                        ${doc.type_demande === 'Première demande' ? 'bg-mayelia-100 text-mayelia-800' :
-                                          doc.type_demande === 'Renouvellement' ? 'bg-green-100 text-green-800' :
-                                          doc.type_demande === 'Modification' ? 'bg-yellow-100 text-yellow-800' :
-                                          'bg-purple-100 text-purple-800'}">
+                            <div class="space-y-3 pt-3 border-t border-gray-50">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Type de demande</span>
+                                    <span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full ${badgeClass} border border-black/5">
                                         ${doc.type_demande}
                                     </span>
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="font-medium">Statut:</span>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-bold text-gray-400 uppercase">Importance</span>
                                     ${doc.obligatoire ? 
-                                        '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800"><i class="fas fa-exclamation-circle mr-1"></i>Obligatoire</span>' :
-                                        '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800"><i class="fas fa-info-circle mr-1"></i>Facultatif</span>'
+                                        '<span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full bg-red-100 text-red-700 border border-red-200">Obligatoire</span>' :
+                                        '<span class="inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full bg-gray-100 text-gray-600 border border-gray-200">Facultatif</span>'
                                     }
                                 </div>
-                                <div class="flex justify-between">
-                                    <span class="font-medium">Ordre:</span>
-                                    <span>${doc.ordre}</span>
-                                </div>
                                 ${doc.description ? `
-                                    <div>
-                                        <span class="font-medium">Description:</span>
-                                        <p class="mt-1 text-gray-600">${doc.description.length > 100 ? doc.description.substring(0, 100) + '...' : doc.description}</p>
+                                    <div class="bg-gray-50 rounded-xl p-3 mt-2">
+                                        <p class="text-xs text-gray-600 italic leading-relaxed">"${doc.description.length > 120 ? doc.description.substring(0, 120) + '...' : doc.description}"</p>
                                     </div>
                                 ` : ''}
                             </div>
+                            
+                            ${window.isAdmin ? `
+                            <div class="mt-4 flex justify-end">
+                                <form action="/document-requis/${doc.id}" method="POST" class="w-full" onsubmit="return confirm('Supprimer ce document ?')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                    <input type="hidden" name="_method" value="DELETE">
+                                    <button type="submit" class="w-full py-2 bg-red-50 text-red-600 text-xs font-bold rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-trash-alt mr-2"></i>Supprimer
+                                    </button>
+                                </form>
+                            </div>
+                            ` : ''}
                         </div>
                     `;
                 });
@@ -753,12 +818,22 @@ function applyFilters() {
 
 // Modal functions
 function openCreateModal() {
+    // Si on est dans l'onglet d'un service spécifique, on pré-sélectionne ce service
+    if (currentActiveServiceId !== 'all') {
+        const serviceSelect = document.querySelector('#createModal select[name="service_id"]');
+        if (serviceSelect) {
+            serviceSelect.value = currentActiveServiceId;
+        }
+    }
+    
     document.getElementById('createModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Empêcher le scroll
 }
 
 function closeCreateModal() {
     document.getElementById('createModal').classList.add('hidden');
     document.getElementById('createForm').reset();
+    document.body.style.overflow = 'auto';
 }
 
 function openEditModal(documentId) {
@@ -774,6 +849,7 @@ function openEditModal(documentId) {
             document.querySelector('input[name="ordre"]').value = data.ordre;
             
             document.getElementById('editModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         })
         .catch(error => {
             console.error('Erreur:', error);
@@ -783,6 +859,7 @@ function openEditModal(documentId) {
 
 function closeEditModal() {
     document.getElementById('editModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
 
 // Fermer les modales en cliquant à l'extérieur

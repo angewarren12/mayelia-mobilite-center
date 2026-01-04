@@ -302,6 +302,9 @@ Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, '
     Route::prefix('qms')->name('qms.')->group(function () {
         // Interface Agent (protégée)
         Route::get('/agent', [App\Http\Controllers\QmsController::class, 'agent'])->name('agent');
+        Route::get('/debug-agent', function() {
+            return view('qms.debug-agent');
+        })->name('debug-agent');
         
         // Actions sur les tickets (protégées - réservées aux agents)
     Route::post('/tickets/call-next', [App\Http\Controllers\QmsController::class, 'callTicket'])->name('tickets.callNext');

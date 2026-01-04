@@ -17,59 +17,6 @@ use Carbon\Carbon;
 class OneciVerificationService
 {
     /**
-     * Mock de l'API ONECI - Données de test
-     * 
-     * En production, ces données viendront de l'API réelle ONECI
-     */
-    private array $mockDatabase = [
-        'ONECI2025001' => [
-            'numero_pre_enrolement' => 'ONECI2025001',
-            'statut' => 'valide',
-            'nom' => 'KOUASSI',
-            'prenoms' => 'Jean Marc',
-            'date_naissance' => '1990-05-15',
-            'lieu_naissance' => 'Abidjan',
-            'telephone' => '+225 07 12 34 56 78',
-            'email' => 'jean.kouassi@example.com',
-            'date_validation' => '2025-12-01 10:30:00'
-        ],
-        'ONECI2025002' => [
-            'numero_pre_enrolement' => 'ONECI2025002',
-            'statut' => 'valide',
-            'nom' => 'YAO',
-            'prenoms' => 'Marie Claire',
-            'date_naissance' => '1985-08-22',
-            'lieu_naissance' => 'Bouaké',
-            'telephone' => '+225 05 98 76 54 32',
-            'email' => 'marie.yao@example.com',
-            'date_validation' => '2025-12-02 14:15:00'
-        ],
-        'ONECI2025003' => [
-            'numero_pre_enrolement' => 'ONECI2025003',
-            'statut' => 'en_attente',
-            'nom' => 'TRAORE',
-            'prenoms' => 'Amadou',
-            'date_naissance' => '1992-03-10',
-            'lieu_naissance' => 'Yamoussoukro',
-            'telephone' => '+225 07 11 22 33 44',
-            'email' => 'amadou.traore@example.com',
-            'date_soumission' => '2025-12-03 09:00:00'
-        ],
-        'ONECI2025004' => [
-            'numero_pre_enrolement' => 'ONECI2025004',
-            'statut' => 'rejete',
-            'nom' => 'KONE',
-            'prenoms' => 'Ibrahim',
-            'date_naissance' => '1988-11-05',
-            'lieu_naissance' => 'Korhogo',
-            'telephone' => '+225 01 23 45 67 89',
-            'email' => 'ibrahim.kone@example.com',
-            'date_rejet' => '2025-12-02 16:45:00',
-            'motif_rejet' => 'Documents incomplets'
-        ]
-    ];
-
-    /**
      * Vérifie un numéro de pré-enrôlement auprès de l'API ONECI
      * 
      * @param string $numeroPreEnrolement
@@ -77,48 +24,43 @@ class OneciVerificationService
      */
     public function verifyPreEnrollmentNumber(string $numeroPreEnrolement): array
     {
-        Log::info('Vérification du numéro de pré-enrôlement ONECI', [
+        Log::info('Vérification du numéro de pré-enrôlement ONECI réelle', [
             'numero' => $numeroPreEnrolement
         ]);
 
-        // En production, remplacer par un appel HTTP à l'API ONECI
-        // $response = Http::withHeaders([
-        //     'Authorization' => 'Bearer ' . config('services.oneci.api_key'),
-        //     'Accept' => 'application/json',
-        // ])->get(config('services.oneci.api_url') . '/verify/' . $numeroPreEnrolement);
-        
-        // Mock de la réponse API
-        $data = $this->mockApiCall($numeroPreEnrolement);
+        try {
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . config('services.oneci.api_key'),
+                'Accept' => 'application/json',
+            ])->timeout(15)->get(config('services.oneci.api_url') . '/verify/' . $numeroPreEnrolement);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                return [
+                    'success' => true,
+                    'message' => $this->getStatusMessage($data['statut'] ?? 'valide'),
+                    'statut' => $data['statut'] ?? 'valide',
+                    'data' => $data
+                ];
+            }
 
-        if ($data === null) {
             return [
                 'success' => false,
-                'message' => 'Numéro de pré-enrôlement introuvable',
+                'message' => 'Numéro de pré-enrôlement introuvable ou erreur API',
+                'statut' => null,
+                'data' => null
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Erreur API ONECI: ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Erreur de connexion à l\'API ONECI',
                 'statut' => null,
                 'data' => null
             ];
         }
-
-        return [
-            'success' => true,
-            'message' => $this->getStatusMessage($data['statut']),
-            'statut' => $data['statut'],
-            'data' => $data
-        ];
-    }
-
-    /**
-     * Mock de l'appel API ONECI
-     * 
-     * @param string $numeroPreEnrolement
-     * @return array|null
-     */
-    private function mockApiCall(string $numeroPreEnrolement): ?array
-    {
-        // Simuler un délai réseau
-        usleep(500000); // 0.5 secondes
-
-        return $this->mockDatabase[$numeroPreEnrolement] ?? null;
     }
 
     /**

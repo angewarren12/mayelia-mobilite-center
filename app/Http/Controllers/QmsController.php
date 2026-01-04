@@ -58,7 +58,6 @@ class QmsController extends Controller
         
         // L'agent ne sélectionne plus son guichet, il utilise celui assigné par l'admin
         $assignedGuichet = Guichet::where('user_id', $user->id)
-            ->where('centre_id', $user->centre_id)
             ->with(['centre'])
             ->first();
             
@@ -80,7 +79,20 @@ class QmsController extends Controller
         
         $centreId = $assignedGuichet->centre_id;
         
-        return view('qms.agent', compact('assignedGuichet', 'centreId'));
+        // Debug temporaire
+        \Log::info('QMS Agent Access', [
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'user_centre_id' => $user->centre_id,
+            'assigned_guichet_id' => $assignedGuichet->id,
+            'assigned_guichet_name' => $assignedGuichet->nom,
+            'centre_id' => $centreId
+        ]);
+        
+        return view('qms.agent', [
+            'assignedGuichet' => $assignedGuichet,
+            'centreId' => $centreId
+        ]);
     }
 
     /**
@@ -197,21 +209,32 @@ class QmsController extends Controller
         // Recalculer les priorités selon le mode actif du centre
         $this->priorityService->updateAllPriorities($centre);
 
-        // Sélectionner le prochain ticket en respectant les restrictions de services du guichet
-        $query = Ticket::pourCentre($centre->id)
-            ->enAttente()
-            ->parPriorite();
-            
-        // Si le guichet a des types de services spécifiques autorisés
-        if ($guichet->type_services && is_array($guichet->type_services) && count($guichet->type_services) > 0) {
-            $query->whereIn('service_id', $guichet->type_services);
+        // LOGIQUE DE FILE D'ATTENTE BIOMÉTRIE
+        if ($user->is_agent_biometrie) {
+            // L'agent biométrie récupère les tickets en attente de biométrie
+            // On trie par updated_at (date de mise en file biométrie)
+            $query = Ticket::pourCentre($centre->id)
+                ->where('statut', Ticket::STATUT_EN_ATTENTE_BIOMETRIE)
+                ->orderBy('updated_at', 'asc');
+        } else {
+            // Sélectionner le prochain ticket standard
+            $query = Ticket::pourCentre($centre->id)
+                ->enAttente()
+                ->parPriorite();
+                
+            // Si le guichet a des types de services spécifiques autorisés
+            // (Uniquement pour les agents standards, pas biométrie qui prend tout le flux)
+            if ($guichet->type_services && is_array($guichet->type_services) && count($guichet->type_services) > 0) {
+                $query->whereIn('service_id', $guichet->type_services);
+            }
         }
 
         $nextTicket = $query->first();
 
         if ($nextTicket) {
             $nextTicket->update([
-                'statut' => Ticket::STATUT_APPELÉ,
+                'statut' => Ticket::STATUT_APPELÉ, // Reste 'appelé' mais contextuellement c'est pour biométrie
+                // Note: On pourrait utiliser STATUT_EN_COURS_BIOMETRIE pour différencier sur la TV si besoin
                 'called_at' => now(),
                 'guichet_id' => $request->guichet_id,
                 'user_id' => Auth::id() // Agent qui appelle
@@ -234,10 +257,23 @@ class QmsController extends Controller
      */
     public function completeTicket(Ticket $ticket)
     {
-        $ticket->update([
-            'statut' => Ticket::STATUT_TERMINÉ,
-            'completed_at' => now()
-        ]);
+        $user = Auth::user();
+
+        // Si l'agent EST un agent biométrie, clore définitivement le ticket
+        if ($user->is_agent_biometrie) {
+            $ticket->update([
+                'statut' => Ticket::STATUT_TERMINÉ,
+                'completed_at' => now()
+            ]);
+        } else {
+            // Si c'est un agent d'accueil/dossier, on transfère vers la biométrie
+            // Au lieu de terminer, on met en attente biométrie
+            $ticket->update([
+                'statut' => Ticket::STATUT_EN_ATTENTE_BIOMETRIE,
+                'guichet_id' => null, // Détacher du guichet actuel pour le remettre dans le pool
+                'user_id' => null     // Détacher de l'agent actuel
+            ]);
+        }
 
         return response()->json(['success' => true]);
     }
@@ -385,13 +421,20 @@ class QmsController extends Controller
             ->get();
 
         // File d'attente (pour l'agent)
-        $waiting = Ticket::select('id', 'numero', 'service_id', 'type', 'created_at', 'priorite')
+        $waitingQuery = Ticket::select('id', 'numero', 'service_id', 'type', 'created_at', 'priorite', 'updated_at')
             ->pourCentre($centreId)
-            ->enAttente()
             ->with('service:id,nom')
-            ->parPriorite()
-            ->orderBy('created_at', 'asc')
-            ->get();
+            ->parPriorite();
+
+        if (Auth::user()->is_agent_biometrie) {
+            $waitingQuery->where('statut', Ticket::STATUT_EN_ATTENTE_BIOMETRIE)
+                         ->orderBy('updated_at', 'asc');
+        } else {
+            $waitingQuery->enAttente()
+                         ->orderBy('created_at', 'asc');
+        }
+
+        $waiting = $waitingQuery->get();
 
         // Tickets actuellement en cours de traitement (par guichet) pour le widget
         $activeTickets = Ticket::select('id', 'numero', 'guichet_id', 'service_id', 'type', 'statut')

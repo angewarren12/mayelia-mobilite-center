@@ -26,8 +26,8 @@
                         1
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-900">Client</p>
-                        <p class="text-xs text-gray-500">Créer ou sélectionner le client</p>
+                        <p class="text-sm font-medium text-gray-900">Service & Vérification</p>
+                        <p class="text-xs text-gray-500">Choix du service et vérification ONECI</p>
                     </div>
                 </div>
                 <div class="flex-1 h-0.5 bg-gray-200 mx-4">
@@ -38,8 +38,8 @@
                         2
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Service</p>
-                        <p class="text-xs text-gray-500">Sélectionner service et formule</p>
+                        <p class="text-sm font-medium text-gray-600">Infos Client</p>
+                        <p class="text-xs text-gray-500">Valider les informations du client</p>
                     </div>
                 </div>
                 <div class="flex-1 h-0.5 bg-gray-200 mx-4">
@@ -62,166 +62,17 @@
     <form id="walkinForm" class="bg-white rounded-lg shadow p-6">
         @csrf
 
-        <!-- Étape 1: Client -->
+        <!-- Étape 1: Service & Vérification -->
         <div id="step-1" class="wizard-step">
             <div class="mb-6">
                 <h3 class="text-xl font-semibold text-gray-900 mb-2">
-                    <i class="fas fa-user mr-2 text-mayelia-600"></i>
-                    Étape 1: Client
-                </h3>
-                <p class="text-gray-600">Recherchez un client existant ou créez-en un nouveau</p>
-            </div>
-
-            <!-- Recherche de client existant -->
-            <div class="mb-6 p-4 bg-mayelia-50 rounded-lg">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-search mr-2"></i>Rechercher un client existant
-                </label>
-                <div class="flex space-x-2">
-                    <input type="text" 
-                           id="clientSearch" 
-                           placeholder="Nom, email ou téléphone..."
-                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    <button type="button" 
-                            onclick="searchClient()" 
-                            class="bg-mayelia-600 text-white px-6 py-2 rounded-lg hover:bg-mayelia-700">
-                        <i class="fas fa-search mr-2"></i>Rechercher
-                    </button>
-                </div>
-                <div id="clientSearchResults" class="mt-4 hidden">
-                    <!-- Résultats de recherche -->
-                </div>
-            </div>
-
-            <div class="text-center my-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">OU</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Formulaire de création de client -->
-            <div id="newClientForm">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">Créer un nouveau client</h4>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
-                        <input type="text" 
-                               name="client_nom" 
-                               id="client_nom"
-                               required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
-                        <input type="text" 
-                               name="client_prenom" 
-                               id="client_prenom"
-                               required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                        <input type="email" 
-                               name="client_email" 
-                               id="client_email"
-                               required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
-                        <input type="text" 
-                               name="client_telephone" 
-                               id="client_telephone"
-                               required
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                        <input type="date" 
-                               name="client_date_naissance" 
-                               id="client_date_naissance"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Lieu de naissance</label>
-                        <input type="text" 
-                               name="client_lieu_naissance" 
-                               id="client_lieu_naissance"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                        <input type="text" 
-                               name="client_adresse" 
-                               id="client_adresse"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Profession</label>
-                        <input type="text" 
-                               name="client_profession" 
-                               id="client_profession"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Sexe</label>
-                        <select name="client_sexe" 
-                                id="client_sexe"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                            <option value="">Sélectionner</option>
-                            <option value="M">Masculin</option>
-                            <option value="F">Féminin</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Type de pièce d'identité</label>
-                        <select name="client_type_piece_identite" 
-                                id="client_type_piece_identite"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                            <option value="">Sélectionner</option>
-                            <option value="CNI">CNI</option>
-                            <option value="PASSEPORT">Passeport</option>
-                            <option value="PERMIS">Permis de conduire</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Numéro de pièce d'identité</label>
-                        <input type="text" 
-                               name="client_numero_piece_identite" 
-                               id="client_numero_piece_identite"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
-                    </div>
-                </div>
-            </div>
-
-            <input type="hidden" name="client_id" id="client_id">
-
-            <div class="mt-6 flex justify-end">
-                <button type="button" 
-                        onclick="nextStep(2)" 
-                        class="bg-mayelia-600 text-white px-6 py-2 rounded-lg hover:bg-mayelia-700">
-                    Suivant <i class="fas fa-arrow-right ml-2"></i>
-                </button>
-            </div>
-        </div>
-
-        <!-- Étape 2: Service et Formule -->
-        <div id="step-2" class="wizard-step hidden">
-            <div class="mb-6">
-                <h3 class="text-xl font-semibold text-gray-900 mb-2">
                     <i class="fas fa-clipboard-list mr-2 text-mayelia-600"></i>
-                    Étape 2: Service et Formule
+                    Étape 1: Service & Vérification
                 </h3>
-                <p class="text-gray-600">Sélectionnez le service et la formule souhaités</p>
+                <p class="text-gray-600">Sélectionnez le service et vérifiez le numéro de pré-enrôlement</p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Service *</label>
                     <select name="service_id" 
@@ -245,6 +96,166 @@
                     </select>
                 </div>
             </div>
+
+            <!-- Zone de Vérification ONECI -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+                <h4 class="text-lg font-medium text-blue-900 mb-4">Vérification de l'identité</h4>
+                
+                <div class="mb-4 flex space-x-6 hidden">
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="verification_type" value="oneci" checked onchange="toggleVerificationType()" class="form-radio text-blue-600 h-4 w-4">
+                        <span class="ml-2 text-gray-700">Pré-enrôlement ONECI</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="verification_type" value="resident" onchange="toggleVerificationType()" class="form-radio text-blue-600 h-4 w-4">
+                        <span class="ml-2 text-gray-700">Carte de Résident</span>
+                    </label>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input type="radio" name="verification_type" value="cni" onchange="toggleVerificationType()" class="form-radio text-blue-600 h-4 w-4">
+                        <span class="ml-2 text-gray-700">CNI (Ancienne/Nouvelle)</span>
+                    </label>
+                </div>
+
+                <div class="flex space-x-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-blue-800 mb-2" id="verification_label">Numéro de pré-enrôlement</label>
+                        <input type="text" 
+                               id="numero_verification" 
+                               name="numero_pre_enrolement"
+                               placeholder="Ex: 173687xxxx"
+                               class="w-full px-4 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button type="button" 
+                            onclick="verifierNumeroEnrolement()" 
+                            id="btn-verify"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 mb-[1px]">
+                        <i class="fas fa-search mr-2"></i>Vérifier
+                    </button>
+                </div>
+                
+                <!-- Option pour passer la vérification -->
+                <div class="mt-2 text-right">
+                    <button type="button" 
+                            onclick="skipVerification()" 
+                            class="text-xs text-gray-500 hover:text-gray-700 underline">
+                        Passer la vérification (non recommandé)
+                    </button>
+                    <input type="hidden" name="force_skip_verification" id="force_skip_verification" value="0">
+                </div>
+
+                <!-- Résultats de vérification -->
+                <div id="verificationResult" class="mt-4 hidden p-4 bg-white rounded border border-blue-100 shadow-sm">
+                    <!-- Rempli par JS -->
+                </div>
+            </div>
+
+            <!-- Champs cachés pour stocker les données ONECI -->
+            <input type="hidden" name="donnees_oneci" id="donnees_oneci">
+            <input type="hidden" name="statut_oneci" id="statut_oneci">
+            <input type="hidden" name="is_verified" id="is_verified" value="0">
+
+            <div class="mt-6 flex justify-end">
+                <button type="button" 
+                        onclick="nextStep(2)" 
+                        id="btn-step-1-next"
+                        class="bg-mayelia-600 text-white px-6 py-2 rounded-lg hover:bg-mayelia-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                    Suivant <i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Étape 2: Infos Client -->
+        <div id="step-2" class="wizard-step hidden">
+            <div class="mb-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                    <i class="fas fa-user mr-2 text-mayelia-600"></i>
+                    Étape 2: Informations Client
+                </h3>
+                <p class="text-gray-600">Vérifiez et complétez les informations du client</p>
+            </div>
+            
+            <!-- Recherche de client existant (Optionnel) -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                 <button type="button" onclick="toggleClientSearch()" class="text-mayelia-600 hover:text-mayelia-800 text-sm font-medium flex items-center w-full justify-between">
+                    <span class="flex items-center"><i class="fas fa-search mr-2"></i> Rechercher un client existant (si vérification échouée)</span>
+                    <i class="fas fa-chevron-down transform transition-transform" id="searchChevron"></i>
+                 </button>
+                 <div id="clientSearchZone" class="mt-4 hidden animate-fade-in-down">
+                    <div class="flex space-x-2">
+                        <input type="text" id="clientSearch" placeholder="Rechercher par nom, email ou téléphone..." class="flex-1 px-3 py-2 border rounded-md focus:ring-2 focus:ring-mayelia-500">
+                        <button type="button" onclick="searchClient()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">Rechercher</button>
+                    </div>
+                    <div id="clientSearchResults" class="mt-2 space-y-2"></div>
+                 </div>
+            </div>
+
+            <!-- Formulaire Client -->
+            <div id="newClientForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
+                        <input type="text" name="client_nom" id="client_nom" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500 bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Prénom *</label>
+                        <input type="text" name="client_prenom" id="client_prenom" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500 bg-gray-50">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+                        <input type="email" name="client_email" id="client_email" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone *</label>
+                        <input type="text" name="client_telephone" id="client_telephone" required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
+                        <input type="date" name="client_date_naissance" id="client_date_naissance"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Lieu de naissance</label>
+                        <input type="text" name="client_lieu_naissance" id="client_lieu_naissance"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
+                        <input type="text" name="client_adresse" id="client_adresse"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Profession</label>
+                        <input type="text" name="client_profession" id="client_profession"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Sexe</label>
+                        <select name="client_sexe" id="client_sexe" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                            <option value="">Sélectionner</option>
+                            <option value="M">Masculin</option>
+                            <option value="F">Féminin</option>
+                        </select>
+                    </div>
+                    <div class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Type Pièce</label>
+                        <select name="client_type_piece_identite" id="client_type_piece_identite" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                            <option value="">Sélectionner</option>
+                            <option value="CNI">CNI</option>
+                            <option value="PASSEPORT">Passeport</option>
+                            <option value="PERMIS">Permis</option>
+                        </select>
+                    </div>
+                     <div class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Numéro Pièce</label>
+                        <input type="text" name="client_numero_piece_identite" id="client_numero_piece_identite" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
+                    </div>
+                </div>
+            </div>
+            <input type="hidden" name="client_id" id="client_id">
 
             <div class="mt-6 flex justify-between">
                 <button type="button" 
@@ -295,22 +306,235 @@
 <script>
 let currentStep = 1;
 let selectedClient = null;
+let oneciData = null;
+
+function toggleVerificationType() {
+    const type = document.querySelector('input[name="verification_type"]:checked').value;
+    const label = document.getElementById('verification_label');
+    const input = document.getElementById('numero_verification');
+    
+    if (type === 'oneci') {
+        label.textContent = "Numéro de pré-enrôlement";
+        input.placeholder = "Ex: 173687xxxx";
+    } else if (type === 'resident') {
+        label.textContent = "Numéro de Carte de Résident";
+        input.placeholder = "Ex: 1111xxxxx";
+    } else {
+        label.textContent = "Numéro CNI (Ancienne ou Nouvelle)";
+        input.placeholder = "Ex: C00xxxxx";
+    }
+}
+
+function skipVerification() {
+    if (confirm("Êtes-vous sûr de vouloir sauter la vérification ? Cela devrait être réservé aux cas où le service de vérification est indisponible.")) {
+        document.getElementById('is_verified').value = "0";
+        document.getElementById('force_skip_verification').value = "1";
+        // On permet de passer à l'étape suivante manuellement ou on débloque le bouton suivant
+        alert("Vérification ignorée. Vous pouvez passer à l'étape suivante.");
+        // Optionnel : auto-next ?
+        // nextStep(2);
+    }
+}
+
+async function verifierNumeroEnrolement() {
+    const input = document.getElementById('numero_verification');
+    const number = input.value.trim();
+    const type = document.querySelector('input[name="verification_type"]:checked').value;
+    const resultDiv = document.getElementById('verificationResult');
+    const btn = document.getElementById('btn-verify');
+    
+    if (number.length < 5) {
+        alert("Veuillez saisir un numéro valide");
+        return;
+    }
+
+    // UI Loading
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+    input.disabled = true;
+    resultDiv.classList.add('hidden');
+
+    try {
+        let endpoint = '/booking/verify-enrollment';
+        let bodyData = { numero_pre_enrolement: number };
+        
+        if (type === 'resident') {
+            endpoint = '/booking/verify-carte-resident';
+            bodyData = { numero_dossier: number };
+        }
+        if (type === 'cni') {
+            endpoint = '/booking/verify-cni';
+            bodyData = { numero_dossier: number };
+        }
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(bodyData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Stockage des données
+            oneciData = data.data;
+            document.getElementById('donnees_oneci').value = JSON.stringify(data.data);
+            document.getElementById('statut_oneci').value = 'valide';
+            document.getElementById('is_verified').value = "1";
+            document.getElementById('force_skip_verification').value = "0";
+
+            // Affichage Résultat OK
+            let infoHtml = '';
+            // Gestion de la casse (API ONECI vs Resident vs CNI)
+            const nom = data.data.nom || data.data.Nom || data.data.NOM || '';
+            const prenoms = data.data.prenoms || data.data.Prenoms || data.data.PRENOMS || '';
+            const nomComplet = data.data.nom_complet || data.data.NomComplet || '';
+
+            if (nom || prenoms) {
+                infoHtml = `<div class="mt-1 text-lg uppercase font-bold text-green-800">${nom} ${prenoms}</div>`;
+            } else if (nomComplet) {
+                 infoHtml = `<div class="mt-1 text-lg uppercase font-bold text-green-800">${nomComplet}</div>`;
+            }
+
+            resultDiv.innerHTML = `
+                <div class="flex items-center text-green-700">
+                    <i class="fas fa-check-circle text-2xl mr-3"></i>
+                    <div>
+                        <p class="font-medium">Vérification réussie !</p>
+                        <p class="text-sm">${infoHtml}</p>
+                    </div>
+                </div>
+            `;
+            resultDiv.classList.remove('hidden', 'bg-red-50', 'border-red-200');
+            resultDiv.classList.add('bg-green-50', 'border-green-200');
+
+            // Pré-remplissage immédiat (invisible pour l'instant)
+            prefillClientForm(data.data);
+
+        } else {
+            // Erreur API
+            document.getElementById('is_verified').value = "0";
+            resultDiv.innerHTML = `
+                <div class="flex items-center text-red-700">
+                    <i class="fas fa-times-circle text-2xl mr-3"></i>
+                    <div>
+                        <p class="font-medium">Impossible de vérifier ce numéro</p>
+                        <p class="text-sm">${data.message || 'Numéro introuvable ou invalide.'}</p>
+                    </div>
+                </div>
+            `;
+            resultDiv.classList.remove('hidden', 'bg-green-50', 'border-green-200');
+            resultDiv.classList.add('bg-red-50', 'border-red-200');
+        }
+
+    } catch (e) {
+        console.error(e);
+        resultDiv.innerHTML = `<p class="text-red-600">Erreur de connexion au service de vérification.</p>`;
+        resultDiv.classList.remove('hidden');
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        input.disabled = false;
+    }
+}
+
+function prefillClientForm(data) {
+    if (!data) return;
+
+    // Mapping des champs (ajuster selon structure API)
+    const mapping = {
+        'client_nom': data.nom || data.Nom || data.NOM || '',
+        'client_prenom': data.prenoms || data.Prenoms || data.PRENOMS || data.prenom || data.Prenom || '',
+        'client_date_naissance': formatDateForInput(data.date_naissance || data.DateNaissance),
+        'client_lieu_naissance': data.lieu_naissance || data.LieuNaissance || data.LIEU_NAISSANCE || '',
+        'client_telephone': data.telephone || data.Telephone || '',
+        'client_email': data.email || data.Email || '',
+        'client_sexe': (data.genre === 'M' || data.Genre === 'M' || data.sexe === 'M') ? 'M' : 'F',
+        // 'client_numero_piece_identite': document.getElementById('numero_verification').value,
+        'client_profession': data.profession || data.Profession || ''
+    };
+    
+    // Type pièce
+    // const typeDoc = document.querySelector('input[name="verification_type"]:checked').value;
+    // if (typeDoc === 'oneci') document.getElementById('client_type_piece_identite').value = 'CNI';
+    // if (typeDoc === 'resident') document.getElementById('client_type_piece_identite').value = 'PASSEPORT';
+    
+    // Application des valeurs
+    for (const [id, value] of Object.entries(mapping)) {
+        const el = document.getElementById(id);
+        if (el && value) {
+            el.value = value;
+            // Highlight pour montrer que ça a été rempli
+            el.classList.add('bg-blue-50');
+            setTimeout(() => el.classList.remove('bg-blue-50'), 2000);
+        }
+    }
+}
+
+function formatDateForInput(dateStr) {
+    if (!dateStr) return '';
+    // Gestion formats FR (DD/MM/YYYY) vers ISO (YYYY-MM-DD)
+    if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateStr; // Suppose ISO
+}
 
 function validateStep(step) {
     if (step === 1) {
-        // Validation étape 1 : Client
-        const clientId = document.getElementById('client_id').value;
-        const clientNom = document.getElementById('client_nom').value.trim();
-        const clientPrenom = document.getElementById('client_prenom').value.trim();
-        const clientEmail = document.getElementById('client_email').value.trim();
-        const clientTelephone = document.getElementById('client_telephone').value.trim();
+        // Validation étape 1 : Service, Formule et Vérification
+        const serviceId = document.getElementById('service_id').value;
+        const formuleId = document.getElementById('formule_id').value;
+        const isVerified = document.getElementById('is_verified').value === "1";
+        const forceSkip = document.getElementById('force_skip_verification').value === "1";
+        const errors = [];
         
-        // Si un client est sélectionné, c'est bon
+        if (!serviceId) {
+            errors.push('Veuillez sélectionner un service');
+            document.getElementById('service_id').classList.add('border-red-500');
+        } else {
+            document.getElementById('service_id').classList.remove('border-red-500');
+        }
+        
+        if (!formuleId) {
+            errors.push('Veuillez sélectionner une formule');
+            document.getElementById('formule_id').classList.add('border-red-500');
+        } else {
+            document.getElementById('formule_id').classList.remove('border-red-500');
+        }
+
+        if (!isVerified && !forceSkip) {
+            errors.push('Veuillez effectuer la vérification ou cliquer sur "Passer la vérification"');
+        }
+        
+        if (errors.length > 0) {
+            return { 
+                valid: false, 
+                message: errors.join('\n') 
+            };
+        }
+        
+        return { valid: true };
+        
+    } else if (step === 2) {
+        // Validation étape 2 : Informations Client
+        const clientId = document.getElementById('client_id').value;
+        
+        // Si un client existant est sélectionné, c'est bon
         if (clientId) {
             return { valid: true };
         }
         
-        // Sinon, vérifier que tous les champs obligatoires sont remplis
+        // Sinon, vérifier les champs obligatoires
+        const clientNom = document.getElementById('client_nom').value.trim();
+        const clientPrenom = document.getElementById('client_prenom').value.trim();
+        const clientEmail = document.getElementById('client_email').value.trim();
+        const clientTelephone = document.getElementById('client_telephone').value.trim();
         const errors = [];
         
         if (!clientNom) {
@@ -348,35 +572,6 @@ function validateStep(step) {
             return { 
                 valid: false, 
                 message: 'Veuillez corriger les erreurs suivantes :\n' + errors.join('\n') 
-            };
-        }
-        
-        return { valid: true };
-        
-    } else if (step === 2) {
-        // Validation étape 2 : Service et Formule
-        const serviceId = document.getElementById('service_id').value;
-        const formuleId = document.getElementById('formule_id').value;
-        const errors = [];
-        
-        if (!serviceId) {
-            errors.push('Veuillez sélectionner un service');
-            document.getElementById('service_id').classList.add('border-red-500');
-        } else {
-            document.getElementById('service_id').classList.remove('border-red-500');
-        }
-        
-        if (!formuleId) {
-            errors.push('Veuillez sélectionner une formule');
-            document.getElementById('formule_id').classList.add('border-red-500');
-        } else {
-            document.getElementById('formule_id').classList.remove('border-red-500');
-        }
-        
-        if (errors.length > 0) {
-            return { 
-                valid: false, 
-                message: errors.join('\n') 
             };
         }
         
@@ -543,10 +738,44 @@ function clearClientSelection() {
     });
 }
 
+// Mappe les IDs de service aux types de vérification
+function updateVerificationTypeFromService(serviceId) {
+    if (!serviceId) return;
+    
+    const id = parseInt(serviceId);
+    let type = 'oneci'; // Par défaut
+
+    // 1, 2, 3 sont des cartes de résident
+    if ([1, 2, 3].includes(id)) {
+        type = 'resident';
+    } 
+    // 4 est la CNI
+    else if (id === 4) {
+        type = 'cni';
+    }
+    
+    const radio = document.querySelector(`input[name="verification_type"][value="${type}"]`);
+    if (radio) {
+        radio.checked = true;
+        // Met à jour l'affichage (labels, placeholders)
+        toggleVerificationType();
+        
+        // Feedback visuel (flash)
+        const container = radio.closest('.bg-blue-50');
+        if (container) {
+            container.classList.add('ring-2', 'ring-blue-300');
+            setTimeout(() => container.classList.remove('ring-2', 'ring-blue-300'), 500);
+        }
+    }
+}
+
 async function loadFormules() {
     const serviceId = document.getElementById('service_id').value;
     const formuleSelect = document.getElementById('formule_id');
     const centreId = {{ $centre->id }};
+    
+    // Mise à jour automatique du type de vérification
+    updateVerificationTypeFromService(serviceId);
     
     if (!serviceId) {
         formuleSelect.innerHTML = '<option value="">Sélectionner d\'abord un service</option>';

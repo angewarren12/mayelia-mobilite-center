@@ -163,7 +163,7 @@
             currentTicket: null,
             waitingList: [],
             waitingCount: 0,
-            centreId: {{ $centreId }},
+            centreId: {{ $centreId ?? $assignedGuichet->centre_id ?? 'null' }},
             assignedGuichetId: {{ $assignedGuichet ? $assignedGuichet->id : 'null' }},
             currentTime: '',
             isMiniMode: false,

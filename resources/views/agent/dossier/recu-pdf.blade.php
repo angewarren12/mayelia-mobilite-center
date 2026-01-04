@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reçu Mayelia - Dossier #{{ $dossierOuvert->id }}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
             font-family: 'DejaVu Sans', Arial, sans-serif;
             font-size: 10px;
@@ -31,26 +25,9 @@
             margin-bottom: 20px;
         }
         
-        .logo-container {
-            margin-bottom: 10px;
-        }
-        
         .logo-img {
             max-width: 200px;
             height: auto;
-        }
-        
-        .company-name {
-            font-size: 24px;
-            font-weight: bold;
-            color: #028339;
-            margin-bottom: 5px;
-        }
-        
-        .company-subtitle {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 5px;
         }
         
         .receipt-title {
@@ -61,20 +38,14 @@
         }
         
         .receipt-number {
-            background: #028339;
+            background-color: #028339;
             color: white;
             padding: 8px 16px;
             border-radius: 4px;
             font-size: 14px;
             font-weight: bold;
-            margin: 15px auto;
+            margin-top: 15px;
             text-align: center;
-            display: inline-block;
-            width: 100%;
-        }
-        
-        .section {
-            margin: 20px 0;
         }
         
         .section-title {
@@ -86,55 +57,41 @@
             font-size: 14px;
         }
         
-        .info-grid {
-            display: table;
+        table {
             width: 100%;
-            margin-bottom: 8px;
+            border-collapse: collapse;
+            margin-bottom: 15px;
         }
         
-        .info-row {
-            display: table-row;
+        td {
+            padding: 4px;
+            vertical-align: top;
         }
         
-        .info-label {
-            display: table-cell;
+        .label {
+            width: 35%;
             font-weight: bold;
             color: #666;
-            width: 35%;
-            padding: 4px 0;
             font-size: 9px;
         }
         
-        .info-value {
-            display: table-cell;
+        .value {
             color: #333;
-            padding: 4px 0;
             font-size: 9px;
         }
         
-        .client-info {
-            background-color: #F3F4F6;
-            padding: 8px;
-            border-radius: 3px;
-            margin-bottom: 10px;
+        .box {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
         }
         
-        .service-info {
-            background-color: #EFF6FF;
-            padding: 8px;
-            border-radius: 3px;
-            margin-bottom: 10px;
-        }
-        
-        .payment-info {
-            background-color: #F0FDF4;
-            padding: 8px;
-            border-radius: 3px;
-            margin-bottom: 10px;
-        }
+        .bg-gray { background-color: #F3F4F6; }
+        .bg-blue { background-color: #EFF6FF; }
+        .bg-green { background-color: #F0FDF4; }
         
         .amount-box {
-            background: #f0f9f4;
+            background-color: #f0f9f4;
             padding: 15px;
             border-radius: 5px;
             margin: 20px 0;
@@ -145,75 +102,27 @@
             font-size: 24px;
             font-weight: bold;
             color: #028339;
-            margin-top: 10px;
-        }
-        
-        .amount-label {
-            font-size: 10px;
-            margin-bottom: 3px;
-        }
-        
-        .amount-value {
-            font-size: 20px;
-            font-weight: bold;
         }
         
         .footer {
-            margin-top: 15px;
-            padding-top: 10px;
+            margin-top: 30px;
+            padding-top: 15px;
             border-top: 1px solid #E5E7EB;
             text-align: center;
             font-size: 8px;
             color: #666;
         }
         
-        .status-badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-weight: bold;
-            font-size: 9px;
-            background-color: #10B981;
-            color: white;
-        }
-        
-        .date-info {
-            text-align: right;
-            color: #666;
-            font-size: 9px;
-            margin-bottom: 10px;
-        }
-        
-        .signature-section {
-            margin-top: 20px;
-            display: table;
+        .signatures {
             width: 100%;
+            margin-top: 40px;
         }
         
         .signature-box {
-            display: table-cell;
-            width: 50%;
+            width: 48%;
             text-align: center;
-            padding: 10px;
-        }
-        
-        .signature-line {
             border-top: 1px solid #333;
-            margin-top: 30px;
-            padding-top: 3px;
-            font-size: 9px;
-        }
-        
-        .two-columns {
-            display: table;
-            width: 100%;
-        }
-        
-        .column {
-            display: table-cell;
-            width: 50%;
-            vertical-align: top;
-            padding: 0 5px;
+            padding-top: 10px;
         }
     </style>
 </head>
@@ -221,7 +130,7 @@
     <div class="container">
         <!-- En-tête -->
         <div class="header">
-            <div class="logo-container">
+            <div style="margin-bottom: 15px;">
                 @php
                     $logoPath = public_path('img/logo-oneci.jpg');
                     $logoExists = file_exists($logoPath);
@@ -232,171 +141,74 @@
             </div>
             <div class="receipt-title">REÇU DE TRAÇABILITÉ - DOSSIER FINALISÉ</div>
             <div class="receipt-number">N° Dossier: {{ $dossierOuvert->id }}</div>
+            <div style="margin-top: 10px; font-size: 11px;">Date d'émission : {{ now()->format('d/m/Y à H:i') }}</div>
         </div>
-        
-        <div class="date-info">
-            Date d'émission : {{ now()->format('d/m/Y à H:i') }}
-        </div>
-        
-        <!-- Deux colonnes pour optimiser l'espace -->
-        <div class="two-columns">
-            <!-- Colonne gauche -->
-            <div class="column">
-                <!-- Informations du client -->
-                <div class="section">
+
+        <table style="width: 100%; margin-bottom: 0;">
+            <tr>
+                <!-- Colonne Gauche -->
+                <td style="width: 49%; padding-right: 15px;">
                     <div class="section-title">Informations du Client</div>
-                    <div class="client-info">
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <div class="info-label">Nom complet :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->client->nom_complet ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Email :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->client->email ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Téléphone :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->client->telephone ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Adresse :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->client->adresse ?? 'N/A' }}</div>
-                            </div>
-                
-                <!-- Informations du service -->
-                <div class="section">
+                    <div class="box bg-gray">
+                        <table>
+                            <tr><td class="label">Nom complet :</td><td class="value">{{ $dossierOuvert->rendezVous->client->nom_complet ?? 'N/A' }}</td></tr>
+                            <tr><td class="label">Email :</td><td class="value">{{ $dossierOuvert->rendezVous->client->email ?? 'N/A' }}</td></tr>
+                            <tr><td class="label">Téléphone :</td><td class="value">{{ $dossierOuvert->rendezVous->client->telephone ?? 'N/A' }}</td></tr>
+                            <tr><td class="label">Adresse :</td><td class="value">{{ $dossierOuvert->rendezVous->client->adresse ?? 'N/A' }}</td></tr>
+                        </table>
+                    </div>
+
                     <div class="section-title">Service et Formule</div>
-                    <div class="service-info">
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <div class="info-label">Service :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->service->nom ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Formule :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->formule->nom ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Centre :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->centre->nom ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Ville :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->centre->ville->nom ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Date RDV :</div>
-                                <div class="info-value">{{ $dossierOuvert->rendezVous->date_rendez_vous->format('d/m/Y') }} {{ $dossierOuvert->rendezVous->tranche_horaire }}</div>
-                            </div>
-                        </div>
+                    <div class="box bg-blue">
+                        <table>
+                            <tr><td class="label">Service :</td><td class="value">{{ $dossierOuvert->rendezVous->service->nom ?? 'N/A' }}</td></tr>
+                            <tr><td class="label">Formule :</td><td class="value">{{ $dossierOuvert->rendezVous->formule->nom ?? 'N/A' }}</td></tr>
+                            <tr><td class="label">Centre :</td><td class="value">{{ $dossierOuvert->rendezVous->centre->nom ?? 'N/A' }}</td></tr>
+                            <tr><td class="label">Ville :</td><td class="value">{{ $dossierOuvert->rendezVous->centre->ville->nom ?? 'N/A' }}</td></tr>
+                        </table>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Colonne droite -->
-            <div class="column">
-        
-                <!-- Informations de paiement -->
-                @if($dossierOuvert->paiementVerification)
-                <div class="section">
-                    <div class="section-title">Informations de Paiement</div>
-                    <div class="payment-info">
-                        <div class="info-grid">
-                            <div class="info-row">
-                                <div class="info-label">Montant payé :</div>
-                                <div class="info-value">{{ number_format($dossierOuvert->paiementVerification->montant_paye, 0, ',', ' ') }} FCFA</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Mode de paiement :</div>
-                                <div class="info-value">{{ ucfirst($dossierOuvert->paiementVerification->mode_paiement ?? 'N/A') }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Référence :</div>
-                                <div class="info-value">{{ $dossierOuvert->paiementVerification->reference_paiement ?? 'N/A' }}</div>
-                            </div>
-                            <div class="info-row">
-                                <div class="info-label">Date de paiement :</div>
-                                <div class="info-value">{{ $dossierOuvert->paiementVerification->date_paiement->format('d/m/Y H:i') ?? 'N/A' }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
+                </td>
                 
-                <!-- Statut du dossier -->
-                <div class="section">
-                    <div class="section-title">Statut du Dossier</div>
-                    <div class="info-grid">
-                        <div class="info-row">
-                            <div class="info-label">Statut :</div>
-                            <div class="info-value">
-                                <span class="status-badge">{{ $dossierOuvert->statut_formate }}</span>
-                            </div>
-                        </div>
-                        <div class="info-row">
-                            <div class="info-label">Date d'ouverture :</div>
-                            <div class="info-value">{{ $dossierOuvert->date_ouverture->format('d/m/Y H:i') }}</div>
-                        </div>
-                        @if($dossierOuvert->statut === 'finalise')
-                        <div class="info-row">
-                            <div class="info-label">Date de finalisation :</div>
-                            <div class="info-value">{{ now()->format('d/m/Y H:i') }}</div>
-                        </div>
-                        @endif
-                        <div class="info-row">
-                            <div class="info-label">Géré par :</div>
-                            <div class="info-value">
-                                @if($dossierOuvert->agent)
-                                    {{ $dossierOuvert->agent->nom ?? ($dossierOuvert->agent->email ?? 'Agent') }}
-                                @else
-                                    N/A
-                                @endif
-                            </div>
-                        </div>
+                <!-- Colonne Droite -->
+                <td style="width: 49%; padding-left: 15px; border-left: 1px solid #eee;">
+                    <div class="section-title">Informations de Paiement</div>
+                    <div class="box bg-green">
+                        <table>
+                            <tr><td class="label">Montant Total :</td><td class="value font-bold" style="color: #028339;">{{ number_format($dossierOuvert->rendezVous->formule->prix, 0, ',', ' ') }} FCFA</td></tr>
+                            <tr><td class="label">Statut Paiement :</td><td class="value"><span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 10px;">Payé</span></td></tr>
+                            <tr><td class="label">Mode :</td><td class="value">Espèces / Guichet</td></tr>
+                            <tr><td class="label">Référence :</td><td class="value">{{ $dossierOuvert->rendezVous->numero_suivi }}</td></tr>
+                        </table>
                     </div>
-                </div>
-            </div>
-        </div>
+
+                    <div class="amount-box">
+                        <div class="amount-label">NET PAYÉ</div>
+                        <div class="total-amount">{{ number_format($dossierOuvert->rendezVous->formule->prix, 0, ',', ' ') }} FCFA</div>
+                    </div>
+                    
+                    <div class="box bg-gray" style="margin-top: 15px;">
+                        <table>
+                            <tr><td class="label">Géré par :</td><td class="value">{{ $dossierOuvert->agent->nom ?? 'Agent Mayelia' }}</td></tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
         
-        <!-- Montant total en pleine largeur -->
-        @if($dossierOuvert->paiementVerification)
-        <div class="amount-box">
-            <div style="color: #666;">Montant payé</div>
-            <div class="total-amount">{{ number_format($dossierOuvert->paiementVerification->montant_paye, 0, ',', ' ') }} FCFA</div>
-        </div>
-        @endif
-        
-        <!-- Notes -->
-        @if($dossierOuvert->notes)
-        <div class="section">
-            <div class="section-title">Notes</div>
-            <div style="padding: 8px; background-color: #FEF3C7; border-radius: 3px; font-size: 9px;">
-                {{ $dossierOuvert->notes }}
-            </div>
-        </div>
-        @endif
-        
-        <!-- Signatures -->
-        <div class="signature-section">
-            <div class="signature-box">
-                <div class="signature-line">
-                    Agent MAYELIA
-                </div>
-            </div>
-            <div class="signature-box">
-                <div class="signature-line">
-                    Client
-                </div>
-            </div>
-        </div>
-        
-        <!-- Pied de page -->
+        <table class="signatures">
+            <tr>
+                <td class="signature-box">Signature du Client</td>
+                <td style="width: 4%;"></td>
+                <td class="signature-box">Signature Agent</td>
+            </tr>
+        </table>
+
         <div class="footer">
-            <p><strong>MAYELIA MOBILITÉ</strong></p>
-            <p>Ce document est généré automatiquement et certifie le traitement du dossier.</p>
-            <p style="margin-top: 10px;">Document généré le {{ now()->format('d/m/Y à H:i') }}</p>
+            <p><strong>Note Importante :</strong> Ce reçu est une preuve de finalisation de votre dossier au centre Mayelia.</p>
+            <p>Conservez ce document précieusement. Pour toute question, contactez notre support.</p>
+            <p style="margin-top: 10px;">Mayelia Mobilité - Centre de gestion des démarches administratives<br>
+            www.mayelia.ci - contact@mayelia.ci</p>
         </div>
     </div>
 </body>
-
+</html>

@@ -102,7 +102,7 @@
                         <i class="fas fa-file-alt text-mayelia-600"></i>
                     </div>
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Fiche de pré-enrôlement</h3>
+                        <h3 class="text-lg font-semibold text-gray-900">Vérification du pré-enrôlement</h3>
                         <p class="text-sm text-gray-600">Étape 1/4</p>
                     </div>
                 </div>
@@ -119,14 +119,37 @@
             </div>
             
             <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                <p class="text-gray-700 text-sm mb-2">
-                    <i class="fas fa-info-circle text-mayelia-500 mr-2"></i>
-                    Vérification de la fiche de pré-enrôlement remplie par le client en ligne.
-                </p>
-                <div class="text-xs text-gray-500">
-                    <i class="fas fa-calendar mr-1"></i>
-                    À implémenter prochainement
-                </div>
+                @if($dossierOuvert->fiche_pre_enrolement_verifiee)
+                    <div class="flex flex-col">
+                        <span class="text-xs text-gray-500 uppercase font-semibold">Numéro d'enrôlement</span>
+                        <span class="text-lg font-bold text-gray-900">{{ $dossierOuvert->rendezVous->numero_pre_enrolement ?? 'N/A' }}</span>
+                        
+                        @if($dossierOuvert->rendezVous->donnees_oneci)
+                            <div class="mt-2">
+                                <span class="text-xs text-gray-500 uppercase font-semibold">Nom et Prénoms</span>
+                                <div class="text-base font-medium text-gray-900">
+                                    {{ $dossierOuvert->rendezVous->donnees_oneci['nom'] ?? '' }} {{ $dossierOuvert->rendezVous->donnees_oneci['prenoms'] ?? '' }}
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="mt-2 flex items-center text-sm text-green-700">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            Statut ONECI : {{ $dossierOuvert->rendezVous->statut_oneci ?? 'Validé' }}
+                        </div>
+                        @if($dossierOuvert->rendezVous->verified_at)
+                            <div class="mt-1 text-xs text-gray-500">
+                                <i class="fas fa-calendar-check mr-1"></i>
+                                Vérifié le {{ \Carbon\Carbon::parse($dossierOuvert->rendezVous->verified_at)->format('d/m/Y H:i') }}
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    <p class="text-gray-700 text-sm mb-2">
+                        <i class="fas fa-info-circle text-mayelia-500 mr-2"></i>
+                        Veuillez saisir le numéro de pré-enrôlement pour vérifier le statut du dossier.
+                    </p>
+                @endif
             </div>
             
             @if($dossierOuvert->fiche_pre_enrolement_verifiee)
@@ -140,7 +163,7 @@
             <button id="btn-verifier-fiche" onclick="verifierFichePreEnrolement()" 
                 class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ($dossierOuvert->fiche_pre_enrolement_verifiee ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-mayelia-600 text-white hover:bg-mayelia-700') }} px-4 py-3 rounded-lg transition-colors font-medium"
                 {{ $isAnnule ? 'disabled' : '' }}>
-                <i class="fas {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'fa-edit' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'Modifier la vérification' : 'Vérifier la fiche' }}
+                <i class="fas {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'fa-sync' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'Relancer la vérification' : 'Vérifier le statut' }}
             </button>
             @enduserCan
         </div>
@@ -507,15 +530,15 @@
     </div>
 </div>
 
-<!-- Modal Étape 1: Vérification fiche pré-enrôlement -->
+<!-- Modal Étape 1: Vérification pré-enrôlement en temps réel -->
 <div id="modalFichePreEnrolement" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div class="p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-file-alt text-mayelia-600 mr-2"></i>
-                        Vérification fiche pré-enrôlement
+                        <i class="fas fa-shield-alt text-mayelia-600 mr-2"></i>
+                        Vérification du pré-enrôlement
                     </h3>
                     <button onclick="closeModal('modalFichePreEnrolement')" class="text-gray-400 hover:text-gray-600">
                         <i class="fas fa-times"></i>
@@ -524,21 +547,28 @@
                 
                 <div class="mb-4">
                     <p class="text-gray-600 text-sm mb-4">
-                        Vérifiez que la fiche de pré-enrôlement du client est correctement remplie.
+                        Saisissez le numéro d'enrôlement pour vérifier le statut en temps réel auprès de l'ONECI.
                     </p>
                     
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Upload de la fiche (optionnel)
+                        <label for="numero_enrolement" class="block text-sm font-medium text-gray-700 mb-2">
+                            Numéro d'enrôlement <span class="text-red-500">*</span>
                         </label>
-                        <input type="file" id="ficheFile" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-mayelia-50 file:text-mayelia-700 hover:file:bg-mayelia-100">
+                        <input type="text" id="numero_enrolement" 
+                               value="{{ $dossierOuvert->rendezVous->numero_pre_enrolement ?? '' }}"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 text-lg font-bold" 
+                               placeholder="Ex: ONECI2025001">
+                    </div>
+
+                    <div id="verification-results" class="hidden mb-4 p-4 rounded-lg">
+                        <!-- Les résultats seront injectés ici -->
                     </div>
                     
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Commentaires
+                            Commentaires (optionnel)
                         </label>
-                        <textarea id="ficheCommentaires" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Ajoutez des commentaires si nécessaire...">{{ $dossierOuvert->notes }}</textarea>
+                        <textarea id="ficheCommentaires" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Notes de l'agent...">{{ $dossierOuvert->notes }}</textarea>
                     </div>
                 </div>
                 
@@ -546,8 +576,8 @@
                     <button onclick="closeModal('modalFichePreEnrolement')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
                         Annuler
                     </button>
-                    <button onclick="validerFichePreEnrolement()" class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700">
-                        <i class="fas fa-check mr-2"></i>Valider la fiche
+                    <button onclick="validerFichePreEnrolement(event)" class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 flex items-center">
+                        <i class="fas fa-search mr-2"></i>Vérifier et Valider
                     </button>
                 </div>
             </div>
@@ -682,33 +712,34 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                            <input type="text" id="clientNom" value="{{ $dossierOuvert->rendezVous->client->nom }}" 
+                            <input type="text" id="clientNom" value="{{ $dossierOuvert->rendezVous->donnees_oneci['nom'] ?? $dossierOuvert->rendezVous->client->nom }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
-                            <input type="text" id="clientPrenom" value="{{ $dossierOuvert->rendezVous->client->prenom }}" 
+                            <input type="text" id="clientPrenom" value="{{ $dossierOuvert->rendezVous->donnees_oneci['prenoms'] ?? $dossierOuvert->rendezVous->client->prenom }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" id="clientEmail" value="{{ $dossierOuvert->rendezVous->client->email }}" 
+                            <input type="email" id="clientEmail" value="{{ $dossierOuvert->rendezVous->donnees_oneci['email'] ?? $dossierOuvert->rendezVous->client->email }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                            <input type="tel" id="clientTelephone" value="{{ $dossierOuvert->rendezVous->client->telephone ?? '' }}" 
+                            <input type="tel" id="clientTelephone" value="{{ $dossierOuvert->rendezVous->donnees_oneci['telephone'] ?? $dossierOuvert->rendezVous->donnees_oneci['numero_telephone'] ?? $dossierOuvert->rendezVous->client->telephone ?? '' }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                            <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->client->date_naissance ? \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('Y-m-d') : '' }}" 
+                            <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->donnees_oneci['date_naissance'] ?? ($dossierOuvert->rendezVous->client->date_naissance ? \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('Y-m-d') : '') }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                            <input type="text" id="clientAdresse" value="{{ $dossierOuvert->rendezVous->client->adresse ?? '' }}" 
+                            <input type="text" id="clientAdresse" value="{{ $dossierOuvert->rendezVous->donnees_oneci['lieu_naissance'] ?? $dossierOuvert->rendezVous->client->adresse ?? '' }}" 
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <p class="text-xs text-gray-500 mt-1">Si disponible, le lieu de naissance ONECI est utilisé par défaut comme adresse.</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Profession</label>
@@ -909,27 +940,35 @@ function openModal(modalId) {
     document.getElementById(modalId).classList.remove('hidden');
 }
 
-// Étape 1: Fiche pré-enrôlement
+// Étape 1: Vérification du pré-enrôlement
 function verifierFichePreEnrolement() {
     openModal('modalFichePreEnrolement');
 }
 
-function validerFichePreEnrolement() {
+function validerFichePreEnrolement(event) {
+    const numeroEnrolement = document.getElementById('numero_enrolement').value;
     const commentaires = document.getElementById('ficheCommentaires').value;
-    const fichier = document.getElementById('ficheFile').files[0];
+    const resultsDiv = document.getElementById('verification-results');
     
-    // Afficher un indicateur de chargement
-    const button = event.target;
+    if (!numeroEnrolement) {
+        showErrorToast('Le numéro d\'enrôlement est obligatoire');
+        return;
+    }
+
+    // Afficher un indicateur de chargement sur le bouton
+    const button = event.currentTarget || event.target;
     const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Validation...';
+    button.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Vérification...';
     button.disabled = true;
+
+    // Réinitialiser les résultats
+    resultsDiv.classList.add('hidden');
+    resultsDiv.innerHTML = '';
     
     // Préparer les données
     const formData = new FormData();
+    formData.append('numero_enrolement', numeroEnrolement);
     formData.append('commentaires', commentaires);
-    if (fichier) {
-        formData.append('fiche_file', fichier);
-    }
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
     
     // Appel AJAX
@@ -940,16 +979,49 @@ function validerFichePreEnrolement() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            closeModal('modalFichePreEnrolement');
-            showSuccessToast(data.message);
-            updateEtapeStatus(1, true, data.progression);
+            // Afficher le succès dans le modal
+            resultsDiv.classList.remove('hidden', 'bg-red-100', 'text-red-800');
+            resultsDiv.classList.add('bg-green-100', 'text-green-800');
+            resultsDiv.innerHTML = `
+                <div class="flex items-start">
+                    <i class="fas fa-check-circle mt-1 mr-2 text-green-600"></i>
+                    <div>
+                        <p class="font-bold">Vérification réussie !</p>
+                        <p class="text-sm">Client: ${data.data.nom || ''} ${data.data.prenoms || ''}</p>
+                        <p class="text-sm">Statut: ${data.data.statut || 'Validé'}</p>
+                    </div>
+                </div>
+            `;
+
+            // Fermer après un court délai et mettre à jour l'UI globale
+            setTimeout(() => {
+                closeModal('modalFichePreEnrolement');
+                showSuccessToast(data.message);
+                updateEtapeStatus(1, true, data.progression);
+                
+                // recharger la page pour afficher les détails complets
+                window.location.reload();
+            }, 3000);
+
         } else {
+            // Afficher l'erreur dans le modal
+            resultsDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800');
+            resultsDiv.classList.add('bg-red-100', 'text-red-800');
+            resultsDiv.innerHTML = `
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-circle mt-1 mr-2 text-red-600"></i>
+                    <div>
+                        <p class="font-bold">Échec de la vérification</p>
+                        <p class="text-sm">${data.message}</p>
+                    </div>
+                </div>
+            `;
             showErrorToast(data.message);
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
-        showErrorToast('Erreur lors de la validation');
+        showErrorToast('Erreur lors de la connexion au serveur.');
     })
     .finally(() => {
         button.innerHTML = originalText;
@@ -1402,6 +1474,11 @@ function validerPaiement() {
             closeModal('modalPaiement');
             showSuccessToast('Paiement validé avec succès');
             updateEtapeStatus(4, true, data.progression);
+            
+            // Recharger la page pour afficher les détails du paiement
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         } else {
             showErrorToast(data.message);
         }

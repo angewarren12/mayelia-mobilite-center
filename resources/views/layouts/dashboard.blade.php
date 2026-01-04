@@ -126,7 +126,7 @@
                 </a>
                 @endif
                 
-                @if($authService->isAdmin() || $authService->getAuthenticatedUser()->role === 'agent')
+                @if($authService->isAdmin() || in_array($authService->getAuthenticatedUser()->role, ['agent', 'agent_biometrie']))
                 <a href="{{ route('qms.agent') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('qms.agent') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
                    :title="!sidebarOpen ? 'Guichet Agent' : ''">
                     <i class="fas fa-desktop w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
@@ -239,12 +239,14 @@
                                 $role = $currentUser ? match($currentUser->role) {
                                     'admin' => 'Administrateur',
                                     'agent' => 'Agent',
+                                    'agent_biometrie' => 'Agent Biométrie',
                                     'oneci' => 'Agent ONECI',
                                     default => 'Utilisateur'
                                 } : '';
                                 $roleColor = $currentUser ? match($currentUser->role) {
                                     'admin' => 'bg-mayelia-100 text-mayelia-800',
                                     'oneci' => 'bg-purple-100 text-purple-800',
+                                    'agent_biometrie' => 'bg-blue-100 text-blue-800',
                                     default => 'bg-green-100 text-green-800'
                                 } : '';
                             @endphp

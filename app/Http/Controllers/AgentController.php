@@ -66,6 +66,7 @@ class AgentController extends Controller
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'telephone' => 'required|string|max:20',
+            'role' => 'required|in:agent,agent_biometrie',
             'password' => 'required|string|min:8',
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,id'
@@ -78,9 +79,9 @@ class AgentController extends Controller
                 'email' => $request->email,
                 'telephone' => $request->telephone,
                 'centre_id' => $user->centre_id, // Utiliser le centre de l'admin connecté
-                'role' => 'agent',
+                'role' => $request->role,
                 'statut' => 'actif',
-                'password' => Hash::make($request->password),
+                'password' => $request->password,
             ]);
 
             // Attacher les permissions sélectionnées
@@ -100,8 +101,8 @@ class AgentController extends Controller
 
     public function show(User $agent)
     {
-        // Vérifier que c'est bien un agent
-        if ($agent->role !== 'agent') {
+        // Vérifier que c'est bien un agent ou un agent biométrie
+        if (!in_array($agent->role, ['agent', 'agent_biometrie'])) {
             abort(404);
         }
         
@@ -129,8 +130,8 @@ class AgentController extends Controller
 
     public function edit(User $agent)
     {
-        // Vérifier que c'est bien un agent
-        if ($agent->role !== 'agent') {
+        // Vérifier que c'est bien un agent ou un agent biométrie
+        if (!in_array($agent->role, ['agent', 'agent_biometrie'])) {
             abort(404);
         }
         
@@ -157,8 +158,8 @@ class AgentController extends Controller
 
     public function update(Request $request, User $agent)
     {
-        // Vérifier que c'est bien un agent
-        if ($agent->role !== 'agent') {
+        // Vérifier que c'est bien un agent ou un agent biométrie
+        if (!in_array($agent->role, ['agent', 'agent_biometrie'])) {
             abort(404);
         }
         
@@ -179,6 +180,7 @@ class AgentController extends Controller
             'prenom' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $agent->id,
             'telephone' => 'required|string|max:20',
+            'role' => 'required|in:agent,agent_biometrie',
             'statut' => 'required|in:actif,inactif',
             'password' => 'nullable|string|min:8',
             'permissions' => 'nullable|array',
@@ -191,13 +193,14 @@ class AgentController extends Controller
                 'prenom' => $request->prenom,
                 'email' => $request->email,
                 'telephone' => $request->telephone,
+                'role' => $request->role,
                 'statut' => $request->statut,
                 // Le centre_id ne peut pas être modifié
             ];
             
             // Mettre à jour le mot de passe si fourni
             if ($request->filled('password')) {
-                $data['password'] = Hash::make($request->password);
+                $data['password'] = $request->password;
             }
             
             $agent->update($data);
@@ -222,8 +225,8 @@ class AgentController extends Controller
 
     public function destroy(User $agent)
     {
-        // Vérifier que c'est bien un agent
-        if ($agent->role !== 'agent') {
+        // Vérifier que c'est bien un agent ou un agent biométrie
+        if (!in_array($agent->role, ['agent', 'agent_biometrie'])) {
             abort(404);
         }
         

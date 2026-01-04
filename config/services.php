@@ -37,6 +37,8 @@ return [
 
     'oneci' => [
         'email' => env('ONECI_EMAIL', 'oneci@example.com'),
+        'api_url' => env('ONECI_API_URL', 'https://api.oneci.ci'),
+        'api_key' => env('ONECI_API_KEY'),
     ],
 
 ];

@@ -20,7 +20,9 @@ class OneciCniVerificationService
         // Essayer de récupérer le token depuis le cache pour éviter de spammer l'API d'auth
         return Cache::remember('oneci_cni_token', 3000, function () {
             try {
-                $response = Http::asForm()->post($this->baseUrl . '/token', [
+                $response = Http::asForm()
+                    ->timeout(10)
+                    ->post($this->baseUrl . '/token', [
                     'oneciprecni_client' => $this->clientId,
                     'oneciprecni_secret' => $this->clientSecret,
                 ]);
@@ -58,6 +60,7 @@ class OneciCniVerificationService
 
             $response = Http::withToken($token)
                 ->asForm()
+                ->timeout(15)
                 ->post($this->baseUrl . '/info', [
                     'numero_dossier' => $numeroDossier
                 ]);

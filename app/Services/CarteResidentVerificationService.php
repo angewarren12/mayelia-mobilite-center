@@ -32,7 +32,7 @@ class CarteResidentVerificationService
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->token,
                 'Content-Type' => 'application/json',
-            ])->post($this->apiUrl, [
+            ])->timeout(15)->post($this->apiUrl, [
                 'numero_dossier' => $numeroDossier
             ]);
 

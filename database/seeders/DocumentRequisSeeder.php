@@ -16,23 +16,32 @@ class DocumentRequisSeeder extends Seeder
         DocumentRequis::truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
-        // 1. SERVICE CNI (ID 4 ou recherche par nom)
+        // 1. SERVICE CNI
         $cniService = Service::where('nom', 'LIKE', '%CNI%')->first();
         if ($cniService) {
             $this->seedCNIDocuments($cniService->id);
             $this->command->info('Documents CNI ajoutés.');
         }
 
-        // 2. SERVICE CEDEAO / CARTE DE RESIDENT (ID 3 ou recherche par nom)
-        $cedeaService = Service::where('nom', 'LIKE', '%CEDEAO%')
-            ->orWhere('nom', 'LIKE', '%résident%')
-            ->first();
-        if ($cedeaService) {
-            $this->seedCEDEAODocuments($cedeaService->id);
-            $this->command->info('Documents CEDEAO/Résident ajoutés.');
+        // 2. SERVICE CARTE DE RÉSIDENT CEDEAO
+        $cedeaoService = Service::where('nom', 'LIKE', '%résident CEDEAO%')->first();
+        if ($cedeaoService) {
+            $this->seedResidentCedeaoDocuments($cedeaoService->id);
+            $this->command->info('Documents Résident CEDEAO ajoutés.');
+        }
+
+        // 3. SERVICES RÉSIDENT HORS CEDEAO ET RELIGIEUX (Utilisent la liste longue)
+        $nonCedeaoServices = Service::where(function($q) {
+                $q->where('nom', 'LIKE', '%résident hors CEDEAO%')
+                  ->orWhere('nom', 'LIKE', '%résident religieux%');
+            })->get();
+            
+        foreach ($nonCedeaoServices as $service) {
+            $this->seedResidentNonCedeaoDocuments($service->id);
+            $this->command->info("Documents pour {$service->nom} ajoutés.");
         }
         
-        // 3. SERVICE VISA (ID 5)
+        // 4. SERVICE VISA
         $visaService = Service::where('nom', 'LIKE', '%visa%')->first();
         if ($visaService) {
             $this->seedVisaDocuments($visaService->id);
@@ -200,10 +209,115 @@ class DocumentRequisSeeder extends Seeder
         }
     }
 
-    private function seedCEDEAODocuments($serviceId)
+    private function seedResidentCedeaoDocuments($serviceId)
     {
         $docs = [
-            // PRÉMIÈRE DEMANDE
+            // PREMIÈRE DEMANDE
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Première demande',
+                'nom_document' => 'Pièce d’identité origine',
+                'description' => "Un des documents : CNI pays d'origine, Carte consulaire, Extrait naissance, Passeport, ou Formulaire appartenance CEDEAO.",
+                'obligatoire' => true,
+                'ordre' => 1
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Première demande',
+                'nom_document' => 'Justificatif de profession',
+                'description' => "Obligatoire pour les professions réglementées (voir liste professions spécifiques).",
+                'obligatoire' => false,
+                'ordre' => 2
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Première demande',
+                'nom_document' => 'Reçu d’enrôlement',
+                'description' => "Le reçu d’enrôlement requis.",
+                'obligatoire' => true,
+                'ordre' => 3
+            ],
+
+            // RENOUVELLEMENT
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Renouvellement',
+                'nom_document' => 'Carte de Résident (CR) à renouveler',
+                'description' => "CR originale, photocopie, ou fiche d'identité délivrée par l'ONECI.",
+                'obligatoire' => true,
+                'ordre' => 1
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Renouvellement',
+                'nom_document' => 'Justificatif de profession',
+                'description' => "Obligatoire pour les professions réglementées.",
+                'obligatoire' => false,
+                'ordre' => 2
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Renouvellement',
+                'nom_document' => 'Reçu d’enrôlement',
+                'description' => "Le reçu d’enrôlement requis.",
+                'obligatoire' => true,
+                'ordre' => 3
+            ],
+
+            // RENOUVELLEMENT AVEC MODIFICATION
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Renouvellement avec modification',
+                'nom_document' => 'Fiche de demande de modification',
+                'description' => "Remplie sur le site de l’ONECI.",
+                'obligatoire' => true,
+                'ordre' => 1
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Renouvellement avec modification',
+                'nom_document' => 'Reçu d’enrôlement',
+                'description' => "Le reçu d’enrôlement requis.",
+                'obligatoire' => true,
+                'ordre' => 2
+            ],
+
+            // DUPLICATA
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Duplicata',
+                'nom_document' => 'Attestation de perte',
+                'description' => "Attestation délivrée par les autorités compétentes.",
+                'obligatoire' => true,
+                'ordre' => 1
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Duplicata',
+                'nom_document' => 'Identifiant CR égarée',
+                'description' => "Copie recto-verso de la CR, fiche ONECI, ou document portant le NNI.",
+                'obligatoire' => true,
+                'ordre' => 2
+            ],
+            [
+                'service_id' => $serviceId,
+                'type_demande' => 'Duplicata',
+                'nom_document' => 'Reçu d’enrôlement',
+                'description' => "Le reçu d’enrôlement requis.",
+                'obligatoire' => true,
+                'ordre' => 3
+            ],
+        ];
+
+        foreach ($docs as $d) {
+            DocumentRequis::create($d);
+        }
+    }
+
+    private function seedResidentNonCedeaoDocuments($serviceId)
+    {
+        $docs = [
+            // PRÉMIÈRE DEMANDE (LONGUE)
             ['service_id' => $serviceId, 'type_demande' => 'Première demande', 'nom_document' => 'Copie identité passeport ou carte consulaire', 'description' => 'En cours de validité.', 'obligatoire' => true, 'ordre' => 1],
             ['service_id' => $serviceId, 'type_demande' => 'Première demande', 'nom_document' => 'Copie du visa et du cachet d’entrée', 'description' => 'Copies lisibles du visa et du cachet d’entrée.', 'obligatoire' => true, 'ordre' => 2],
             ['service_id' => $serviceId, 'type_demande' => 'Première demande', 'nom_document' => 'Extrait du casier judiciaire', 'description' => 'Un extrait de casier judiciaire.', 'obligatoire' => true, 'ordre' => 3],
@@ -225,19 +339,10 @@ class DocumentRequisSeeder extends Seeder
             ['service_id' => $serviceId, 'type_demande' => 'Renouvellement', 'nom_document' => 'Reçu d’enrôlement', 'description' => 'Le reçu d’enrôlement.', 'obligatoire' => true, 'ordre' => 6],
             ['service_id' => $serviceId, 'type_demande' => 'Renouvellement', 'nom_document' => 'Justificatif de statut', 'description' => 'Attestation travail, Vie religieuse, Registre commerce, etc.', 'obligatoire' => false, 'ordre' => 7],
 
-            // RENOUVELLEMENT AVEC MODIFICATION
-            ['service_id' => $serviceId, 'type_demande' => 'Renouvellement avec modification', 'nom_document' => 'Fiche de demande de modification', 'description' => 'Sur le site de l’ONECI.', 'obligatoire' => true, 'ordre' => 1],
-            ['service_id' => $serviceId, 'type_demande' => 'Renouvellement avec modification', 'nom_document' => 'Reçu d’enrôlement', 'description' => 'Le reçu d’enrôlement.', 'obligatoire' => true, 'ordre' => 2],
-
             // DUPLICATA
             ['service_id' => $serviceId, 'type_demande' => 'Duplicata', 'nom_document' => 'Attestation de déclaration de perte', 'description' => 'Délivrée par les autorités compétentes.', 'obligatoire' => true, 'ordre' => 1],
             ['service_id' => $serviceId, 'type_demande' => 'Duplicata', 'nom_document' => 'Ancienne carte ou fiche ONECI', 'description' => 'Copie de l’ancienne carte ou fiche d’identification.', 'obligatoire' => true, 'ordre' => 2],
             ['service_id' => $serviceId, 'type_demande' => 'Duplicata', 'nom_document' => 'Reçu de paiement (Versus Bank)', 'description' => 'Le reçu de paiement Versus Bank.', 'obligatoire' => true, 'ordre' => 3],
-
-            // MODIFICATION
-            ['service_id' => $serviceId, 'type_demande' => 'Modification', 'nom_document' => 'Fiche de demande de modification', 'description' => 'Sur le site de l’ONECI.', 'obligatoire' => true, 'ordre' => 1],
-            ['service_id' => $serviceId, 'type_demande' => 'Modification', 'nom_document' => 'Reçu d’enrôlement', 'description' => 'Le reçu d’enrôlement.', 'obligatoire' => true, 'ordre' => 2],
-            ['service_id' => $serviceId, 'type_demande' => 'Modification', 'nom_document' => 'Reçu de paiement (Versus Bank)', 'description' => 'Le reçu de paiement Versus Bank.', 'obligatoire' => true, 'ordre' => 3],
         ];
         foreach ($docs as $d) {
             DocumentRequis::create($d);

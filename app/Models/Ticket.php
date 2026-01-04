@@ -33,6 +33,8 @@ class Ticket extends Model
     const STATUT_TERMINÉ = 'terminé';
     const STATUT_ABSENT = 'absent';
     const STATUT_ANNULÉ = 'annulé';
+    const STATUT_EN_ATTENTE_BIOMETRIE = 'en_attente_biometrie';
+    const STATUT_EN_COURS_BIOMETRIE = 'en_cours_biometrie';
 
     // Constantes pour les types
     const TYPE_RDV = 'rdv';

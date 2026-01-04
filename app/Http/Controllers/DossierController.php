@@ -424,6 +424,15 @@ class DossierController extends Controller
                 ]);
             }
 
+            // Traitement des données de vérification
+            $donneesOneci = null;
+            if ($request->filled('donnees_oneci')) {
+                $donneesOneci = json_decode($request->donnees_oneci, true);
+            }
+            
+            $isVerified = $request->input('is_verified', '0') == '1';
+            $numeroPreEnrolement = $request->input('numero_pre_enrolement');
+
             // Étape 2 : Créer le rendez-vous "sur place"
             // Format court: W + Ymd + 4 random chars = 1 + 8 + 4 = 13 caractères
             $numeroSuivi = 'W' . date('Ymd') . strtoupper(substr(uniqid(), -4));
@@ -438,6 +447,10 @@ class DossierController extends Controller
                 'statut' => RendezVous::STATUT_CONFIRME,
                 'numero_suivi' => $numeroSuivi,
                 'notes' => 'Dossier créé sur place (walk-in)',
+                'numero_pre_enrolement' => $numeroPreEnrolement,
+                'statut_oneci' => $isVerified ? 'valide' : null,
+                'verified_at' => $isVerified ? now() : null,
+                'donnees_oneci' => $donneesOneci,
             ]);
 
             // Étape 3 : Créer le dossier ouvert
@@ -446,7 +459,7 @@ class DossierController extends Controller
                 'agent_id' => $user->id,
                 'date_ouverture' => now(),
                 'statut' => 'ouvert',
-                'fiche_pre_enrolement_verifiee' => false,
+                'fiche_pre_enrolement_verifiee' => $isVerified,
                 'documents_verifies' => false,
                 'documents_manquants' => false,
                 'informations_client_verifiees' => false,

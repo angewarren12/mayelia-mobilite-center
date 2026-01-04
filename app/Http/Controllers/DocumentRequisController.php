@@ -43,6 +43,7 @@ class DocumentRequisController extends Controller
         $typesDemande = [
             'Première demande' => 'Première demande',
             'Renouvellement' => 'Renouvellement',
+            'Renouvellement avec modification' => 'Renouvellement avec modification',
             'Modification' => 'Modification',
             'Duplicata' => 'Duplicata'
         ];
@@ -60,6 +61,7 @@ class DocumentRequisController extends Controller
         $typesDemande = [
             'Première demande' => 'Première demande',
             'Renouvellement' => 'Renouvellement',
+            'Renouvellement avec modification' => 'Renouvellement avec modification',
             'Modification' => 'Modification',
             'Duplicata' => 'Duplicata'
         ];
@@ -127,6 +129,7 @@ class DocumentRequisController extends Controller
         $typesDemande = [
             'Première demande' => 'Première demande',
             'Renouvellement' => 'Renouvellement',
+            'Renouvellement avec modification' => 'Renouvellement avec modification',
             'Modification' => 'Modification',
             'Duplicata' => 'Duplicata'
         ];

@@ -17,16 +17,29 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Services\AuthService;
 use App\Http\Controllers\Concerns\ChecksPermissions;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use App\Services\OneciVerificationService;
+use App\Services\CarteResidentVerificationService;
+use App\Services\OneciCniVerificationService;
 
 class DossierWorkflowController extends Controller
 {
     use ChecksPermissions, AuthorizesRequests;
 
     protected $authService;
+    protected $oneciService;
+    protected $carteResidentService;
+    protected $oneciCniService;
 
-    public function __construct(AuthService $authService)
-    {
+    public function __construct(
+        AuthService $authService,
+        OneciVerificationService $oneciService,
+        CarteResidentVerificationService $carteResidentService,
+        OneciCniVerificationService $oneciCniService
+    ) {
         $this->authService = $authService;
+        $this->oneciService = $oneciService;
+        $this->carteResidentService = $carteResidentService;
+        $this->oneciCniService = $oneciCniService;
     }
     /**
      * Afficher la liste des rendez-vous pour les agents
@@ -209,9 +222,6 @@ class DossierWorkflowController extends Controller
         }
     }
 
-    /**
-     * Valider l'étape 1: Fiche pré-enrôlement
-     */
     public function validerEtape1(Request $request, DossierOuvert $dossierOuvert)
     {
         try {
@@ -220,35 +230,81 @@ class DossierWorkflowController extends Controller
             // Vérifier la permission via la Policy
             $this->authorize('update', $dossierOuvert);
 
-            $updateData = [
-                'fiche_pre_enrolement_verifiee' => true,
-                'notes' => $request->input('commentaires', $dossierOuvert->notes)
-            ];
+            // Augmenter les limites pour ce processus critique
+            ini_set('memory_limit', '256M');
+            set_time_limit(120); // 2 minutes
 
-            // Gérer l'upload de la fiche (optionnel)
-            if ($request->hasFile('fiche_file')) {
-                $file = $request->file('fiche_file');
-                
-                // Valider le fichier
-                $request->validate([
-                    'fiche_file' => 'file|mimes:pdf,jpg,jpeg,png|max:10240'
-                ]);
-                
-                // Stocker le fichier
-                $filename = 'fiche_' . time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('dossiers/' . $dossierOuvert->id . '/fiche', $filename, 'public');
-                
-                $updateData['fiche_pre_enrolement_path'] = $path;
-                
-                Log::info('Fiche pré-enrôlement uploadée:', ['path' => $path]);
+            $numeroEnrolement = $request->input('numero_enrolement');
+            
+            if (!$numeroEnrolement) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le numéro d\'enrôlement est requis pour la vérification.'
+                ], 400);
             }
 
+            // Identifier le service pour appeler le bon validateur
+            $rendezVous = $dossierOuvert->rendezVous;
+            $service = $rendezVous->service;
+            $serviceId = $service->id;
+
+            Log::info('Vérification en temps réel pour l\'étape 1', [
+                'dossier_id' => $dossierOuvert->id,
+                'service' => $service->nom,
+                'numero' => $numeroEnrolement
+            ]);
+
+            $result = null;
+
+            // Mapping des services (basé sur les IDs récupérés)
+            // 1, 2, 3: Carte Résident
+            // 4: CNI
+            // Autres: ONECI Standard
+            if (in_array($serviceId, [1, 2, 3])) {
+                $result = $this->carteResidentService->verifyNumeroDossier($numeroEnrolement);
+            } elseif ($serviceId == 4) {
+                $result = $this->oneciCniService->verifyNumeroDossier($numeroEnrolement);
+            } else {
+                $result = $this->oneciService->verifyPreEnrollmentNumber($numeroEnrolement);
+            }
+
+            if (!$result || !$result['success']) {
+                $message = $result['message'] ?? 'Échec de la vérification du numéro d\'enrôlement.';
+                
+                // Gérer les cas spécifiques de statut pour plus de clarté
+                if (isset($result['statut_label'])) {
+                    $message .= " (Statut: " . $result['statut_label'] . ")";
+                } elseif (isset($result['statut'])) {
+                    $message .= " (Statut: " . $result['statut'] . ")";
+                }
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 400);
+            }
+
+            // Si on arrive ici, la vérification est réussie
+            // Note: Pour CNI, le service vérifie déjà si statut == 'FPD'
+
+            // Mettre à jour le rendez-vous
+            $rendezVous->update([
+                'numero_pre_enrolement' => $numeroEnrolement,
+                'statut_oneci' => $result['statut'] ?? 'valide',
+                'donnees_oneci' => $result['data'] ?? null,
+                'verified_at' => now()
+            ]);
+
             // Mettre à jour le dossier
-            $dossierOuvert->update($updateData);
+            $dossierOuvert->update([
+                'fiche_pre_enrolement_verifiee' => true,
+                'notes' => $request->input('commentaires', $dossierOuvert->notes)
+            ]);
             
-            $dossierOuvert->logAction('fiche_verifiee', 'Validation de la fiche de pré-enrôlement', [
-                'commentaire' => $request->input('commentaires'),
-                'avec_fichier' => isset($updateData['fiche_pre_enrolement_path'])
+            $dossierOuvert->logAction('fiche_verifiee', 'Validation du pré-enrôlement en temps réel', [
+                'numero' => $numeroEnrolement,
+                'service' => $service->nom,
+                'statut_oneci' => $result['statut'] ?? 'valide'
             ]);
 
             // Mettre à jour le statut du dossier
@@ -259,13 +315,14 @@ class DossierWorkflowController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Fiche pré-enrôlement validée avec succès',
-                'progression' => $dossierOuvert->progression
+                'message' => 'Pré-enrôlement vérifié et validé avec succès',
+                'progression' => $dossierOuvert->progression,
+                'data' => $result['data']
             ]);
 
         } catch (\Exception $e) {
             Log::error('Erreur validation étape 1: ' . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Erreur lors de la validation'], 500);
+            return response()->json(['success' => false, 'message' => 'Erreur lors de la vérification : ' . $e->getMessage()], 500);
         }
     }
 
@@ -485,6 +542,10 @@ class DossierWorkflowController extends Controller
             $agent = Auth::user();
             
             $this->authorize('update', $dossierOuvert);
+
+            // Augmenter les limites pour l'upload de fichiers
+            ini_set('memory_limit', '256M');
+            set_time_limit(120);
 
             // Gérer le reçu de paiement (optionnel mais recommandé)
             $recuPath = null;
