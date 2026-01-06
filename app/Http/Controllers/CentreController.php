@@ -141,4 +141,118 @@ class CentreController extends Controller
             return response()->json([], 500);
         }
     }
+
+    /**
+     * Mettre à jour les options TV (Slider)
+     */
+    public function updateTvOptions(Request $request)
+    {
+        $this->checkPermission('centres', 'update');
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
+
+        if (!$centre) {
+            return response()->json(['success' => false, 'message' => 'Centre non trouvé'], 404);
+        }
+
+        $options = $centre->options_tv ?? [
+            'enabled' => false,
+            'images' => [],
+            'interval' => 4000
+        ];
+
+        if ($request->has('enabled')) {
+            $options['enabled'] = $request->boolean('enabled');
+        }
+        
+        if ($request->has('interval')) {
+            $options['interval'] = (int) $request->input('interval');
+        }
+
+        $centre->update(['options_tv' => $options]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Options TV mises à jour',
+            'options' => $options
+        ]);
+    }
+
+    /**
+     * Uploader une diapositive pour le slider TV
+     */
+    public function uploadSlide(Request $request)
+    {
+        $this->checkPermission('centres', 'update');
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
+
+        if (!$centre) {
+            return response()->json(['success' => false, 'message' => 'Centre non trouvé'], 404);
+        }
+
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048' // Max 2MB
+        ]);
+
+        $file = $request->file('image');
+        $filename = 'slide_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs("centres/{$centre->id}/slides", $filename, 'public');
+
+        $options = $centre->options_tv ?? [
+            'enabled' => false,
+            'images' => [],
+            'interval' => 4000
+        ];
+
+        // Ajouter l'image à la liste
+        if (!isset($options['images'])) {
+            $options['images'] = [];
+        }
+        $options['images'][] = "/storage/" . $path; // Chemin public
+
+        $centre->update(['options_tv' => $options]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Diapositive ajoutée',
+            'image_url' => "/storage/" . $path,
+            'options' => $options
+        ]);
+    }
+
+    /**
+     * Supprimer une diapositive
+     */
+    public function deleteSlide(Request $request)
+    {
+        $this->checkPermission('centres', 'update');
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
+
+        if (!$centre) {
+            return response()->json(['success' => false, 'message' => 'Centre non trouvé'], 404);
+        }
+
+        $imageUrl = $request->input('image_url');
+        $options = $centre->options_tv ?? [];
+
+        if (isset($options['images']) && is_array($options['images'])) {
+            // Filtrer le tableau pour retirer l'image
+            $options['images'] = array_values(array_filter($options['images'], function($img) use ($imageUrl) {
+                return $img !== $imageUrl;
+            }));
+
+            $centre->update(['options_tv' => $options]);
+            
+            // Note: On pourrait aussi supprimer le fichier physique ici
+            // mais on garde ça simple pour l'instant (soft delete logique)
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Diapositive supprimée',
+            'options' => $options
+        ]);
+    }
 }

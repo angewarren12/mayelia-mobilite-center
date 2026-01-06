@@ -58,7 +58,205 @@
         </div>
     </div>
 
-    <!-- Services avec formules -->
+    <!-- Configuration TV (Slider) -->
+    @isAdmin
+    <div class="bg-white rounded-lg shadow p-6" x-data="tvAdmin()">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-images text-mayelia-600 text-xl mr-3"></i>
+                Configuration Écran TV (Mode Attente)
+            </h3>
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500" x-text="config.enabled ? 'Activé' : 'Désactivé'"></span>
+                <button @click="toggleEnabled" 
+                        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-mayelia-500 focus:ring-offset-2"
+                        :class="config.enabled ? 'bg-mayelia-600' : 'bg-gray-200'">
+                    <span class="translate-x-0 pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                          :class="config.enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Paramètres -->
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Intervalle (millisecondes)</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" x-model="config.interval" @change="updateSettings" min="1000" step="500" 
+                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-mayelia-500 focus:ring-mayelia-500 sm:text-sm">
+                        <span class="text-gray-500 text-sm">ms</span>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Fonctionnement</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <p>Le slider s'activera automatiquement sur la TV lorsque :</p>
+                                <ul class="list-disc pl-5 space-y-1 mt-1">
+                                    <li>L'option "Activé" est cochée</li>
+                                    <li>Tous les guichets ouverts sont occupés</li>
+                                    <li>Aucun nouvel appel n'est en cours (flash)</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upload & Galerie -->
+            <div class="col-span-2 space-y-4">
+                <div class="flex items-center justify-between">
+                    <label class="block text-sm font-medium text-gray-700">Diapositives TV</label>
+                    <button @click="$refs.fileInput.click()" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-mayelia-600 hover:bg-mayelia-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-mayelia-500">
+                        <i class="fas fa-plus mr-1"></i> Ajouter une image
+                    </button>
+                    <input x-ref="fileInput" type="file" class="hidden" accept="image/*" @change="uploadImage">
+                </div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                    <template x-for="(img, index) in config.images" :key="index">
+                        <div class="group relative aspect-video bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                            <img :src="img" class="object-cover w-full h-full">
+                            <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <button @click="deleteImage(img)" class="text-white bg-red-600 hover:bg-red-700 p-2 rounded-full transition-colors">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- Empty State -->
+                    <div x-show="config.images.length === 0" class="col-span-full border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
+                        <i class="fas fa-images text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-500">Aucune diapositive configurée</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div x-show="notification.show" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform translate-y-2"
+             class="fixed bottom-4 right-4 z-50">
+            <div class="rounded-lg shadow-lg p-4 text-white" :class="notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'">
+                <div class="flex items-center">
+                    <i class="fas" :class="notification.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+                    <span class="ml-2 font-medium" x-text="notification.message"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function tvAdmin() {
+            return {
+                config: {
+                    enabled: false,
+                    interval: 4000,
+                    images: []
+                },
+                notification: { show: false, message: '', type: 'success' },
+
+                init() {
+                    // Initialiser avec les données serveur si disponibles
+                    this.config = @json($centre->options_tv ?? ['enabled' => false, 'interval' => 4000, 'images' => []]);
+                    // S'assurer que les valeurs par défaut sont là
+                    if (!this.config.interval) this.config.interval = 4000;
+                    if (!this.config.images) this.config.images = [];
+                },
+
+                toggleEnabled() {
+                    this.config.enabled = !this.config.enabled;
+                    this.updateSettings();
+                },
+
+                updateSettings() {
+                    fetch('{{ route("centres.update-tv-options") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({
+                            enabled: this.config.enabled,
+                            interval: this.config.interval
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            this.showNotification('Paramètres mis à jour');
+                        }
+                    })
+                    .catch(() => this.showNotification('Erreur lors de la sauvegarde', 'error'));
+                },
+
+                uploadImage(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    fetch('{{ route("centres.upload-slide") }}', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            this.config.images = data.options.images;
+                            this.showNotification('Diapositive ajoutée');
+                        } else {
+                            this.showNotification(data.message, 'error');
+                        }
+                    })
+                    .catch(() => this.showNotification('Erreur upload', 'error'))
+                    .finally(() => {
+                        e.target.value = ''; // Reset input
+                    });
+                },
+
+                deleteImage(imgUrl) {
+                    if(!confirm('Supprimer cette diapositive ?')) return;
+
+                    fetch('{{ route("centres.delete-slide") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ image_url: imgUrl })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            this.config.images = data.options.images; // Mise à jour depuis le serveur pour être sûr
+                            this.showNotification('Diapositive supprimée');
+                        }
+                    });
+                },
+
+                showNotification(msg, type = 'success') {
+                    this.notification = { show: true, message: msg, type: type };
+                    setTimeout(() => this.notification.show = false, 3000);
+                }
+            }
+        }
+    </script>
+    @endisAdmin
     @if($servicesGlobaux->count() > 0)
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="servicesContainer">
             @foreach($servicesGlobaux as $service)

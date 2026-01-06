@@ -255,6 +255,31 @@
         </div>
     </div>
 
+    <!-- Slider Overlay -->
+    <div x-show="showSlider" 
+         x-transition:enter="transition ease-in duration-1000"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-out duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden">
+        
+        <template x-for="(image, index) in sliderImages" :key="index">
+            <img :src="image" 
+                 x-show="currentSlideIndex === index"
+                 x-transition:enter="transition ease-in duration-1000"
+                 x-transition:enter-start="opacity-0 scale-105"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 class="absolute inset-0 w-full h-full object-contain bg-black">
+        </template>
+        
+        <!-- Indicateur de chargement si pas d'images -->
+        <div x-show="sliderImages.length === 0" class="text-white text-2xl animate-pulse">
+            Chargement des diapositives...
+        </div>
+    </div>
+
     <!-- Alpine.js Local -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
@@ -271,6 +296,17 @@
                 centreId: {{ $centre->id }},
                 flash: false,
                 audioEnabled: false,
+                voicesLoaded: false,
+                
+                // Slider Logic
+                showSlider: false,
+                sliderImages: [],
+                currentSlideIndex: 0,
+                sliderIntervalTime: 4000,
+                sliderTimer: null,
+                sliderConfig: { enabled: false },
+                allBusy: false,
+                gracePeriodTimer: null,
                 
                 init() {
                     this.updateTime();
@@ -278,11 +314,29 @@
                     
                     // On commence le fetch uniquement après interaction (optionnel, mais ici on fetch direct pour l'visuel)
                     this.fetchData();
-                    setInterval(() => this.fetchData(), 1000);
+                    setInterval(() => this.fetchData(), 2000); // Polling toutes les 2s pour soulager le serveur
 
                     // Tenter de restaurer l'état audio si déjà activé précédemment dans la session
                     if (sessionStorage.getItem('audioEnabled') === 'true') {
                         this.audioEnabled = true;
+                        // Précharger les voix si audio déjà activé
+                        if ('speechSynthesis' in window) {
+                            window.speechSynthesis.getVoices();
+                            window.speechSynthesis.addEventListener('voiceschanged', () => {
+                                this.voicesLoaded = true;
+                                console.log('Voix préchargées:', window.speechSynthesis.getVoices().length);
+                            }, { once: true });
+                        }
+                    }
+                    
+                    // Précharger les voix au démarrage (même si audio pas encore activé)
+                    if ('speechSynthesis' in window) {
+                        // Forcer le chargement initial des voix
+                        window.speechSynthesis.getVoices();
+                        window.speechSynthesis.addEventListener('voiceschanged', () => {
+                            this.voicesLoaded = true;
+                            console.log('Voix chargées au démarrage:', window.speechSynthesis.getVoices().length);
+                        }, { once: true });
                     }
                 },
                 
@@ -295,8 +349,20 @@
                     audio.volume = 0;
                     audio.play().catch(() => {});
                     
-                    // Initialiser la synthèse vocale (test)
+                    // Initialiser la synthèse vocale et charger les voix
                     if ('speechSynthesis' in window) {
+                        // Forcer le chargement des voix
+                        window.speechSynthesis.getVoices();
+                        
+                        // Écouter l'événement voiceschanged pour s'assurer que les voix sont chargées
+                        if (!this.voicesLoaded) {
+                            window.speechSynthesis.addEventListener('voiceschanged', () => {
+                                this.voicesLoaded = true;
+                                console.log('Voix chargées:', window.speechSynthesis.getVoices().length);
+                            }, { once: true });
+                        }
+                        
+                        // Test initial pour activer la synthèse vocale
                         const utterance = new SpeechSynthesisUtterance('');
                         window.speechSynthesis.speak(utterance);
                     }
@@ -336,6 +402,11 @@
                             this.history = data.history || [];
                             this.waitingCount = data.waiting_count || 0;
                             
+                            // Gérer le Slider
+                            if (data.tv_status) {
+                                this.processTvStatus(data.tv_status);
+                            }
+
                             // Détecter un nouvel appel (basé sur le TIMESTAMP du dernier appelé)
                             if (this.currentTicket) {
                                 // Utiliser called_at s'il existe (prioritaire), sinon updated_at
@@ -355,7 +426,71 @@
                         .catch(error => console.error('Erreur:', error));
                 },
 
+                processTvStatus(status) {
+                    this.allBusy = status.should_show_slider; // On garde le nom de variable interne allBusy pour pas tout casser, mais elle porte mal son nom mtn
+                    this.sliderConfig = status.slider_config || { enabled: false, images: [], interval: 4000 };
+                    
+                    if (this.sliderConfig.images && this.sliderConfig.images.length > 0) {
+                        this.sliderImages = this.sliderConfig.images;
+                    }
+
+                    if (this.sliderConfig.interval) {
+                        this.sliderIntervalTime = this.sliderConfig.interval;
+                    }
+
+                    // Logique d'activation du slider
+                    if (this.sliderConfig.enabled && this.allBusy && !this.flash) {
+                        // Si pas déjà affiché et pas de timer de grâce en cours
+                        if (!this.showSlider && !this.gracePeriodTimer) {
+                            // Démarrer la période de grâce (5 secondes) avant d'afficher
+                            this.gracePeriodTimer = setTimeout(() => {
+                                if (this.allBusy && !this.flash) {
+                                    this.startSlider();
+                                }
+                                this.gracePeriodTimer = null;
+                            }, 5000);
+                        }
+                    } else {
+                        // Si conditions non réunies, arrêter immédiatement
+                        this.stopSlider();
+                        if (this.gracePeriodTimer) {
+                            clearTimeout(this.gracePeriodTimer);
+                            this.gracePeriodTimer = null;
+                        }
+                    }
+                },
+
+                startSlider() {
+                    if (this.showSlider) return;
+                    this.showSlider = true;
+                    this.currentSlideIndex = 0;
+                    
+                    if (this.sliderTimer) clearInterval(this.sliderTimer);
+                    
+                    this.sliderTimer = setInterval(() => {
+                        if (this.sliderImages.length > 0) {
+                            this.currentSlideIndex = (this.currentSlideIndex + 1) % this.sliderImages.length;
+                        }
+                    }, this.sliderIntervalTime);
+                },
+
+                stopSlider() {
+                    if (!this.showSlider) return;
+                    this.showSlider = false;
+                    if (this.sliderTimer) {
+                        clearInterval(this.sliderTimer);
+                        this.sliderTimer = null;
+                    }
+                },
+
                 triggerFlash(ticket) {
+                    // Arrêter immédiatement le slider lors d'un appel
+                    this.stopSlider();
+                    if (this.gracePeriodTimer) {
+                        clearTimeout(this.gracePeriodTimer);
+                        this.gracePeriodTimer = null;
+                    }
+
                     this.flash = true;
                     setTimeout(() => this.flash = false, 800);
                     
@@ -364,22 +499,53 @@
                 },
                 
                 playAnnouncement(ticket) {
-                    if (!this.audioEnabled) return;
+                    if (!this.audioEnabled) {
+                        console.log('Audio désactivé, annonce vocale ignorée');
+                        return;
+                    }
+
+                    console.log('Début de l\'annonce pour le ticket:', ticket.numero);
 
                     // 1. Son de notification (Ding-Dong)
                     const audio = new Audio('/sounds/beep.wav');
                     audio.volume = 0.6;
                     
-                    audio.onended = () => {
-                        // 2. Annonce vocale après le son
-                        this.speakTicket(ticket);
+                    let speechTriggered = false;
+                    
+                    const triggerSpeech = () => {
+                        if (!speechTriggered) {
+                            speechTriggered = true;
+                            console.log('Déclenchement de la synthèse vocale pour:', ticket.numero);
+                            this.speakTicket(ticket);
+                        }
                     };
                     
-                    // Si le son échoue ou est absent, on parle quand même
+                    audio.onended = () => {
+                        console.log('Son terminé, déclenchement de la synthèse vocale');
+                        // 2. Annonce vocale après le son
+                        triggerSpeech();
+                    };
+                    
+                    audio.onerror = (e) => {
+                        console.error('Erreur lecture son:', e);
+                        // Si le son échoue, on parle quand même immédiatement
+                        triggerSpeech();
+                    };
+                    
+                    // Si le son échoue ou est absent, on parle quand même après un court délai
                     audio.play().catch(e => {
-                        console.log('Erreur son:', e);
-                        this.speakTicket(ticket);
+                        console.log('Erreur play son:', e);
+                        // Attendre un peu avant de déclencher la synthèse vocale
+                        setTimeout(() => triggerSpeech(), 100);
                     });
+                    
+                    // Timeout de sécurité : si le son ne se termine pas dans les 2 secondes, on parle quand même
+                    setTimeout(() => {
+                        if (!speechTriggered) {
+                            console.log('Timeout sécurité, déclenchement de la synthèse vocale');
+                            triggerSpeech();
+                        }
+                    }, 2000);
                 },
 
                 speakTicket(ticket) {
@@ -392,36 +558,92 @@
                         guichetNom = "guichet " + guichetNom; 
                     }
 
-                    // Formatage: P005 -> P 5
+                    // Formatage: P005 -> P 5, D001 -> D 1
                     const numeroClean = numero.replace(/([A-Z])0*(\d+)/, "$1 $2"); 
                     const text = `Ticket numéro, ${numeroClean}, attendu au ${guichetNom}`;
 
                     // 2. Essai Synthèse Native (PC/Android)
                     if ('speechSynthesis' in window) {
-                        const voices = window.speechSynthesis.getVoices();
+                        // Forcer le chargement des voix si pas encore fait
+                        window.speechSynthesis.getVoices();
                         
-                        // Si des voix sont détectées, on utilise le natif
-                        if (voices.length > 0) {
-                            window.speechSynthesis.cancel();
+                        // Fonction pour essayer de parler avec les voix disponibles
+                        const trySpeak = () => {
+                            const voices = window.speechSynthesis.getVoices();
                             
-                            const utterance = new SpeechSynthesisUtterance(text);
-                            utterance.lang = 'fr-FR';
-                            utterance.rate = 0.9;
-                            utterance.pitch = 1;
+                            // Si des voix sont détectées, on utilise le natif
+                            if (voices.length > 0) {
+                                window.speechSynthesis.cancel();
+                                
+                                const utterance = new SpeechSynthesisUtterance(text);
+                                utterance.lang = 'fr-FR';
+                                utterance.rate = 0.9;
+                                utterance.pitch = 1;
+                                utterance.volume = 1.0;
 
-                            const frenchVoice = voices.find(v => v.lang === 'fr-FR' && !v.name.includes('Compact')) || 
-                                                voices.find(v => v.lang.startsWith('fr'));
-                            
-                            if (frenchVoice) utterance.voice = frenchVoice;
+                                // Chercher une voix française
+                                const frenchVoice = voices.find(v => v.lang === 'fr-FR' && !v.name.includes('Compact')) || 
+                                                    voices.find(v => v.lang.startsWith('fr')) ||
+                                                    voices.find(v => v.lang.includes('fr'));
+                                
+                                if (frenchVoice) {
+                                    utterance.voice = frenchVoice;
+                                    console.log('Utilisation de la voix:', frenchVoice.name);
+                                } else {
+                                    console.log('Aucune voix française trouvée, utilisation de la voix par défaut');
+                                }
 
-                            window.speechSynthesis.speak(utterance);
+                                // Gestion des erreurs
+                                utterance.onerror = (e) => {
+                                    console.error('Erreur synthèse vocale native:', e);
+                                    // Fallback vers TTS online en cas d'erreur
+                                    this.playOnlineTTS(text);
+                                };
+
+                                window.speechSynthesis.speak(utterance);
+                                return true;
+                            }
+                            return false;
+                        };
+
+                        // Essayer immédiatement
+                        if (trySpeak()) {
                             return;
                         }
+
+                        // Si pas de voix disponibles, attendre l'événement voiceschanged
+                        const voicesChangedHandler = () => {
+                            if (trySpeak()) {
+                                window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+                            } else {
+                                // Si toujours pas de voix après chargement, utiliser fallback
+                                setTimeout(() => {
+                                    window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+                                    if (!trySpeak()) {
+                                        console.log("TTS Natif indisponible après chargement des voix, utilisation du fallback online");
+                                        this.playOnlineTTS(text);
+                                    }
+                                }, 500);
+                            }
+                        };
+
+                        window.speechSynthesis.addEventListener('voiceschanged', voicesChangedHandler, { once: true });
+
+                        // Timeout de sécurité : si pas de voix après 1 seconde, utiliser fallback
+                        setTimeout(() => {
+                            window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
+                            if (!trySpeak()) {
+                                console.log("TTS Natif indisponible (timeout), utilisation du fallback online");
+                                this.playOnlineTTS(text);
+                            }
+                        }, 1000);
+                        
+                        return;
                     }
 
                     // 3. Fallback Online (TV TCL / Samsung etc.)
-                    // Si pas de support natif ou pas de voix installées
-                    console.log("TTS Natif indisponible, utilisation du fallback online");
+                    // Si pas de support natif
+                    console.log("TTS Natif non supporté, utilisation du fallback online");
                     this.playOnlineTTS(text);
                 },
 
@@ -433,12 +655,32 @@
                         
                         const audio = new Audio(url);
                         audio.volume = 1.0;
-                        audio.play().catch(e => {
+                        
+                        // Gestion des erreurs
+                        audio.onerror = (e) => {
                             console.error("Erreur lecture TTS Online:", e);
+                        };
+                        
+                        audio.onended = () => {
+                            console.log("Annonce vocale terminée");
+                        };
+                        
+                        audio.play().catch(e => {
+                            console.error("Erreur lecture TTS Online (play):", e);
+                            // Essayer une alternative si Google TTS échoue
+                            this.playAlternativeTTS(text);
                         });
                     } catch (e) {
                         console.error("Erreur construction TTS Online:", e);
+                        // Essayer une alternative
+                        this.playAlternativeTTS(text);
                     }
+                },
+                
+                playAlternativeTTS(text) {
+                    // Alternative : utiliser l'API ResponsiveVoice ou autre service
+                    // Pour l'instant, on log juste l'erreur
+                    console.warn("Toutes les méthodes TTS ont échoué pour:", text);
                 },
                 
                 formatTime(dateString) {

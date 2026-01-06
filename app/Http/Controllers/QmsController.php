@@ -438,12 +438,46 @@ class QmsController extends Controller
             ->with(['service:id,nom', 'guichet:id,nom'])
             ->get();
 
+        // Calculer le statut d'occupation pour le slider TV
+        $centre = Centre::findOrFail($centreId);
+        
+        // Guichets ouverts (avec un agent actif assigné)
+        $activeGuichetsCount = Guichet::where('centre_id', $centreId)
+            ->where('statut', 'ouvert')
+            ->count();
+            
+        // Tickets en cours de traitement (appelé ou en cours)
+        $processingTicketsCount = Ticket::where('centre_id', $centreId)
+            ->whereIn('statut', [Ticket::STATUT_APPELÉ, Ticket::STATUT_EN_COURS, Ticket::STATUT_EN_COURS_BIOMETRIE])
+            ->whereDate('updated_at', Carbon::today())
+            ->count();
+            
+        // Tous les guichets sont occupés si:
+        // 1. Il y a au moins un guichet ouvert
+        // 2. Le nombre de tickets en traitement >= nombre de guichets ouverts
+        $allBusy = $activeGuichetsCount > 0 && $processingTicketsCount >= $activeGuichetsCount;
+        
+        // Ou si la file d'attente est vide
+        $queueEmpty = $waiting->count() === 0;
+        
+        $shouldShowSlider = $allBusy || $queueEmpty;
+        
+        $tvStatus = [
+            'should_show_slider' => $shouldShowSlider,
+            'slider_config' => $centre->options_tv ?? [
+                'enabled' => false,
+                'images' => [],
+                'interval' => 4000
+            ]
+        ];
+
         return response()->json([
             'last_called' => $lastCalled,
             'active_tickets' => $activeTickets, // Pour le widget agent
             'history' => $history,
             'waiting' => $waiting,
-            'waiting_count' => $waiting->count()
+            'waiting_count' => $waiting->count(),
+            'tv_status' => $tvStatus
         ]);
     }
 }

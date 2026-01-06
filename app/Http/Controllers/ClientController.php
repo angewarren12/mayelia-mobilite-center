@@ -29,14 +29,6 @@ class ClientController extends Controller
 
         $query = Client::query();
 
-        // Filtrer par centre pour les utilisateurs rattachés (Agents et Admins de centre)
-        $user = \Illuminate\Support\Facades\Auth::user();
-        if ($user->centre_id) {
-            $query->whereHas('rendezVous', function($q) use ($user) {
-                $q->where('centre_id', $user->centre_id);
-            });
-        }
-
         // Recherche
         if ($request->has('search') && $request->search) {
             $query->recherche($request->search);

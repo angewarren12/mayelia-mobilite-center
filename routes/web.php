@@ -128,6 +128,9 @@ Route::middleware(['auth', 'oneci.redirect'])->group(function () {
     Route::get('/centres', [CentreController::class, 'index'])->name('centres.index');
     Route::post('/centres/services/{service}/toggle', [CentreController::class, 'toggleService'])->name('centres.toggle-service');
     Route::post('/centres/formules/{formule}/toggle', [CentreController::class, 'toggleFormule'])->name('centres.toggle-formule');
+    Route::post('/centres/tv-options', [CentreController::class, 'updateTvOptions'])->name('centres.update-tv-options');
+    Route::post('/centres/upload-slide', [CentreController::class, 'uploadSlide'])->name('centres.upload-slide');
+    Route::post('/centres/delete-slide', [CentreController::class, 'deleteSlide'])->name('centres.delete-slide');
     
     // Gestion des créneaux
     Route::get('/creneaux', [CreneauxController::class, 'index'])->name('creneaux.index');

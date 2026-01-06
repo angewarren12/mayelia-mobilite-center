@@ -295,3 +295,4 @@ Le système fonctionne correctement pour **1-2 guichets**, mais présente une **
 **Action recommandée** : Implémenter l'Option 1 ou 2 pour améliorer l'expérience utilisateur.
 
 
+

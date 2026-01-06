@@ -17,7 +17,8 @@ class Centre extends Model
         'telephone',
         'statut',
         'qms_mode',
-        'qms_fenetre_minutes'
+        'qms_fenetre_minutes',
+        'options_tv'
     ];
 
     // Constantes pour les modes QMS
@@ -29,7 +30,8 @@ class Centre extends Model
     const STATUT_INACTIF = 'inactif';
 
     protected $casts = [
-        'qms_fenetre_minutes' => 'integer'
+        'qms_fenetre_minutes' => 'integer',
+        'options_tv' => 'array'
     ];
 
     /**

@@ -50,8 +50,8 @@ class KioskScreen extends StatefulWidget {
 
 class _KioskScreenState extends State<KioskScreen> {
   // Vous pouvez aussi les charger depuis les paramètres ou une configuration
-  static const int centreId = 1;
-  static const String centreNom = 'Centre Mayelia San-Pedro';
+  static const int centreId = 2;
+  static const String centreNom = 'Centre de Daloa';
 
   late final ApiService apiService;
   late final BluetoothService bluetoothService;
