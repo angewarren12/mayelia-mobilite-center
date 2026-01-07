@@ -337,9 +337,9 @@
                             <!-- Email -->
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Email <span class="text-red-500">*</span>
+                                    Email
                                 </label>
-                                <input type="email" id="email" name="email" required
+                                <input type="email" id="email" name="email"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-mayelia-500 focus:border-mayelia-500">
                             </div>
 

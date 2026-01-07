@@ -203,8 +203,8 @@
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500 bg-gray-50">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                        <input type="email" name="client_email" id="client_email" required
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                        <input type="email" name="client_email" id="client_email"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:border-mayelia-500">
                     </div>
                     <div>
@@ -549,10 +549,7 @@ function validateStep(step) {
             document.getElementById('client_prenom').classList.remove('border-red-500');
         }
         
-        if (!clientEmail) {
-            errors.push('L\'email est obligatoire');
-            document.getElementById('client_email').classList.add('border-red-500');
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+        if (clientEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
             errors.push('L\'email n\'est pas valide');
             document.getElementById('client_email').classList.add('border-red-500');
         } else {

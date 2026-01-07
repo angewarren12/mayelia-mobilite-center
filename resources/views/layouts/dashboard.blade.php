@@ -52,7 +52,7 @@
     </script>
     
     <!-- Alpine.js for dropdowns -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="{{ asset('js/alpine.js') }}"></script>
 </head>
 <body class="font-sans antialiased bg-gray-100" x-data="{ 
     sidebarOpen: window.innerWidth >= 1024 ? (localStorage.getItem('sidebarOpen') !== 'false') : false,

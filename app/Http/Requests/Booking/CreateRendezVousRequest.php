@@ -32,7 +32,7 @@ class CreateRendezVousRequest extends FormRequest
             
             // Infos client
             'nom' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'nullable|email|max:255',
             'telephone' => 'required|string|max:20',
             'prenom' => 'nullable|string|max:255',
             'date_naissance' => 'nullable|date|before:today',

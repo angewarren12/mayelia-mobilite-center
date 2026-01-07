@@ -314,7 +314,10 @@
 
                     fetch('{{ route("centres.upload-slide") }}', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        }
                     })
                     .then(res => res.json())
                     .then(data => {

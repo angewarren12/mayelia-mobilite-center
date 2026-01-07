@@ -10,7 +10,7 @@
     <link rel="manifest" href="{{ asset('manifest.json') }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="{{ asset('js/alpine.js') }}"></script>
 
     <script>
         tailwind.config = {

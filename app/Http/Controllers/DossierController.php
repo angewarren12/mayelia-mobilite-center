@@ -69,6 +69,14 @@ class DossierController extends Controller
             $query->where('statut', $request->statut);
         }
 
+        if ($request->filled('start_date')) {
+            $query->whereDate('date_ouverture', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->whereDate('date_ouverture', '<=', $request->end_date);
+        }
+
         $dossiers = $query->orderBy('date_ouverture', 'desc')->paginate(15);
 
         return view('dossiers.index', compact('dossiers'));

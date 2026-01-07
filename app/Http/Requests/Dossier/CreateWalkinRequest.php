@@ -26,7 +26,7 @@ class CreateWalkinRequest extends FormRequest
             'client_id' => 'nullable|exists:clients,id',
             'client_nom' => 'required_without:client_id|string|max:255',
             'client_prenom' => 'required_without:client_id|string|max:255',
-            'client_email' => 'required_without:client_id|email|max:255',
+            'client_email' => 'nullable|email|max:255',
             'client_telephone' => 'required_without:client_id|string|max:20',
             'client_date_naissance' => 'nullable|date|before:today',
             'client_lieu_naissance' => 'nullable|string|max:255',

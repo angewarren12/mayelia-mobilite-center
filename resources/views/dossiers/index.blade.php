@@ -41,10 +41,18 @@
                 </select>
             </div>
             <div class="min-w-48">
+                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Du</label>
+                <input type="date" id="start_date" name="start_date" value="{{ request('start_date') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
+            </div>
+            <div class="min-w-48">
+                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Au</label>
+                <input type="date" id="end_date" name="end_date" value="{{ request('end_date') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
+            </div>
+            <div class="min-w-48">
                 <label for="rendez_vous_id" class="block text-sm font-medium text-gray-700 mb-1">Rendez-vous</label>
                 <select id="rendez_vous_id" name="rendez_vous_id" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500">
                     <option value="">Tous les rendez-vous</option>
-                    @foreach(\App\Models\RendezVous::with('client')->get() as $rdv)
+                    @foreach(\App\Models\RendezVous::with('client')->latest()->take(50)->get() as $rdv)
                     <option value="{{ $rdv->id }}" {{ request('rendez_vous_id') == $rdv->id ? 'selected' : '' }}>
                         {{ $rdv->client->nom_complet ?? 'Client supprimé' }} - {{ $rdv->date_rendez_vous->format('d/m/Y') }}
                     </option>
