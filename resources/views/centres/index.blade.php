@@ -60,7 +60,7 @@
 
     <!-- Configuration TV (Slider) -->
     @isAdmin
-    <div class="bg-white rounded-lg shadow p-6" x-data="tvAdmin()">
+    <div class="bg-white rounded-lg shadow p-6 mb-6" x-data="tvAdmin()">
         <div class="flex items-center justify-between mb-6">
             <h3 class="text-lg font-semibold text-gray-900 flex items-center">
                 <i class="fas fa-images text-mayelia-600 text-xl mr-3"></i>
@@ -157,8 +157,110 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- Configuration du Scan -->
+    <div class="bg-white rounded-lg shadow p-6 mb-6" x-data="scanAdmin()">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                <i class="fas fa-print text-mayelia-600 text-xl mr-3"></i>
+                Configuration du Scan de Documents
+            </h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+                <label class="block text-sm font-medium text-gray-700">Méthode de capture active</label>
+                <div class="grid grid-cols-1 gap-3">
+                    <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none" :class="config.mode === 'manuel' ? 'border-mayelia-500 ring-2 ring-mayelia-500' : 'border-gray-300'">
+                        <input type="radio" name="scan_mode" value="manuel" x-model="config.mode" @change="updateSettings" class="sr-only">
+                        <span class="flex flex-1">
+                            <span class="flex flex-col">
+                                <span class="block text-sm font-medium text-gray-900">Upload Manuel (Ancienne méthode)</span>
+                                <span class="mt-1 flex items-center text-sm text-gray-500">L'agent doit scanner sur son PC, sauvegarder le fichier, puis le sélectionner.</span>
+                            </span>
+                        </span>
+                        <i class="fas fa-check-circle text-mayelia-600" x-show="config.mode === 'manuel'"></i>
+                    </label>
+
+                    <label class="relative flex cursor-pointer rounded-lg border bg-white p-4 shadow-sm focus:outline-none" :class="config.mode === 'python' ? 'border-mayelia-500 ring-2 ring-mayelia-500' : 'border-gray-300'">
+                        <input type="radio" name="scan_mode" value="python" x-model="config.mode" @change="updateSettings" class="sr-only">
+                        <span class="flex flex-1">
+                            <span class="flex flex-col">
+                                <span class="block text-sm font-medium text-gray-900">Scan Direct (Pont Python)</span>
+                                <span class="mt-1 flex items-center text-sm text-gray-500">Scan automatique depuis l'imprimante via le logiciel pont installé sur le PC.</span>
+                            </span>
+                        </span>
+                        <i class="fas fa-check-circle text-mayelia-600" x-show="config.mode === 'python'"></i>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-md p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-exclamation-triangle text-amber-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-amber-800">Note Importante</h3>
+                        <div class="mt-2 text-sm text-amber-700">
+                            <p>Le mode <strong>Scan Direct</strong> nécessite que le script <code>scan_bridge.py</code> (ou son exécutable) soit lancé sur le PC de l'agent. Sinon, le bouton de scan affichera une erreur de connexion.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div x-show="notification.show" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform translate-y-2"
+             x-transition:enter-end="opacity-100 transform translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform translate-y-0"
+             x-transition:leave-end="opacity-0 transform translate-y-2"
+             class="fixed bottom-4 right-4 z-50">
+            <div class="rounded-lg shadow-lg p-4 text-white" :class="notification.type === 'success' ? 'bg-green-600' : 'bg-red-600'">
+                <div class="flex items-center">
+                    <i class="fas" :class="notification.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'"></i>
+                    <span class="ml-2 font-medium" x-text="notification.message"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        function scanAdmin() {
+            return {
+                config: { mode: 'manuel' },
+                notification: { show: false, message: '', type: 'success' },
+                init() {
+                    let saved = @json($centre->options_scan ?? ['mode' => 'manuel']);
+                    this.config.mode = saved.mode || 'manuel';
+                },
+                updateSettings() {
+                    fetch('{{ route("centres.update-scan-options") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        body: JSON.stringify({ mode: this.config.mode })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            this.showNotification('Mode de scan mis à jour : ' + (this.config.mode === 'python' ? 'Direct' : 'Manuel'));
+                        }
+                    })
+                    .catch(() => this.showNotification('Erreur lors de la sauvegarde', 'error'));
+                },
+                showNotification(msg, type = 'success') {
+                    this.notification = { show: true, message: msg, type: type };
+                    setTimeout(() => this.notification.show = false, 3000);
+                }
+            }
+        }
+
         function tvAdmin() {
             return {
                 config: {
@@ -312,7 +414,7 @@
                                             <div class="w-3 h-3 rounded-full" style="background-color: {{ $formule->couleur }}"></div>
                                             <div>
                                                 <span class="text-sm font-medium text-gray-900">{{ $formule->nom }}</span>
-                                                <span class="text-xs text-gray-500 ml-2">{{ number_format($formule->prix, 2) }} €</span>
+                                                <span class="text-xs text-gray-500 ml-2">{{ number_format($formule->prix, 2) }} XOF</span>
                                             </div>
                                         </div>
                                         

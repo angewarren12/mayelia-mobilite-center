@@ -18,7 +18,8 @@ class Centre extends Model
         'statut',
         'qms_mode',
         'qms_fenetre_minutes',
-        'options_tv'
+        'options_tv',
+        'options_scan'
     ];
 
     // Constantes pour les modes QMS
@@ -31,7 +32,8 @@ class Centre extends Model
 
     protected $casts = [
         'qms_fenetre_minutes' => 'integer',
-        'options_tv' => 'array'
+        'options_tv' => 'array',
+        'options_scan' => 'array'
     ];
 
     /**

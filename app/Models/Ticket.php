@@ -17,13 +17,15 @@ class Ticket extends Model
         'priorite',
         'heure_rdv',
         'called_at',
-        'completed_at'
+        'completed_at',
+        'metadata'
     ];
 
     protected $casts = [
         'heure_rdv' => 'datetime:H:i',
         'called_at' => 'datetime',
-        'completed_at' => 'datetime'
+        'completed_at' => 'datetime',
+        'metadata' => 'array'
     ];
 
     // Constantes pour les statuts
@@ -98,5 +100,10 @@ class Ticket extends Model
     public function guichet()
     {
         return $this->belongsTo(Guichet::class);
+    }
+
+    public function retraitCarte()
+    {
+        return $this->hasOne(RetraitCarte::class);
     }
 }

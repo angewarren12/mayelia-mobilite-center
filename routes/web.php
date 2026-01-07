@@ -129,6 +129,7 @@ Route::middleware(['auth', 'oneci.redirect'])->group(function () {
     Route::post('/centres/services/{service}/toggle', [CentreController::class, 'toggleService'])->name('centres.toggle-service');
     Route::post('/centres/formules/{formule}/toggle', [CentreController::class, 'toggleFormule'])->name('centres.toggle-formule');
     Route::post('/centres/tv-options', [CentreController::class, 'updateTvOptions'])->name('centres.update-tv-options');
+    Route::post('/centres/scan-options', [CentreController::class, 'updateScanOptions'])->name('centres.update-scan-options');
     Route::post('/centres/upload-slide', [CentreController::class, 'uploadSlide'])->name('centres.upload-slide');
     Route::post('/centres/delete-slide', [CentreController::class, 'deleteSlide'])->name('centres.delete-slide');
     
@@ -247,6 +248,14 @@ Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, '
     
     // Statistiques
     Route::get('/statistics', [App\Http\Controllers\StatisticsController::class, 'index'])->name('statistics.index');
+
+    // Retraits de carte
+    Route::get('/retraits', [App\Http\Controllers\RetraitCarteController::class, 'index'])->name('retraits.index');
+    Route::get('/retraits/export-pdf', [App\Http\Controllers\RetraitCarteController::class, 'exportPdf'])->name('retraits.export-pdf');
+    Route::post('/retraits/manual', [App\Http\Controllers\RetraitCarteController::class, 'createManual'])->name('retraits.create-manual');
+    Route::get('/retraits/{ticket}/traitement', [App\Http\Controllers\RetraitCarteController::class, 'traitement'])->name('retraits.traitement');
+    Route::post('/retraits/{ticket}/store', [App\Http\Controllers\RetraitCarteController::class, 'store'])->name('retraits.store');
+    Route::post('/retraits/{ticket}/finaliser', [App\Http\Controllers\RetraitCarteController::class, 'finaliser'])->name('retraits.finaliser');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

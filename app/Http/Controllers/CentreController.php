@@ -255,4 +255,34 @@ class CentreController extends Controller
             'options' => $options
         ]);
     }
+
+    /**
+     * Mettre à jour les options de scan
+     */
+    public function updateScanOptions(Request $request)
+    {
+        $this->checkPermission('centres', 'update');
+        $user = $this->authService->getAuthenticatedUser();
+        $centre = $user->centre;
+
+        if (!$centre) {
+            return response()->json(['success' => false, 'message' => 'Centre non trouvé'], 404);
+        }
+
+        $options = $centre->options_scan ?? [
+            'mode' => 'manuel'
+        ];
+
+        if ($request->has('mode')) {
+            $options['mode'] = $request->input('mode');
+        }
+
+        $centre->update(['options_scan' => $options]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuration du scan mise à jour',
+            'options' => $options
+        ]);
+    }
 }

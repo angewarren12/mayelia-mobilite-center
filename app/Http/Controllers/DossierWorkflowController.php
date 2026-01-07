@@ -254,6 +254,48 @@ class DossierWorkflowController extends Controller
                 'numero' => $numeroEnrolement
             ]);
 
+            if ($request->input('force')) {
+                Log::info('Validation forcée de l\'étape 1 (manuelle)', [
+                    'dossier_id' => $dossierOuvert->id,
+                    'agent_id' => $agent->id,
+                    'numero' => $numeroEnrolement
+                ]);
+
+                // Mettre à jour le rendez-vous sans données ONECI
+                $rendezVous->update([
+                    'numero_pre_enrolement' => $numeroEnrolement,
+                    'statut_oneci' => 'valide', // 'valide_manuellement' cause une erreur ENUM
+                    'donnees_oneci' => [
+                        'nom' => $rendezVous->client->nom,
+                        'prenoms' => $rendezVous->client->prenom,
+                        'statut' => 'Validé Manuellement',
+                        'message' => 'Vérification ONECI passée manuellement par l\'agent.'
+                    ],
+                    'verified_at' => now()
+                ]);
+
+                // Mettre à jour le dossier
+                $dossierOuvert->update([
+                    'fiche_pre_enrolement_verifiee' => true,
+                    'notes' => "[VALIDATION MANUELLE] " . $request->input('commentaires', $dossierOuvert->notes)
+                ]);
+
+                $dossierOuvert->logAction('fiche_verifiee_manuellement', 'Validation manuelle du pré-enrôlement (Saut vérification)', [
+                    'numero' => $numeroEnrolement,
+                    'agent' => $agent->nom
+                ]);
+
+                $this->updateDossierStatus($dossierOuvert);
+                $dossierOuvert->refresh();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'L\'étape a été validée manuellement avec succès.',
+                    'progression' => $dossierOuvert->progression,
+                    'data' => $rendezVous->donnees_oneci
+                ]);
+            }
+
             $result = null;
 
             // Mapping des services (basé sur les IDs récupérés)
@@ -373,14 +415,9 @@ class DossierWorkflowController extends Controller
                     }
                 }
                 
-                // Gérer l'upload du fichier si présent à cet index
+                // Gérer l'upload du fichier (Mode Manuel)
                 if ($present && $foundIndex !== -1 && isset($documentsFiles[$foundIndex]['fichier'])) {
                     $file = $documentsFiles[$foundIndex]['fichier'];
-                    
-                    // Valider le fichier
-                    // Note: La validation globale au début serait mieux mais on reste granulaire pour l'instant
-                    
-                    // Stocker le fichier
                     $filename = time() . '_' . $document->id . '_' . $file->getClientOriginalName();
                     $path = $file->storeAs('dossiers/' . $dossierOuvert->id . '/documents', $filename, 'public');
                     
@@ -390,6 +427,29 @@ class DossierWorkflowController extends Controller
                         'taille_fichier' => $file->getSize(),
                         'type_mime' => $file->getMimeType()
                     ];
+                }
+
+                // Gérer le scan base64 (Mode Scan Direct)
+                $scanBase64 = $request->input("scan_{$document->id}");
+                if ($present && $scanBase64) {
+                    try {
+                        $image = base64_decode($scanBase64);
+                        if ($image) {
+                            $filename = 'scan_' . time() . '_' . $document->id . '.jpg';
+                            $path = 'dossiers/' . $dossierOuvert->id . '/documents/' . $filename;
+                            
+                            Storage::disk('public')->put($path, $image);
+                            
+                            $fichierData = [
+                                'nom_fichier' => $filename,
+                                'chemin_fichier' => $path,
+                                'taille_fichier' => strlen($image),
+                                'type_mime' => 'image/jpeg'
+                            ];
+                        }
+                    } catch (\Exception $e) {
+                        Log::error("Erreur décodage scan document {$document->id}: " . $e->getMessage());
+                    }
                 }
                 
                 // Créer ou mettre à jour la vérification

@@ -82,7 +82,7 @@
             loading: false,
             waitingList: [],
             waitingCount: 0,
-            centreId: 1,
+            centreId: {{ Auth::user()->centre_id ?? 1 }},
             currentTime: '',
             justCompletedTicket: false,
             

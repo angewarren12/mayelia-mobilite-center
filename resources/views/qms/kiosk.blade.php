@@ -89,7 +89,7 @@
             
             <div class="grid grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto max-h-[60vh] p-4">
                 @foreach($services as $service)
-                <button @click="selectService({{ $service->id }})" :disabled="loading"
+                <button @click="selectService({{ $service->id }}, '{{ addslashes($service->nom) }}')" :disabled="loading"
                         class="bg-gray-50 hover:bg-mayelia-50 border-2 border-gray-200 hover:border-mayelia-500 rounded-xl p-6 flex flex-col items-center justify-center transition-all h-40 active:scale-95 disabled:opacity-50">
                     <span x-show="!loading" class="text-4xl mb-3 text-mayelia-600 font-bold">{{ substr($service->nom, 0, 1) }}</span>
                     <span x-show="loading" class="text-4xl mb-3 text-gray-400"><i class="fas fa-spinner fa-spin"></i></span>
@@ -105,7 +105,25 @@
             </div>
         </div>
 
-        <!-- ÉCRAN 2: SAISIE RDV -->
+        <!-- ÉCRAN 1.7: SÉLECTION TYPE DE PIÈCE (Si Retrait de Carte) -->
+        <div x-show="step === 1.7" class="bg-white rounded-3xl shadow-2xl p-12 max-w-4xl mx-auto text-center" style="display: none;">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8">Type de pièce à retirer</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <button @click="confirmRetrait('CNI')" class="bg-gray-50 hover:bg-mayelia-50 border-4 border-gray-100 hover:border-mayelia-500 rounded-2xl p-10 flex flex-col items-center transition-all active:scale-95">
+                    <i class="fas fa-address-card text-6xl text-mayelia-600 mb-4"></i>
+                    <span class="text-2xl font-bold">CARTE CNI</span>
+                </button>
+                <button @click="confirmRetrait('Résident')" class="bg-gray-50 hover:bg-mayelia-50 border-4 border-gray-100 hover:border-mayelia-500 rounded-2xl p-10 flex flex-col items-center transition-all active:scale-95">
+                    <i class="fas fa-id-card-alt text-6xl text-mayelia-600 mb-4"></i>
+                    <span class="text-2xl font-bold">CARTE DE RÉSIDENT</span>
+                </button>
+            </div>
+            <div class="mt-12">
+                <button @click="step = 1.5" class="px-8 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold">
+                    <i class="fas fa-arrow-left mr-2"></i> Retour
+                </button>
+            </div>
+        </div>
         <div x-show="step === 2" class="bg-white rounded-3xl shadow-2xl p-12 max-w-2xl mx-auto text-center" style="display: none;">
             <h2 class="text-3xl font-bold text-gray-800 mb-8">Numéro de Suivi / Enrôlement</h2>
             
@@ -191,6 +209,8 @@
                 step: 1,
                 mode: '{{ $centre->qms_mode }}',
                 numeroRdv: '',
+                selectedServiceId: null,
+                typeRetrait: '',
                 loading: false,
                 errorMsg: '',
                 adminTapCount: 0,
@@ -223,8 +243,22 @@
                     }
                 },
 
-                selectService(serviceId) {
-                    this.generateTicket('sans_rdv', { service_id: serviceId });
+                selectService(serviceId, serviceNom) {
+                    this.selectedServiceId = serviceId;
+                    // Si c'est le service "Retrait de Carte", on demande le type
+                    if (serviceNom.toLowerCase().includes('retrait')) {
+                        this.step = 1.7;
+                    } else {
+                        this.generateTicket('sans_rdv', { service_id: serviceId });
+                    }
+                },
+
+                confirmRetrait(type) {
+                    this.typeRetrait = type;
+                    this.generateTicket('sans_rdv', { 
+                        service_id: this.selectedServiceId,
+                        type_retrait: type
+                    });
                 },
                 
                 startRdv() {

@@ -64,29 +64,31 @@ class QmsController extends Controller
             ->first();
             
         // Si c'est un admin et qu'il n'a pas de guichet assigné, on lui permet d'utiliser le premier guichet 
-        // de son centre, ou le tout premier guichet existant s'il n'a pas de centre assigné.
-        if (!$assignedGuichet && $user->role === 'admin') {
-            if ($user->centre_id) {
-                $assignedGuichet = Guichet::where('centre_id', $user->centre_id)
-                    ->with(['centre'])
-                    ->first();
-            } else {
-                $assignedGuichet = Guichet::with(['centre'])->first();
-            }
+    // de son centre, ou le tout premier guichet existant s'il n'a pas de centre assigné.
+    $guichets = collect();
+    if ($user->role === 'admin' || $user->role === 'super_admin') {
+        if ($user->centre_id) {
+            $guichets = Guichet::where('centre_id', $user->centre_id)->get();
+        } else {
+            $guichets = Guichet::all();
         }
-            
-        if (!$assignedGuichet) {
-            return redirect()->route('dashboard')->with('error', 'Accès refusé : Aucun guichet ne vous est assigné pour le moment. Veuillez demander à votre administrateur de vous assigner à un guichet.');
-        }
-        
-        $centreId = $assignedGuichet->centre_id;
-        
+    }
 
+    if (!$assignedGuichet && ($user->role === 'admin' || $user->role === 'super_admin')) {
+        $assignedGuichet = $guichets->first();
+    }
         
-        return view('qms.agent', [
-            'assignedGuichet' => $assignedGuichet,
-            'centreId' => $centreId
-        ]);
+    if (!$assignedGuichet) {
+        return redirect()->route('dashboard')->with('error', 'Accès refusé : Aucun guichet ne vous est assigné pour le moment. Veuillez demander à votre administrateur de vous assigner à un guichet.');
+    }
+    
+    $centreId = $assignedGuichet->centre_id;
+    
+    return view('qms.agent', [
+        'assignedGuichet' => $assignedGuichet,
+        'guichets' => $guichets,
+        'centreId' => $centreId
+    ]);
     }
 
     /**
@@ -101,15 +103,17 @@ class QmsController extends Controller
             $centre = Centre::findOrFail($request->centre_id);
 
             // Génération du numéro de ticket
-            // Format: [Lettre Service][001-999]
-            $service = Service::find($request->service_id);
-            $prefix = $service ? strtoupper(substr($service->nom, 0, 1)) : 'T';
-            
-            // Compter les tickets du jour pour ce service/centre
-            $count = Ticket::where('centre_id', $request->centre_id)
-                ->whereDate('created_at', Carbon::today())
-                ->where('numero', 'like', $prefix . '%')
-                ->count();
+        // Format: [Lettre Service][001-999]
+        $service = Service::find($request->service_id);
+        $prefix = $service ? strtoupper(substr($service->nom, 0, 1)) : 'T';
+        
+        // Compter les tickets du jour pour ce service/centre spécifique
+        // On utilise lockForUpdate pour éviter les doublons en cas de requêtes simultanées
+        $count = Ticket::where('centre_id', $request->centre_id)
+            ->whereDate('created_at', Carbon::today())
+            ->where('numero', 'like', $prefix . '%')
+            ->lockForUpdate()
+            ->count();
             
             $numero = $prefix . str_pad($count + 1, 3, '0', STR_PAD_LEFT);
 
@@ -127,8 +131,16 @@ class QmsController extends Controller
                 'type' => $request->type,
                 'heure_rdv' => $heureRdv,
                 'priorite' => 1, // Sera recalculée
-                'statut' => Ticket::STATUT_EN_ATTENTE
+                'statut' => Ticket::STATUT_EN_ATTENTE,
             ]);
+
+            // Si c'est un retrait de carte, on initialise l'entrée dans la table dédiée
+            if ($service && $service->nom === 'Retrait de Carte') {
+                \App\Models\RetraitCarte::create([
+                    'ticket_id' => $ticket->id,
+                    'type_piece' => $request->type_retrait ?? 'CNI'
+                ]);
+            }
 
             // Calculer la priorité selon le mode du centre
             $priorite = $this->priorityService->calculatePriority($centre, $ticket);
@@ -390,10 +402,9 @@ class QmsController extends Controller
      */
     public function getQueueData($centreId)
     {
-        // Sécurité : Vérifier l'accès au centre
-        if (!Auth::user()->canAccessCentre($centreId)) {
-            return response()->json(['error' => 'Non autorisé'], 403);
-        }
+        // Vérifier que le centre existe
+        $centre = Centre::findOrFail($centreId);
+        
         // Dernier appelé (pour la TV)
         $lastCalled = Ticket::select('id', 'numero', 'guichet_id', 'updated_at', 'type', 'statut')
             ->pourCentre($centreId)
@@ -414,16 +425,18 @@ class QmsController extends Controller
             ->take(3)
             ->get();
 
-        // File d'attente (pour l'agent)
+        // File d'attente (pour l'agent - seulement si authentifié)
         $waitingQuery = Ticket::select('id', 'numero', 'service_id', 'type', 'created_at', 'priorite', 'updated_at')
             ->pourCentre($centreId)
             ->with('service:id,nom')
             ->parPriorite();
 
-        if (Auth::user()->is_agent_biometrie) {
+        // Si l'utilisateur est authentifié et est agent biométrie
+        if (Auth::check() && Auth::user()->is_agent_biometrie) {
             $waitingQuery->where('statut', Ticket::STATUT_EN_ATTENTE_BIOMETRIE)
                          ->orderBy('updated_at', 'asc');
         } else {
+            // Pour les agents normaux ou pour la TV publique, afficher les tickets en attente
             $waitingQuery->enAttente()
                          ->orderBy('created_at', 'asc');
         }
@@ -439,7 +452,7 @@ class QmsController extends Controller
             ->get();
 
         // Calculer le statut d'occupation pour le slider TV
-        $centre = Centre::findOrFail($centreId);
+        // (le centre est déjà chargé plus haut)
         
         // Guichets ouverts (avec un agent actif assigné)
         $activeGuichetsCount = Guichet::where('centre_id', $centreId)

@@ -572,13 +572,34 @@
                     </div>
                 </div>
                 
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeModal('modalFichePreEnrolement')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
-                        Annuler
-                    </button>
-                    <button onclick="validerFichePreEnrolement(event)" class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 flex items-center">
-                        <i class="fas fa-search mr-2"></i>Vérifier et Valider
-                    </button>
+                @php
+                    $isWalkinUnverified = !$dossierOuvert->fiche_pre_enrolement_verifiee && 
+                                          str_contains($dossierOuvert->rendezVous->tranche_horaire ?? '', 'Sur place');
+                @endphp
+
+                <div class="flex justify-between items-center">
+                    <div>
+                        @if(!$isWalkinUnverified)
+                        <button onclick="validerFichePreEnrolement(event, true)" class="px-3 py-2 text-xs text-orange-600 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
+                            <i class="fas fa-forward mr-1"></i>Valider sans vérifier
+                        </button>
+                        @endif
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="closeModal('modalFichePreEnrolement')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+                            Annuler
+                        </button>
+                        
+                        @if($isWalkinUnverified)
+                        <button onclick="validerFichePreEnrolement(event, true)" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center shadow-md">
+                            <i class="fas fa-check-circle mr-2"></i>Valider sans vérifier
+                        </button>
+                        @else
+                        <button onclick="validerFichePreEnrolement(event, false)" class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 flex items-center shadow-md">
+                            <i class="fas fa-search mr-2"></i>Vérifier et Valider
+                        </button>
+                        @endif
+                    </div>
                 </div>
             </div>
         </div>
@@ -654,21 +675,60 @@
                                 </div>
                             </div>
                             
-                            <!-- Zone d'upload (visible si activée) -->
+                            <!-- Zone d'upload / Scan -->
                             <div id="upload_zone_{{ $document->id }}" class="ml-8 mt-2 hidden">
-                                <div class="flex items-center space-x-2">
-                                    <input type="file" id="file_{{ $document->id }}" 
-                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                           accept=".pdf,.jpg,.jpeg,.png">
-                                    <button type="button" 
-                                            onclick="removeFileInput({{ $document->id }})"
-                                            class="px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">
-                                        <i class="fas fa-times"></i>
-                                    </button>
+                                <div class="flex flex-col space-y-3">
+                                    @php 
+                                        $scanMode = $dossierOuvert->rendezVous->centre->options_scan['mode'] ?? 'manuel';
+                                    @endphp
+
+                                    @if($scanMode === 'python')
+                                        <!-- Mode Scan Direct -->
+                                        <div class="flex items-center space-x-3">
+                                            <button type="button" 
+                                                    onclick="triggerScan({{ $document->id }})"
+                                                    id="btn_scan_{{ $document->id }}"
+                                                    class="inline-flex items-center px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 transition-colors shadow-sm font-medium">
+                                                <i class="fas fa-print mr-2"></i>
+                                                <span>Scanner depuis l'imprimante</span>
+                                            </button>
+                                            <div id="scan_status_{{ $document->id }}" class="hidden items-center text-sm text-gray-500">
+                                                <i class="fas fa-spinner fa-spin mr-2"></i>
+                                                <span>Scan en cours...</span>
+                                            </div>
+                                        </div>
+                                        <!-- Aperçu du scan -->
+                                        <div id="preview_container_{{ $document->id }}" class="hidden mt-2 relative inline-block">
+                                            <img id="preview_{{ $document->id }}" src="" class="h-32 rounded border shadow-sm">
+                                            <button type="button" onclick="removeScanPreview({{ $document->id }})" 
+                                                    class="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center shadow">
+                                                <i class="fas fa-times text-xs"></i>
+                                            </button>
+                                            <input type="hidden" id="scanned_data_{{ $document->id }}" name="scanned_documents[{{ $document->id }}]">
+                                        </div>
+                                    @else
+                                        <!-- Mode Manuel (Ancien) -->
+                                        <div class="flex items-center space-x-2">
+                                            <input type="file" id="file_{{ $document->id }}" 
+                                                   class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                                   accept=".pdf,.jpg,.jpeg,.png">
+                                            <button type="button" 
+                                                    onclick="removeFileInput({{ $document->id }})"
+                                                    class="px-2 py-1 text-xs rounded bg-red-100 text-red-700 hover:bg-red-200">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    @endif
+                                    
+                                    <p class="text-xs text-gray-500">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        @if($scanMode === 'python')
+                                            Assurez-vous que le document est placé dans le scanner.
+                                        @else
+                                            Formats acceptés: PDF, JPG, PNG (Max 10Mo)
+                                        @endif
+                                    </p>
                                 </div>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    <i class="fas fa-info-circle mr-1"></i>Formats acceptés: PDF, JPG, PNG (Max 10Mo) - Facultatif
-                                </p>
                             </div>
                         </div>
                         @endforeach
@@ -899,6 +959,71 @@
 
 <script>
 
+// --- Fonctions de SCAN DIRECT (Pont Python) ---
+
+const SCAN_BRIDGE_URL = 'http://localhost:18622';
+
+/**
+ * Déclenche le scan via le pont local
+ */
+async function triggerScan(docId) {
+    const btn = document.getElementById(`btn_scan_${docId}`);
+    const status = document.getElementById(`scan_status_${docId}`);
+    const previewContainer = document.getElementById(`preview_container_${docId}`);
+    const previewImg = document.getElementById(`preview_${docId}`);
+    const dataInput = document.getElementById(`scanned_data_${docId}`);
+
+    // UI Feedback
+    btn.disabled = true;
+    btn.classList.add('opacity-50', 'cursor-not-allowed');
+    status.classList.remove('hidden');
+    status.classList.add('flex');
+
+    try {
+        const response = await fetch(`${SCAN_BRIDGE_URL}/scan`, {
+            method: 'POST',
+            mode: 'cors'
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Erreur de scan');
+        }
+
+        const data = await response.json();
+        
+        // Afficher l'aperçu
+        previewImg.src = `data:image/jpeg;base64,${data.image}`;
+        previewContainer.classList.remove('hidden');
+        dataInput.value = data.image; // Stocker le base64
+
+        showSuccessToast('Document scanné avec succès');
+    } catch (error) {
+        console.error('Erreur Scan:', error);
+        if (error.message.includes('Failed to fetch')) {
+            showErrorToast("Impossible de contacter le pont de scan. Assurez-vous que le script 'scan_bridge.exe' est lancé sur votre PC.");
+        } else {
+            showErrorToast(`Erreur lors du scan: ${error.message}`);
+        }
+    } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50', 'cursor-not-allowed');
+        status.classList.add('hidden');
+        status.classList.remove('flex');
+    }
+}
+
+/**
+ * Supprime l'aperçu du scan
+ */
+function removeScanPreview(docId) {
+    const previewContainer = document.getElementById(`preview_container_${docId}`);
+    const dataInput = document.getElementById(`scanned_data_${docId}`);
+    
+    previewContainer.classList.add('hidden');
+    dataInput.value = '';
+}
+
 // État global pour suivre la validation des étapes
 const etapeState = {
     1: @json((bool)$dossierOuvert->fiche_pre_enrolement_verifiee),
@@ -945,7 +1070,7 @@ function verifierFichePreEnrolement() {
     openModal('modalFichePreEnrolement');
 }
 
-function validerFichePreEnrolement(event) {
+function validerFichePreEnrolement(event, force = false) {
     const numeroEnrolement = document.getElementById('numero_enrolement').value;
     const commentaires = document.getElementById('ficheCommentaires').value;
     const resultsDiv = document.getElementById('verification-results');
@@ -969,6 +1094,9 @@ function validerFichePreEnrolement(event) {
     const formData = new FormData();
     formData.append('numero_enrolement', numeroEnrolement);
     formData.append('commentaires', commentaires);
+    if (force) {
+        formData.append('force', '1');
+    }
     formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
     
     // Appel AJAX

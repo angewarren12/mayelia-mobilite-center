@@ -137,8 +137,20 @@
 </head>
 <body>
     <div class="header">
-        <h1>{{ $titre }}</h1>
-        <p>Exporté le {{ $date_export }}</p>
+        <table style="width: 100%; border: none;">
+            <tr>
+                <td style="text-align: left; border: none; width: 30%;">
+                    <img src="{{ public_path('img/logo-oneci.jpg') }}" alt="Logo" style="height: 60px;">
+                </td>
+                <td style="text-align: center; border: none; width: 40%;">
+                    <h1 style="color: #3B82F6;">ONECI</h1>
+                    <p style="margin: 0; font-weight: bold; color: #333;">{{ $titre }}</p>
+                    <p style="margin: 0; font-size: 10px; color: #666;">Exporté le {{ $date_export }}</p>
+                </td>
+                <td style="text-align: right; border: none; width: 30%;">
+                </td>
+            </tr>
+        </table>
     </div>
     
     <div class="info-section">

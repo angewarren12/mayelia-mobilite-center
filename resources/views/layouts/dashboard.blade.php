@@ -155,6 +155,14 @@
                     <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Dossiers</span>
                 </a>
                 @endif
+
+                @if($authService->isAdmin() || in_array($authService->getAuthenticatedUser()->role, ['agent', 'agent_biometrie']))
+                <a href="{{ route('retraits.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('retraits.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"
+                   :title="!sidebarOpen ? 'Retraits de carte' : ''">
+                    <i class="fas fa-id-card w-5 h-5" :class="sidebarOpen ? 'mr-3' : 'mx-auto'"></i>
+                    <span class="transition-opacity duration-300 whitespace-nowrap" :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Retraits de carte</span>
+                </a>
+                @endif
                 
                 @if($authService->isAdmin() || $authService->hasPermission('statistics', 'view'))
                 <a href="{{ route('statistics.index') }}" class="flex items-center px-6 py-3 {{ request()->routeIs('statistics.*') ? 'bg-white text-mayelia-700 border-r-4 border-mayelia-900 font-semibold' : 'text-white/90 hover:bg-white/10 hover:text-white transition-colors' }}"

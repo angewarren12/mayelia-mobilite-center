@@ -83,7 +83,7 @@
                                         </div>
                                         
                                         <div class="text-sm text-gray-600 mb-2">
-                                            Prix: <span class="font-medium">{{ number_format($formule->prix, 2) }} €</span>
+                                            Prix: <span class="font-medium">{{ number_format($formule->prix, 2) }} XOF</span>
                                         </div>
                                         
                                         <div class="flex space-x-1">

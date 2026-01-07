@@ -16,7 +16,7 @@ return [
     'public_path' => null,  // Override the public path if needed
 
     /*
-     * Dejavu Sans font is missing glyphs for converted entities, turn it off if you need to show € and £.
+     * Dejavu Sans font is missing glyphs for converted entities, turn it off if you need to show XOF and £.
      */
     'convert_entities' => true,
 

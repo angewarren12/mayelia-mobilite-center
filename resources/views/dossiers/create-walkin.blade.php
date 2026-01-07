@@ -329,10 +329,8 @@ function skipVerification() {
     if (confirm("Êtes-vous sûr de vouloir sauter la vérification ? Cela devrait être réservé aux cas où le service de vérification est indisponible.")) {
         document.getElementById('is_verified').value = "0";
         document.getElementById('force_skip_verification').value = "1";
-        // On permet de passer à l'étape suivante manuellement ou on débloque le bouton suivant
-        alert("Vérification ignorée. Vous pouvez passer à l'étape suivante.");
-        // Optionnel : auto-next ?
-        // nextStep(2);
+        // On permet de passer à l'étape suivante automatiquement
+        nextStep(2);
     }
 }
 

@@ -118,39 +118,22 @@ class ExportController extends Controller
         }
 
         try {
-            \Log::info('Lancement de la génération PDF asynchrone...');
+            \Log::info('Génération PDF synchrone...');
             
-            GeneratePdfJob::dispatch(
-                'exports.rendez-vous-pdf',
-                [
-                    'rendezVous' => $rendezVous,
-                    'titre' => $titre ?? 'Export des rendez-vous',
-                    'date_export' => Carbon::now()->format('d/m/Y H:i')
-                ],
-                $filename,
-                'public',
-                'exports'
-            );
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.rendez-vous-pdf', [
+                'rendezVous' => $rendezVous,
+                'titre' => $titre ?? 'Export des rendez-vous',
+                'date_export' => Carbon::now()->format('d/m/Y H:i')
+            ]);
             
-            \Log::info('Job de génération PDF lancé avec succès');
+            \Log::info('PDF généré avec succès');
             
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Export en cours de génération. Le fichier sera disponible dans quelques instants.',
-                    'filename' => $filename
-                ]);
-            }
-            
-            return back()->with('success', 'Export en cours de génération. Le fichier sera disponible dans quelques instants.');
+            return $pdf->download($filename);
         } catch (\Exception $e) {
             \Log::error('Erreur export PDF:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            if ($request->ajax()) {
-                return response()->json(['error' => 'Erreur lors de l\'export: ' . $e->getMessage()], 500);
-            }
             return back()->with('error', 'Erreur lors de l\'export: ' . $e->getMessage());
         }
     }
@@ -263,40 +246,23 @@ class ExportController extends Controller
         }
 
         try {
-            \Log::info('Lancement de la génération PDF asynchrone...');
+            \Log::info('Génération PDF dossiers synchrone...');
             
-            GeneratePdfJob::dispatch(
-                'exports.dossiers-pdf',
-                [
-                    'dossiers' => $dossiers,
-                    'titre' => $titre ?? 'Export des dossiers',
-                    'date_export' => Carbon::now()->format('d/m/Y H:i')
-                ],
-                $filename,
-                'public',
-                'exports'
-            );
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('exports.dossiers-pdf', [
+                'dossiers' => $dossiers,
+                'titre' => $titre ?? 'Export des dossiers',
+                'date_export' => Carbon::now()->format('d/m/Y H:i')
+            ]);
             
-            \Log::info('Job de génération PDF lancé avec succès');
+            \Log::info('PDF dossiers généré avec succès');
             
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Export en cours de génération. Le fichier sera disponible dans quelques instants.',
-                    'filename' => $filename
-                ]);
-            }
-            
-            return back()->with('success', 'Export en cours de génération. Le fichier sera disponible dans quelques instants.');
+            return $pdf->download($filename);
         } catch (\Exception $e) {
-            \Log::error('Erreur export PDF:', [
+            \Log::error('Erreur export PDF dossiers:', [
                 'message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            if ($request->ajax()) {
-                return response()->json(['error' => 'Erreur lors de l\'export: ' . $e->getMessage()], 500);
-            }
-            return back()->with('error', 'Erreur lors de l\'export: ' . $e->getMessage());
+            return back()->with('error', 'Erreur lors de l\'export dossiers: ' . $e->getMessage());
         }
     }
 }

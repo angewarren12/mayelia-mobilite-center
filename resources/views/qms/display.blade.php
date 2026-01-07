@@ -297,6 +297,7 @@
                 flash: false,
                 audioEnabled: false,
                 voicesLoaded: false,
+                audioContext: null, // Contexte audio débloqué
                 
                 // Slider Logic
                 showSlider: false,
@@ -344,10 +345,36 @@
                     this.audioEnabled = true;
                     sessionStorage.setItem('audioEnabled', 'true');
                     
+                    // Créer un contexte audio débloqué pour permettre la lecture automatique
+                    try {
+                        // Créer un contexte audio si pas déjà créé
+                        if (!this.audioContext) {
+                            const AudioContext = window.AudioContext || window.webkitAudioContext;
+                            if (AudioContext) {
+                                this.audioContext = new AudioContext();
+                            }
+                        }
+                        
+                        // Débloquer le contexte audio avec une interaction utilisateur
+                        if (this.audioContext && this.audioContext.state === 'suspended') {
+                            this.audioContext.resume().then(() => {
+                                console.log('Contexte audio débloqué');
+                            });
+                        }
+                    } catch (e) {
+                        console.log('Erreur création contexte audio:', e);
+                    }
+                    
                     // Jouer un son test silencieux pour débloquer l'audio context
                     const audio = new Audio('/sounds/beep.wav');
                     audio.volume = 0;
-                    audio.play().catch(() => {});
+                    audio.play().then(() => {
+                        console.log('Audio débloqué avec succès');
+                        audio.pause();
+                        audio.currentTime = 0;
+                    }).catch((e) => {
+                        console.log('Erreur déblocage audio (non bloquant):', e);
+                    });
                     
                     // Initialiser la synthèse vocale et charger les voix
                     if ('speechSynthesis' in window) {
@@ -506,10 +533,6 @@
 
                     console.log('Début de l\'annonce pour le ticket:', ticket.numero);
 
-                    // 1. Son de notification (Ding-Dong)
-                    const audio = new Audio('/sounds/beep.wav');
-                    audio.volume = 0.6;
-                    
                     let speechTriggered = false;
                     
                     const triggerSpeech = () => {
@@ -519,6 +542,17 @@
                             this.speakTicket(ticket);
                         }
                     };
+
+                    // 1. Son de notification (Ding-Dong)
+                    const audio = new Audio('/sounds/beep.wav');
+                    audio.volume = 0.6;
+                    
+                    // Réactiver le contexte audio si suspendu
+                    if (this.audioContext && this.audioContext.state === 'suspended') {
+                        this.audioContext.resume().catch(e => {
+                            console.log('Erreur réactivation contexte audio:', e);
+                        });
+                    }
                     
                     audio.onended = () => {
                         console.log('Son terminé, déclenchement de la synthèse vocale');
@@ -532,20 +566,32 @@
                         triggerSpeech();
                     };
                     
-                    // Si le son échoue ou est absent, on parle quand même après un court délai
-                    audio.play().catch(e => {
-                        console.log('Erreur play son:', e);
-                        // Attendre un peu avant de déclencher la synthèse vocale
-                        setTimeout(() => triggerSpeech(), 100);
-                    });
+                    // Essayer de jouer le son
+                    const playPromise = audio.play();
                     
-                    // Timeout de sécurité : si le son ne se termine pas dans les 2 secondes, on parle quand même
+                    if (playPromise !== undefined) {
+                        playPromise
+                            .then(() => {
+                                console.log('Son joué avec succès');
+                            })
+                            .catch(e => {
+                                console.log('Erreur play son (non bloquant):', e.message);
+                                // Si le son ne peut pas être joué (politique navigateur), 
+                                // on déclenche directement la synthèse vocale après un court délai
+                                setTimeout(() => triggerSpeech(), 200);
+                            });
+                    } else {
+                        // Fallback pour navigateurs plus anciens
+                        setTimeout(() => triggerSpeech(), 200);
+                    }
+                    
+                    // Timeout de sécurité : si le son ne se termine pas dans les 1.5 secondes, on parle quand même
                     setTimeout(() => {
                         if (!speechTriggered) {
                             console.log('Timeout sécurité, déclenchement de la synthèse vocale');
                             triggerSpeech();
                         }
-                    }, 2000);
+                    }, 1500);
                 },
 
                 speakTicket(ticket) {

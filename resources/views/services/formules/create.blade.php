@@ -28,7 +28,7 @@
                 
                 <div>
                     <label for="prix" class="block text-sm font-medium text-gray-700 mb-2">
-                        Prix (€) *
+                        Prix (XOF) *
                     </label>
                     <input type="number" 
                            id="prix" 

@@ -27,6 +27,7 @@ class StoreTicketRequest extends FormRequest
             'service_id' => 'nullable|exists:services,id',
             'type' => 'required|in:rdv,sans_rdv',
             'numero_rdv' => 'nullable|string|required_if:type,rdv',
+            'type_retrait' => 'nullable|string|in:CNI,Résident',
         ];
     }
 

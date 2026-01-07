@@ -22,10 +22,22 @@
                 </div>
 
                 <div class="flex items-center space-x-4">
-                    <div class="flex items-center bg-mayelia-50 text-mayelia-700 px-4 py-2 rounded-lg border border-mayelia-100 font-bold">
-                        <i class="fas fa-desktop mr-2 text-mayelia-500"></i>
-                        <span>{{ $assignedGuichet->nom }}</span>
-                    </div>
+                    @if(isset($guichets) && $guichets->count() > 1)
+                        <div class="flex items-center space-x-2">
+                            <label class="text-sm font-bold text-gray-500 uppercase tracking-wider">Passer au :</label>
+                            <select x-model="selectedGuichet" @change="updateGuichet()" 
+                                    class="bg-white border-mayelia-200 text-mayelia-700 rounded-lg text-sm font-bold focus:ring-mayelia-500 focus:border-mayelia-500 py-1 pl-3 pr-8 shadow-sm">
+                                @foreach($guichets as $g)
+                                    <option value="{{ $g->id }}">{{ $g->nom }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @else
+                        <div class="flex items-center bg-mayelia-50 text-mayelia-700 px-4 py-2 rounded-lg border border-mayelia-100 font-bold">
+                            <i class="fas fa-desktop mr-2 text-mayelia-500"></i>
+                            <span>{{ $assignedGuichet->nom }}</span>
+                        </div>
+                    @endif
                     
                     <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium flex items-center" x-show="selectedGuichet">
                         <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
@@ -174,6 +186,9 @@
             
             init() {
                 this.isMiniMode = localStorage.getItem('qms_mini_mode') === 'true';
+                if (this.selectedGuichet) {
+                    localStorage.setItem('qms_agent_guichet', this.selectedGuichet);
+                }
                 this.fetchQueueData();
                 
                 // Polling pour vérifier si le mode mini a changé (par le widget global)
@@ -198,6 +213,12 @@
                 }
                 this.isMiniMode = !this.isMiniMode;
                 localStorage.setItem('qms_mini_mode', this.isMiniMode);
+            },
+
+            updateGuichet() {
+                localStorage.setItem('qms_agent_guichet', this.selectedGuichet);
+                this.currentTicket = null; // Reset pour forcer le refresh
+                this.fetchQueueData();
             },
 
             updateTime() {
