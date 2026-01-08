@@ -174,7 +174,7 @@
                     <div class="section-title">Informations de Paiement</div>
                     <div class="box bg-green">
                         <table>
-                            <tr><td class="label">Montant Total :</td><td class="value font-bold" style="color: #028339;">{{ number_format($dossierOuvert->rendezVous->formule->prix, 0, ',', ' ') }} FCFA</td></tr>
+                            <tr><td class="label">Montant Total :</td><td class="value font-bold" style="color: #028339;">{{ number_format($dossierOuvert->paiementVerification->montant_paye ?? $dossierOuvert->rendezVous->formule->prix, 0, ',', ' ') }} FCFA</td></tr>
                             <tr><td class="label">Statut Paiement :</td><td class="value"><span style="background: #10B981; color: white; padding: 2px 8px; border-radius: 10px;">Payé</span></td></tr>
                             <tr><td class="label">Mode :</td><td class="value">Espèces / Guichet</td></tr>
                             <tr><td class="label">Référence :</td><td class="value">{{ $dossierOuvert->rendezVous->numero_suivi }}</td></tr>
@@ -183,7 +183,7 @@
 
                     <div class="amount-box">
                         <div class="amount-label">NET PAYÉ</div>
-                        <div class="total-amount">{{ number_format($dossierOuvert->rendezVous->formule->prix, 0, ',', ' ') }} FCFA</div>
+                        <div class="total-amount">{{ number_format($dossierOuvert->paiementVerification->montant_paye ?? $dossierOuvert->rendezVous->formule->prix, 0, ',', ' ') }} FCFA</div>
                     </div>
                     
                     <div class="box bg-gray" style="margin-top: 15px;">

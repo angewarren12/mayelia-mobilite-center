@@ -97,8 +97,8 @@
                 </div>
             </div>
 
-            <!-- Zone de Vérification ONECI -->
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+            <!-- Zone de Vérification ONECI (Masquée) -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6 hidden">
                 <h4 class="text-lg font-medium text-blue-900 mb-4">Vérification de l'identité</h4>
                 
                 <div class="mb-4 flex space-x-6 hidden">
@@ -137,10 +137,10 @@
                 <div class="mt-2 text-right">
                     <button type="button" 
                             onclick="skipVerification()" 
-                            class="text-xs text-gray-500 hover:text-gray-700 underline">
-                        Passer la vérification (non recommandé)
+                            class="bg-mayelia-600 text-white px-6 py-2 rounded-lg hover:bg-mayelia-700">
+                        Suivant <i class="fas fa-arrow-right ml-2"></i>
                     </button>
-                    <input type="hidden" name="force_skip_verification" id="force_skip_verification" value="0">
+                    <input type="hidden" name="force_skip_verification" id="force_skip_verification" value="1">
                 </div>
 
                 <!-- Résultats de vérification -->
@@ -326,12 +326,10 @@ function toggleVerificationType() {
 }
 
 function skipVerification() {
-    if (confirm("Êtes-vous sûr de vouloir sauter la vérification ? Cela devrait être réservé aux cas où le service de vérification est indisponible.")) {
-        document.getElementById('is_verified').value = "0";
-        document.getElementById('force_skip_verification').value = "1";
-        // On permet de passer à l'étape suivante automatiquement
-        nextStep(2);
-    }
+    document.getElementById('is_verified').value = "0";
+    document.getElementById('force_skip_verification').value = "1";
+    // On permet de passer à l'étape suivante automatiquement
+    nextStep(2);
 }
 
 async function verifierNumeroEnrolement() {
@@ -577,6 +575,16 @@ function validateStep(step) {
 }
 
 function nextStep(step) {
+    // Si on est à l'étape 1 et qu'on va vers l'étape 2
+    if (currentStep === 1 && step === 2) {
+        const serviceId = document.getElementById('service_id').value;
+        // Si le service est "Retrait de Carte" (ID 7)
+        if (serviceId == "7") {
+            window.location.href = "{{ route('retraits.index') }}";
+            return;
+        }
+    }
+
     // Validation de l'étape actuelle avant de passer à la suivante
     const validation = validateStep(currentStep);
     

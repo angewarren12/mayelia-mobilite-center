@@ -134,13 +134,6 @@ class QmsController extends Controller
                 'statut' => Ticket::STATUT_EN_ATTENTE,
             ]);
 
-            // Si c'est un retrait de carte, on initialise l'entrée dans la table dédiée
-            if ($service && $service->nom === 'Retrait de Carte') {
-                \App\Models\RetraitCarte::create([
-                    'ticket_id' => $ticket->id,
-                    'type_piece' => $request->type_retrait ?? 'CNI'
-                ]);
-            }
 
             // Calculer la priorité selon le mode du centre
             $priorite = $this->priorityService->calculatePriority($centre, $ticket);
@@ -228,10 +221,28 @@ class QmsController extends Controller
                 ->enAttente()
                 ->parPriorite();
                 
-            // Si le guichet a des types de services spécifiques autorisés
-            // (Uniquement pour les agents standards, pas biométrie qui prend tout le flux)
+            // LOGIQUE DE SÉPARATION DES FILES D'ATTENTE
             if ($guichet->type_services && is_array($guichet->type_services) && count($guichet->type_services) > 0) {
-                $query->whereIn('service_id', $guichet->type_services);
+                // Récupérer l'ID du service "Retrait de Carte"
+                $serviceRetraitId = \App\Models\Service::where('nom', 'Retrait de Carte')->value('id');
+                
+                // Déterminer si ce guichet fait UNIQUEMENT du retrait de carte
+                $isGuichetRetrait = $serviceRetraitId && 
+                                   count($guichet->type_services) === 1 && 
+                                   in_array($serviceRetraitId, $guichet->type_services);
+                
+                if ($isGuichetRetrait) {
+                    // ===== GUICHET RETRAIT (ex: Guichet 1) =====
+                    // Ce guichet voit UNIQUEMENT les tickets de Retrait (R*)
+                    $query->where('numero', 'LIKE', 'R%');
+                } else {
+                    // ===== GUICHET STANDARD (ex: Guichets 2, 3) =====
+                    // Ces guichets voient leurs services autorisés MAIS PAS les tickets R* (Retrait)
+                    $query->where(function($q) use ($guichet) {
+                        $q->whereIn('service_id', $guichet->type_services)
+                          ->where('numero', 'NOT LIKE', 'R%'); // Exclure les tickets Retrait
+                    });
+                }
             }
         }
 
@@ -439,6 +450,25 @@ class QmsController extends Controller
             // Pour les agents normaux ou pour la TV publique, afficher les tickets en attente
             $waitingQuery->enAttente()
                          ->orderBy('created_at', 'asc');
+
+            // FILTRAGE PAR GUICHET (si demandé par l'interface agent)
+            $guichetId = request('guichet_id');
+            if ($guichetId) {
+                $guichet = Guichet::find($guichetId);
+                if ($guichet && $guichet->type_services && count($guichet->type_services) > 0) {
+                    $serviceRetraitId = \App\Models\Service::where('nom', 'Retrait de Carte')->value('id');
+                    $isGuichetRetrait = $serviceRetraitId && count($guichet->type_services) === 1 && in_array($serviceRetraitId, $guichet->type_services);
+
+                    if ($isGuichetRetrait) {
+                        // UNIQUEMENT les tickets Retrait (R*)
+                        $waitingQuery->where('numero', 'LIKE', 'R%');
+                    } else {
+                        // TOUT SAUF les tickets Retrait (R*)
+                        $waitingQuery->whereIn('service_id', $guichet->type_services)
+                                     ->where('numero', 'NOT LIKE', 'R%');
+                    }
+                }
+            }
         }
 
         $waiting = $waitingQuery->get();

@@ -232,6 +232,16 @@ class KioskProvider with ChangeNotifier {
     _errorMessage = '';
     notifyListeners();
 
+    // 1. VÉRIFICATION PRÉALABLE DE L'IMPRIMANTE
+    // On ne crée pas le ticket en BD si l'imprimante n'est pas prête
+    bool printerReady = await bluetoothService.connect();
+    if (!printerReady) {
+      _loading = false;
+      _errorMessage = 'IMPRIMANTE DÉCONNECTÉE. Veuillez vérifier la connexion Bluetooth et le papier.';
+      notifyListeners();
+      return;
+    }
+
     debugPrint(
       'Création du ticket: type=$type, serviceId=$serviceId, numeroRdv=$numeroRdv',
     );
@@ -246,24 +256,31 @@ class KioskProvider with ChangeNotifier {
 
       debugPrint('Résultat de createTicket: $result');
 
-      _loading = false;
-
       if (result['success'] == true && result['ticket'] != null) {
         _currentTicket = result['ticket'] as Ticket;
         _step = KioskStep.confirmation;
         _errorMessage = '';
+        _loading = false;
         notifyListeners();
 
         debugPrint('Ticket créé avec succès: ${_currentTicket?.numero}');
 
-        // Imprimer le ticket
-        await _printTicket();
-
-        // Retourner à l'accueil après 3 secondes
-        Future.delayed(const Duration(seconds: 3), () {
-          reset();
-        });
+        // 2. TENTATIVE D'IMPRESSION
+        bool printSuccess = await _printTicket();
+        
+        if (!printSuccess) {
+          _errorMessage = "L'impression a échoué. Veuillez vérifier l'imprimante et appuyer sur RÉ-IMPRIMER.";
+          notifyListeners();
+        } else {
+          // Succès total : Retourner à l'accueil après 5 secondes
+          Future.delayed(const Duration(seconds: 5), () {
+            if (_step == KioskStep.confirmation) {
+              reset();
+            }
+          });
+        }
       } else {
+        _loading = false;
         final errorMsg =
             result['message'] as String? ??
             'Erreur lors de la création du ticket';
@@ -279,11 +296,32 @@ class KioskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> _printTicket() async {
-    if (_currentTicket == null || _centre == null) return;
+  Future<bool> _printTicket() async {
+    if (_currentTicket == null || _centre == null) return false;
 
     final serviceNom = _selectedService?.nom;
-    await printService.printTicket(_currentTicket!, _centre!.nom, serviceNom);
+    return await printService.printTicket(_currentTicket!, _centre!.nom, serviceNom);
+  }
+
+  /// Permet de retenter l'impression en cas d'échec sans recréer de numéro en base
+  Future<void> retryPrint() async {
+    if (_currentTicket == null) return;
+    
+    _loading = true;
+    _errorMessage = 'Tentative de ré-impression...';
+    notifyListeners();
+    
+    bool result = await _printTicket();
+    
+    _loading = false;
+    if (result) {
+      _errorMessage = 'Impression réussie !';
+      notifyListeners();
+      Future.delayed(const Duration(seconds: 3), () => reset());
+    } else {
+      _errorMessage = 'Échec persistant. Vérifiez la connexion Bluetooth de l\'imprimante.';
+      notifyListeners();
+    }
   }
 
   void goBack() {

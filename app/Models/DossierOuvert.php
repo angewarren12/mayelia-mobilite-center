@@ -142,11 +142,9 @@ class DossierOuvert extends Model
     public function getProgressionAttribute()
     {
         $etapes = 0;
-        $total = 4; // Fiche + Documents + Informations client + Paiement
+        $total = 2; // Documents + Paiement
 
-        if ($this->fiche_pre_enrolement_verifiee) $etapes++;
         if ($this->documents_verifies) $etapes++;
-        if ($this->informations_client_verifiees) $etapes++;
         if ($this->paiement_verifie) $etapes++;
 
         return round(($etapes / $total) * 100);

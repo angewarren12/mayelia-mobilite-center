@@ -4,6 +4,9 @@
 @section('subtitle', 'Workflow de traitement du dossier client')
 
 @section('content')
+@php
+    $isAnnule = $dossierOuvert->statut === 'annulé';
+@endphp
 <div class="space-y-6">
     <!-- En-tête du dossier -->
     <div class="bg-white rounded-lg shadow-lg p-6">
@@ -94,81 +97,7 @@
     <!-- Étapes du workflow -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <!-- Étape 1: Fiche de pré-enrôlement -->
-        <div class="bg-white rounded-lg shadow-lg border-l-4 border-mayelia-500 p-6 hover:shadow-xl transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-mayelia-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-file-alt text-mayelia-600"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Vérification du pré-enrôlement</h3>
-                        <p class="text-sm text-gray-600">Étape 1/4</p>
-                    </div>
-                </div>
-                <span class="px-3 py-1 text-xs rounded-full font-medium
-                    @if($dossierOuvert->fiche_pre_enrolement_verifiee) bg-green-100 text-green-800
-                    @else bg-yellow-100 text-yellow-800
-                    @endif">
-                    @if($dossierOuvert->fiche_pre_enrolement_verifiee) 
-                        <i class="fas fa-check mr-1"></i>Vérifiée 
-                    @else 
-                        <i class="fas fa-clock mr-1"></i>En attente 
-                    @endif
-                </span>
-            </div>
-            
-            <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                @if($dossierOuvert->fiche_pre_enrolement_verifiee)
-                    <div class="flex flex-col">
-                        <span class="text-xs text-gray-500 uppercase font-semibold">Numéro d'enrôlement</span>
-                        <span class="text-lg font-bold text-gray-900">{{ $dossierOuvert->rendezVous->numero_pre_enrolement ?? 'N/A' }}</span>
-                        
-                        @if($dossierOuvert->rendezVous->donnees_oneci)
-                            <div class="mt-2">
-                                <span class="text-xs text-gray-500 uppercase font-semibold">Nom et Prénoms</span>
-                                <div class="text-base font-medium text-gray-900">
-                                    {{ $dossierOuvert->rendezVous->donnees_oneci['nom'] ?? '' }} {{ $dossierOuvert->rendezVous->donnees_oneci['prenoms'] ?? '' }}
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="mt-2 flex items-center text-sm text-green-700">
-                            <i class="fas fa-check-circle mr-2"></i>
-                            Statut ONECI : {{ $dossierOuvert->rendezVous->statut_oneci ?? 'Validé' }}
-                        </div>
-                        @if($dossierOuvert->rendezVous->verified_at)
-                            <div class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-calendar-check mr-1"></i>
-                                Vérifié le {{ \Carbon\Carbon::parse($dossierOuvert->rendezVous->verified_at)->format('d/m/Y H:i') }}
-                            </div>
-                        @endif
-                    </div>
-                @else
-                    <p class="text-gray-700 text-sm mb-2">
-                        <i class="fas fa-info-circle text-mayelia-500 mr-2"></i>
-                        Veuillez saisir le numéro de pré-enrôlement pour vérifier le statut du dossier.
-                    </p>
-                @endif
-            </div>
-            
-            @if($dossierOuvert->fiche_pre_enrolement_verifiee)
-                <div id="fiche-verifiee-message" class="bg-green-50 border border-green-200 rounded-lg p-3 text-green-800 text-sm mb-3">
-                    <i class="fas fa-check-circle mr-2"></i>Fiche vérifiée avec succès
-                </div>
-            @endif
-            
-            @php $isAnnule = $dossierOuvert->statut === 'annulé'; @endphp
-            @userCan('dossiers', 'update')
-            <button id="btn-verifier-fiche" onclick="verifierFichePreEnrolement()" 
-                class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ($dossierOuvert->fiche_pre_enrolement_verifiee ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-mayelia-600 text-white hover:bg-mayelia-700') }} px-4 py-3 rounded-lg transition-colors font-medium"
-                {{ $isAnnule ? 'disabled' : '' }}>
-                <i class="fas {{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'fa-sync' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->fiche_pre_enrolement_verifiee ? 'Relancer la vérification' : 'Vérifier le statut' }}
-            </button>
-            @enduserCan
-        </div>
-
-        <!-- Étape 2: Vérification des documents -->
+        <!-- Étape 1: Vérification des documents -->
         <div class="bg-white rounded-lg shadow-lg border-l-4 border-green-500 p-6 hover:shadow-xl transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
@@ -177,7 +106,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Documents requis</h3>
-                        <p class="text-sm text-gray-600">Étape 2/4</p>
+                        <p class="text-sm text-gray-600">Étape 1/2</p>
                     </div>
                 </div>
                 <span class="px-3 py-1 text-xs rounded-full font-medium
@@ -231,143 +160,7 @@
             @enduserCan
         </div>
 
-        <!-- Étape 3: Informations client -->
-        <div class="bg-white rounded-lg shadow-lg border-l-4 border-purple-500 p-6 hover:shadow-xl transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-purple-600"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900">Informations client</h3>
-                        <p class="text-sm text-gray-600">Étape 3/4</p>
-                    </div>
-                </div>
-                <span class="px-3 py-1 text-xs rounded-full font-medium
-                    @if($dossierOuvert->informations_client_verifiees) bg-green-100 text-green-800
-                    @else bg-yellow-100 text-yellow-800
-                    @endif">
-                    @if($dossierOuvert->informations_client_verifiees) 
-                        <i class="fas fa-check mr-1"></i>Complétées
-                    @else 
-                        <i class="fas fa-clock mr-1"></i>À compléter
-                    @endif
-                </span>
-            </div>
-            
-            <div class="bg-gray-50 rounded-lg p-4 mb-4">
-                <p class="text-gray-700 text-sm mb-2">
-                    <i class="fas fa-info-circle text-purple-500 mr-2"></i>
-                    Mise à jour et vérification des informations du client.
-                </p>
-                <div class="text-xs text-gray-500">
-                    <i class="fas fa-user-edit mr-1"></i>
-                    Nom, prénom, date de naissance, adresse, profession, etc.
-                </div>
-            </div>
-            
-            @if($dossierOuvert->informations_client_verifiees)
-                <!-- Affichage des informations client vérifiées -->
-                <div class="client-info-results bg-gray-50 rounded-lg p-4 mb-4">
-                    <h4 class="font-medium text-gray-700 mb-3">
-                        <i class="fas fa-user-check mr-2"></i>Informations client vérifiées
-                    </h4>
-                    @if($dossierOuvert->rendezVous)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-3">
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-user text-purple-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Nom complet</span>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ $dossierOuvert->rendezVous->client->nom }} {{ $dossierOuvert->rendezVous->client->prenom }}
-                                        </p>
-                                    </div>
-                                </div>
-                                
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-envelope text-purple-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Email</span>
-                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->email }}</p>
-                                    </div>
-                                </div>
-                                
-                                @if($dossierOuvert->rendezVous->client->telephone)
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-phone text-purple-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Téléphone</span>
-                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->telephone }}</p>
-                                    </div>
-                                </div>
-                                @endif
-                            </div>
-                            
-                            <div class="space-y-3">
-                                @if($dossierOuvert->rendezVous->client->date_naissance)
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-calendar text-purple-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Date de naissance</span>
-                                        <p class="text-sm font-medium text-gray-900">
-                                            {{ \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('d/m/Y') }}
-                                        </p>
-                                    </div>
-                                </div>
-                                @endif
-                                
-                                @if($dossierOuvert->rendezVous->client->adresse)
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-map-marker-alt text-purple-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Adresse</span>
-                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->adresse }}</p>
-                                    </div>
-                                </div>
-                                @endif
-                                
-                                @if($dossierOuvert->rendezVous->client->profession)
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-briefcase text-purple-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Profession</span>
-                                        <p class="text-sm font-medium text-gray-900">{{ $dossierOuvert->rendezVous->client->profession }}</p>
-                                    </div>
-                                </div>
-                                @endif
-                                
-                                <div class="flex items-center space-x-3">
-                                    <i class="fas fa-check-circle text-green-500 w-4"></i>
-                                    <div>
-                                        <span class="text-xs text-gray-500">Statut</span>
-                                        <p class="text-sm font-medium text-green-700">Informations validées</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @else
-                        <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                            <p class="text-sm text-orange-800">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>
-                                Ce dossier n'est associé à aucun rendez-vous. Les informations client ne peuvent pas être affichées.
-                            </p>
-                        </div>
-                    @endif
-                </div>
-                
-            @endif 
-            
-            @userCan('dossiers', 'update')
-            <button onclick="modifierInformationsClient()" 
-                class="w-full {{ $isAnnule ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : ($dossierOuvert->informations_client_verifiees ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-purple-600 text-white hover:bg-purple-700') }} px-4 py-3 rounded-lg transition-colors font-medium"
-                {{ $isAnnule ? 'disabled' : '' }}>
-                <i class="fas {{ $dossierOuvert->informations_client_verifiees ? 'fa-edit' : 'fa-check' }} mr-2"></i>{{ $dossierOuvert->informations_client_verifiees ? 'Modifier les informations' : 'Modifier les informations' }}
-            </button>
-            @enduserCan
-        </div>
-
-        <!-- Étape 4: Vérification du paiement -->
+        <!-- Étape 2: Vérification du paiement -->
         <div class="bg-white rounded-lg shadow-lg border-l-4 border-orange-500 p-6 hover:shadow-xl transition-shadow">
             <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center space-x-3">
@@ -376,7 +169,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Paiement</h3>
-                        <p class="text-sm text-gray-600">Étape 4/4</p>
+                        <p class="text-sm text-gray-600">Étape 2/2</p>
                     </div>
                 </div>
                 <span class="px-3 py-1 text-xs rounded-full font-medium
@@ -530,82 +323,6 @@
     </div>
 </div>
 
-<!-- Modal Étape 1: Vérification pré-enrôlement en temps réel -->
-<div id="modalFichePreEnrolement" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-shield-alt text-mayelia-600 mr-2"></i>
-                        Vérification du pré-enrôlement
-                    </h3>
-                    <button onclick="closeModal('modalFichePreEnrolement')" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="mb-4">
-                    <p class="text-gray-600 text-sm mb-4">
-                        Saisissez le numéro d'enrôlement pour vérifier le statut en temps réel auprès de l'ONECI.
-                    </p>
-                    
-                    <div class="mb-4">
-                        <label for="numero_enrolement" class="block text-sm font-medium text-gray-700 mb-2">
-                            Numéro d'enrôlement <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="numero_enrolement" 
-                               value="{{ $dossierOuvert->rendezVous->numero_pre_enrolement ?? '' }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500 text-lg font-bold" 
-                               placeholder="Ex: ONECI2025001">
-                    </div>
-
-                    <div id="verification-results" class="hidden mb-4 p-4 rounded-lg">
-                        <!-- Les résultats seront injectés ici -->
-                    </div>
-                    
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Commentaires (optionnel)
-                        </label>
-                        <textarea id="ficheCommentaires" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-mayelia-500" placeholder="Notes de l'agent...">{{ $dossierOuvert->notes }}</textarea>
-                    </div>
-                </div>
-                
-                @php
-                    $isWalkinUnverified = !$dossierOuvert->fiche_pre_enrolement_verifiee && 
-                                          str_contains($dossierOuvert->rendezVous->tranche_horaire ?? '', 'Sur place');
-                @endphp
-
-                <div class="flex justify-between items-center">
-                    <div>
-                        @if(!$isWalkinUnverified)
-                        <button onclick="validerFichePreEnrolement(event, true)" class="px-3 py-2 text-xs text-orange-600 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors">
-                            <i class="fas fa-forward mr-1"></i>Valider sans vérifier
-                        </button>
-                        @endif
-                    </div>
-                    <div class="flex space-x-3">
-                        <button onclick="closeModal('modalFichePreEnrolement')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
-                            Annuler
-                        </button>
-                        
-                        @if($isWalkinUnverified)
-                        <button onclick="validerFichePreEnrolement(event, true)" class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center shadow-md">
-                            <i class="fas fa-check-circle mr-2"></i>Valider sans vérifier
-                        </button>
-                        @else
-                        <button onclick="validerFichePreEnrolement(event, false)" class="px-4 py-2 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 flex items-center shadow-md">
-                            <i class="fas fa-search mr-2"></i>Vérifier et Valider
-                        </button>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Modal Étape 2: Vérification documents -->
 <div id="modalDocuments" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
     <div class="flex items-center justify-center min-h-screen p-4">
@@ -746,85 +463,6 @@
                     </button>
                     <button onclick="validerDocuments()" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                         <i class="fas fa-check mr-2"></i>Valider les documents
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Étape 3: Informations client -->
-<div id="modalInformationsClient" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
-    <div class="flex items-center justify-center min-h-screen p-4">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">
-                        <i class="fas fa-user text-purple-600 mr-2"></i>
-                        Informations client
-                    </h3>
-                    <button onclick="closeModal('modalInformationsClient')" class="text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                @if($dossierOuvert->rendezVous)
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Nom</label>
-                            <input type="text" id="clientNom" value="{{ $dossierOuvert->rendezVous->donnees_oneci['nom'] ?? $dossierOuvert->rendezVous->client->nom }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Prénom</label>
-                            <input type="text" id="clientPrenom" value="{{ $dossierOuvert->rendezVous->donnees_oneci['prenoms'] ?? $dossierOuvert->rendezVous->client->prenom }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                            <input type="email" id="clientEmail" value="{{ $dossierOuvert->rendezVous->donnees_oneci['email'] ?? $dossierOuvert->rendezVous->client->email }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Téléphone</label>
-                            <input type="tel" id="clientTelephone" value="{{ $dossierOuvert->rendezVous->donnees_oneci['telephone'] ?? $dossierOuvert->rendezVous->donnees_oneci['numero_telephone'] ?? $dossierOuvert->rendezVous->client->telephone ?? '' }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Date de naissance</label>
-                            <input type="date" id="clientDateNaissance" value="{{ $dossierOuvert->rendezVous->donnees_oneci['date_naissance'] ?? ($dossierOuvert->rendezVous->client->date_naissance ? \Carbon\Carbon::parse($dossierOuvert->rendezVous->client->date_naissance)->format('Y-m-d') : '') }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Adresse</label>
-                            <input type="text" id="clientAdresse" value="{{ $dossierOuvert->rendezVous->donnees_oneci['lieu_naissance'] ?? $dossierOuvert->rendezVous->client->adresse ?? '' }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                            <p class="text-xs text-gray-500 mt-1">Si disponible, le lieu de naissance ONECI est utilisé par défaut comme adresse.</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Profession</label>
-                            <input type="text" id="clientProfession" value="{{ $dossierOuvert->rendezVous->client->profession ?? '' }}" 
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
-                        </div>
-                    </div>
-                @else
-                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
-                        <p class="text-sm text-orange-800">
-                            <i class="fas fa-exclamation-triangle mr-2"></i>
-                            Ce dossier n'est associé à aucun rendez-vous. La modification des informations client n'est pas disponible.
-                        </p>
-                    </div>
-                @endif
-                
-                <div class="flex justify-end space-x-3">
-                    <button onclick="closeModal('modalInformationsClient')" class="px-4 py-2 text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
-                        Annuler
-                    </button>
-                    <button onclick="validerRAS()" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
-                        <i class="fas fa-check mr-2"></i>R.A.S
-                    </button>
-                    <button onclick="validerInformationsClient()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                        <i class="fas fa-save mr-2"></i>Valider les modifications
                     </button>
                 </div>
             </div>
@@ -2081,9 +1719,7 @@ function resetDossier() {
 function finaliserDossier() {
     // Vérifier que toutes les étapes sont validées (utiliser l'état global mis à jour en temps réel)
     const etapes = [
-        { nom: 'Fiche de pré-enrôlement', valide: etapeState[1] },
         { nom: 'Documents', valide: etapeState[2] },
-        { nom: 'Informations client', valide: etapeState[3] },
         { nom: 'Paiement', valide: etapeState[4] }
     ];
     

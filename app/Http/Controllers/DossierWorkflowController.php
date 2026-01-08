@@ -817,24 +817,11 @@ class DossierWorkflowController extends Controller
             $this->authorize('update', $dossierOuvert);
 
             // Vérifier que toutes les étapes sont validées
-            if (!$dossierOuvert->fiche_pre_enrolement_verifiee) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'La fiche de pré-enrôlement n\'est pas encore validée'
-                ], 400);
-            }
 
             if (!$dossierOuvert->documents_verifies) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Les documents ne sont pas encore validés'
-                ], 400);
-            }
-
-            if (!$dossierOuvert->informations_client_verifiees) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Les informations client ne sont pas encore validées'
                 ], 400);
             }
 
@@ -1005,9 +992,7 @@ class DossierWorkflowController extends Controller
     private function updateDossierStatus(DossierOuvert $dossierOuvert)
     {
         $etapes = [
-            $dossierOuvert->fiche_pre_enrolement_verifiee,
             $dossierOuvert->documents_verifies,
-            $dossierOuvert->informations_client_verifiees,
             $dossierOuvert->paiement_verifie
         ];
 

@@ -85,7 +85,12 @@ class ClientController extends Controller
         }
 
         try {
-            $client = Client::create($request->all());
+            $data = $request->all();
+            if (empty($data['email'])) {
+                $data['email'] = null;
+            }
+            $data['actif'] = true; // Actif par défaut lors de la création manuelle
+            $client = Client::create($data);
 
             return response()->json([
                 'success' => true,
@@ -181,7 +186,11 @@ class ClientController extends Controller
         }
 
         try {
-            $client->update($request->all());
+            $data = $request->all();
+            if (empty($data['email'])) {
+                $data['email'] = null;
+            }
+            $client->update($data);
 
             return response()->json([
                 'success' => true,

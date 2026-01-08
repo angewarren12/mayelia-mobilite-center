@@ -11,13 +11,15 @@ class RetraitCarte extends Model
 
     protected $fillable = [
         'ticket_id',
+        'centre_id',
         'client_id',
         'type_piece',
         'numero_recepisse',
         'scan_recepisse',
         'numero_piece_finale',
         'date_expiration_piece',
-        'dossier_id'
+        'statut',
+        'user_id'
     ];
 
     protected $casts = [
@@ -29,13 +31,18 @@ class RetraitCarte extends Model
         return $this->belongsTo(Ticket::class);
     }
 
+    public function centre()
+    {
+        return $this->belongsTo(Centre::class);
+    }
+
     public function client()
     {
         return $this->belongsTo(Client::class);
     }
 
-    public function dossier()
+    public function agent()
     {
-        return $this->belongsTo(DossierOuvert::class, 'dossier_id');
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

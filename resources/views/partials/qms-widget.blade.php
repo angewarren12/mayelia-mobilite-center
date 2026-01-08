@@ -91,7 +91,7 @@
             isVisible: false,
             onAgentPage: window.location.pathname.includes('/qms/agent'),
             
-            pos: { x: window.innerWidth - 350, y: window.innerHeight - 350 },
+            pos: { x: window.innerWidth - 340, y: window.innerHeight - 450 },
             offset: { x: 0, y: 0 },
             isDragging: false,
             

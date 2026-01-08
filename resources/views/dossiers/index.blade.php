@@ -169,6 +169,15 @@
                                         </a>
                                         @endif
                                     </div>
+                                    @if(Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
+                                        <form action="{{ route('dossiers.destroy', $dossier) }}" method="POST" class="ml-2" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce dossier ? Cette action est irréversible.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Supprimer le dossier">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach

@@ -87,9 +87,15 @@
                     <p class="text-mayelia-200 text-sm">Système de gestion de file d'attente</p>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="text-5xl font-bold text-white font-mono" x-text="currentTime"></div>
-                <div class="text-mayelia-200 text-sm mt-1" x-text="currentDate"></div>
+            <div class="text-right flex items-center space-x-6">
+                <div class="flex flex-col items-center mr-4">
+                    <div :class="isConnected ? 'bg-green-500' : 'bg-red-500'" class="w-3 h-3 rounded-full animate-pulse transition-colors duration-500"></div>
+                    <span class="text-[10px] uppercase font-black tracking-widest mt-1" :class="isConnected ? 'text-green-400' : 'text-red-400'" x-text="isConnected ? 'Connecté' : 'Hors-ligne'"></span>
+                </div>
+                <div>
+                    <div class="text-5xl font-bold text-white font-mono" x-text="currentTime"></div>
+                    <div class="text-mayelia-200 text-sm mt-1" x-text="currentDate"></div>
+                </div>
             </div>
         </div>
 
@@ -308,6 +314,8 @@
                 sliderConfig: { enabled: false },
                 allBusy: false,
                 gracePeriodTimer: null,
+                isConnected: true,
+                errorCount: 0,
                 
                 init() {
                     this.updateTime();
@@ -414,8 +422,14 @@
                     // Si un call est déjà en cours de traitement (animation), on attend un peu ? Non.
                     
                     fetch(`/qms/api/queue/${this.centreId}`)
-                        .then(res => res.json())
+                        .then(res => {
+                            if (!res.ok) throw new Error('Erreur serveur');
+                            return res.json();
+                        })
                         .then(data => {
+                            this.isConnected = true;
+                            this.errorCount = 0;
+                            
                             // Garder last_called pour compatibilité
                             this.currentTicket = data.last_called;
                             
@@ -429,10 +443,10 @@
                             this.history = data.history || [];
                             this.waitingCount = data.waiting_count || 0;
                             
-                            // Gérer le Slider
-                            if (data.tv_status) {
-                                this.processTvStatus(data.tv_status);
-                            }
+                    // Gérer le Slider et les réglages audio
+                    if (data.tv_status) {
+                        this.processTvStatus(data.tv_status);
+                    }
 
                             // Détecter un nouvel appel (basé sur le TIMESTAMP du dernier appelé)
                             if (this.currentTicket) {
@@ -450,7 +464,13 @@
                                 }
                             }
                         })
-                        .catch(error => console.error('Erreur:', error));
+                        .catch(error => {
+                            console.error('Erreur:', error);
+                            this.errorCount++;
+                            if (this.errorCount > 2) {
+                                this.isConnected = false;
+                            }
+                        });
                 },
 
                 processTvStatus(status) {
@@ -521,13 +541,16 @@
                     this.flash = true;
                     setTimeout(() => this.flash = false, 800);
                     
-                    // Séquence d'annonce
-                    this.playAnnouncement(ticket);
+                    // Séquence d'annonce répétée
+                    const repeatCount = parseInt(this.sliderConfig.repeat || 1);
+                    const volume = parseFloat(this.sliderConfig.volume || 1.0);
+                    
+                    this.playAnnouncement(ticket, repeatCount, volume);
                 },
                 
-                playAnnouncement(ticket) {
-                    if (!this.audioEnabled) {
-                        console.log('Audio désactivé, annonce vocale ignorée');
+                playAnnouncement(ticket, remaining = 1, volume = 1.0) {
+                    if (!this.audioEnabled || remaining <= 0) {
+                        console.log('Annonce vocale terminée ou ignorée');
                         return;
                     }
 
@@ -539,13 +562,20 @@
                         if (!speechTriggered) {
                             speechTriggered = true;
                             console.log('Déclenchement de la synthèse vocale pour:', ticket.numero);
-                            this.speakTicket(ticket);
+                            this.speakTicket(ticket, volume, () => {
+                                // Rappeler si nécessaire après un délai
+                                if (remaining > 1) {
+                                    setTimeout(() => {
+                                        this.playAnnouncement(ticket, remaining - 1, volume);
+                                    }, 2000);
+                                }
+                            });
                         }
                     };
 
                     // 1. Son de notification (Ding-Dong)
                     const audio = new Audio('/sounds/beep.wav');
-                    audio.volume = 0.6;
+                    audio.volume = volume * 0.6; // Ajusté par rapport au volume global
                     
                     // Réactiver le contexte audio si suspendu
                     if (this.audioContext && this.audioContext.state === 'suspended') {
@@ -594,7 +624,7 @@
                     }, 1500);
                 },
 
-                speakTicket(ticket) {
+                speakTicket(ticket, volume = 1.0, onEnd = null) {
                     // 1. Préparation du texte
                     const numero = ticket.numero;
                     let guichetNom = ticket.guichet ? ticket.guichet.nom : 'au guichet';
@@ -625,7 +655,9 @@
                                 utterance.lang = 'fr-FR';
                                 utterance.rate = 0.9;
                                 utterance.pitch = 1;
-                                utterance.volume = 1.0;
+                                utterance.volume = volume;
+ 
+                                if (onEnd) utterance.onend = onEnd;
 
                                 // Chercher une voix française
                                 const frenchVoice = voices.find(v => v.lang === 'fr-FR' && !v.name.includes('Compact')) || 
@@ -643,7 +675,7 @@
                                 utterance.onerror = (e) => {
                                     console.error('Erreur synthèse vocale native:', e);
                                     // Fallback vers TTS online en cas d'erreur
-                                    this.playOnlineTTS(text);
+                                    this.playOnlineTTS(text, volume, onEnd);
                                 };
 
                                 window.speechSynthesis.speak(utterance);
@@ -667,7 +699,7 @@
                                     window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
                                     if (!trySpeak()) {
                                         console.log("TTS Natif indisponible après chargement des voix, utilisation du fallback online");
-                                        this.playOnlineTTS(text);
+                                        this.playOnlineTTS(text, volume, onEnd);
                                     }
                                 }, 500);
                             }
@@ -680,7 +712,7 @@
                             window.speechSynthesis.removeEventListener('voiceschanged', voicesChangedHandler);
                             if (!trySpeak()) {
                                 console.log("TTS Natif indisponible (timeout), utilisation du fallback online");
-                                this.playOnlineTTS(text);
+                                this.playOnlineTTS(text, volume, onEnd);
                             }
                         }, 1000);
                         
@@ -690,43 +722,46 @@
                     // 3. Fallback Online (TV TCL / Samsung etc.)
                     // Si pas de support natif
                     console.log("TTS Natif non supporté, utilisation du fallback online");
-                    this.playOnlineTTS(text);
+                    this.playOnlineTTS(text, volume, onEnd);
                 },
-
-                playOnlineTTS(text) {
+ 
+                playOnlineTTS(text, volume = 1.0, onEnd = null) {
                     try {
                         // Utilisation du endpoint public Google TTS (client=tw-ob)
                         const encodedText = encodeURIComponent(text);
                         const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&q=${encodedText}&tl=fr`;
                         
                         const audio = new Audio(url);
-                        audio.volume = 1.0;
+                        audio.volume = volume;
                         
                         // Gestion des erreurs
                         audio.onerror = (e) => {
                             console.error("Erreur lecture TTS Online:", e);
+                            if (onEnd) onEnd();
                         };
                         
                         audio.onended = () => {
                             console.log("Annonce vocale terminée");
+                            if (onEnd) onEnd();
                         };
                         
                         audio.play().catch(e => {
                             console.error("Erreur lecture TTS Online (play):", e);
                             // Essayer une alternative si Google TTS échoue
-                            this.playAlternativeTTS(text);
+                            this.playAlternativeTTS(text, volume, onEnd);
                         });
                     } catch (e) {
                         console.error("Erreur construction TTS Online:", e);
                         // Essayer une alternative
-                        this.playAlternativeTTS(text);
+                        this.playAlternativeTTS(text, volume, onEnd);
                     }
                 },
                 
-                playAlternativeTTS(text) {
+                playAlternativeTTS(text, volume = 1.0, onEnd = null) {
                     // Alternative : utiliser l'API ResponsiveVoice ou autre service
                     // Pour l'instant, on log juste l'erreur
                     console.warn("Toutes les méthodes TTS ont échoué pour:", text);
+                    if (onEnd) onEnd();
                 },
                 
                 formatTime(dateString) {

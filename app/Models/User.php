@@ -229,4 +229,13 @@ class User extends Authenticatable
         // Les agents et les administrateurs de centre sont limités à leur centre respectif
         return $this->centre_id == $centreId;
     }
+
+    /**
+     * Vérifie si l'utilisateur est un super administrateur
+     * (role = 'super_admin' et centre_id = null)
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'super_admin' && $this->centre_id === null;
+    }
 }

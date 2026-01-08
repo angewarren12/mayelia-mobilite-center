@@ -201,6 +201,10 @@ class DossierController extends Controller
      */
     public function destroy(DossierOuvert $dossier)
     {
+        if (Auth::user()->role !== 'admin' && Auth::user()->role !== 'super_admin') {
+            abort(403, 'Seuls les administrateurs peuvent supprimer un dossier.');
+        }
+
         if (!Auth::user()->canAccessCentre($dossier->rendezVous->centre_id)) {
             abort(403, 'Accès non autorisé à ce dossier.');
         }
@@ -362,7 +366,8 @@ class DossierController extends Controller
 
         $services = Service::where('statut', 'actif')
             ->whereHas('centres', function($query) use ($centre) {
-                $query->where('centres.id', $centre->id);
+                $query->where('centres.id', $centre->id)
+                      ->where('centre_services.actif', true);
             })
             ->orderBy('nom')
             ->get();
@@ -395,9 +400,13 @@ class DossierController extends Controller
                 $client = Client::findOrFail($request->client_id);
             } else {
                 // Vérifier si le client existe déjà (par email ou téléphone)
-                $existingClient = Client::where('email', $request->client_email)
-                    ->orWhere('telephone', $request->client_telephone)
-                    ->first();
+                // Vérifier si le client existe déjà (par email si renseigné, ou par téléphone)
+                $existingClient = Client::where(function($query) use ($request) {
+                    $query->where('telephone', $request->client_telephone);
+                    if ($request->filled('client_email')) {
+                        $query->orWhere('email', $request->client_email);
+                    }
+                })->first();
 
                 if ($existingClient) {
                     return response()->json([
@@ -416,7 +425,7 @@ class DossierController extends Controller
                 $client = Client::create([
                     'nom' => $request->client_nom,
                     'prenom' => $request->client_prenom,
-                    'email' => $request->client_email,
+                    'email' => empty($request->client_email) ? null : $request->client_email,
                     'telephone' => $request->client_telephone,
                     'date_naissance' => $request->client_date_naissance,
                     'lieu_naissance' => $request->client_lieu_naissance,
@@ -426,6 +435,7 @@ class DossierController extends Controller
                     'numero_piece_identite' => $request->client_numero_piece_identite,
                     'type_piece_identite' => $request->client_type_piece_identite,
                     'statut' => 'actif',
+                    'actif' => true,
                 ]);
             }
 

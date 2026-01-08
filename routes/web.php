@@ -123,7 +123,13 @@ Route::middleware(['auth', 'oneci.redirect'])->group(function () {
     // Dashboard (Mayelia uniquement - les agents ONECI sont redirigés)
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/api/dashboard/rendez-vous', [DashboardController::class, 'getRendezVousByMonth'])->name('api.dashboard.rendez-vous');
-    
+    // ========== SUPER ADMIN ROUTES ==========
+    Route::prefix('super-admin')->name('super-admin.')->middleware(['auth'])->group(function () {
+        Route::get('/select-centre', [App\Http\Controllers\SuperAdminController::class, 'selectCentre'])->name('select-centre');
+        Route::get('/dashboard', [App\Http\Controllers\SuperAdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/export-rapport', [App\Http\Controllers\SuperAdminController::class, 'exportRapport'])->name('export-rapport');
+    });
+
     // Gestion du centre
     Route::get('/centres', [CentreController::class, 'index'])->name('centres.index');
     Route::post('/centres/services/{service}/toggle', [CentreController::class, 'toggleService'])->name('centres.toggle-service');
@@ -249,13 +255,19 @@ Route::post('/export/dossiers', [App\Http\Controllers\ExportController::class, '
     // Statistiques
     Route::get('/statistics', [App\Http\Controllers\StatisticsController::class, 'index'])->name('statistics.index');
 
-    // Retraits de carte
-    Route::get('/retraits', [App\Http\Controllers\RetraitCarteController::class, 'index'])->name('retraits.index');
-    Route::get('/retraits/export-pdf', [App\Http\Controllers\RetraitCarteController::class, 'exportPdf'])->name('retraits.export-pdf');
-    Route::post('/retraits/manual', [App\Http\Controllers\RetraitCarteController::class, 'createManual'])->name('retraits.create-manual');
-    Route::get('/retraits/{ticket}/traitement', [App\Http\Controllers\RetraitCarteController::class, 'traitement'])->name('retraits.traitement');
-    Route::post('/retraits/{ticket}/store', [App\Http\Controllers\RetraitCarteController::class, 'store'])->name('retraits.store');
-    Route::post('/retraits/{ticket}/finaliser', [App\Http\Controllers\RetraitCarteController::class, 'finaliser'])->name('retraits.finaliser');
+    // Retrait Carte Module
+    Route::prefix('retraits')->name('retraits.')->group(function () {
+        Route::get('/', [App\Http\Controllers\RetraitCarteController::class, 'index'])->name('index');
+        Route::get('/create', [App\Http\Controllers\RetraitCarteController::class, 'create'])->name('create');
+        Route::post('/', [App\Http\Controllers\RetraitCarteController::class, 'store'])->name('store');
+        Route::get('/stock', [App\Http\Controllers\RetraitCarteController::class, 'stock'])->name('stock');
+        Route::post('/stock', [App\Http\Controllers\RetraitCarteController::class, 'storeStock'])->name('stock.store');
+        Route::get('/export-pdf', [App\Http\Controllers\RetraitCarteController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('/{retrait}/traitement', [App\Http\Controllers\RetraitCarteController::class, 'traitement'])->name('traitement');
+        Route::post('/{retrait}/store-info', [App\Http\Controllers\RetraitCarteController::class, 'storeInfo'])->name('store-info');
+        Route::post('/{retrait}/finaliser', [App\Http\Controllers\RetraitCarteController::class, 'finaliser'])->name('finaliser');
+        Route::delete('/{retrait}', [App\Http\Controllers\RetraitCarteController::class, 'destroy'])->name('destroy');
+    });
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

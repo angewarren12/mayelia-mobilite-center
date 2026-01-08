@@ -245,20 +245,7 @@
 
                 selectService(serviceId, serviceNom) {
                     this.selectedServiceId = serviceId;
-                    // Si c'est le service "Retrait de Carte", on demande le type
-                    if (serviceNom.toLowerCase().includes('retrait')) {
-                        this.step = 1.7;
-                    } else {
-                        this.generateTicket('sans_rdv', { service_id: serviceId });
-                    }
-                },
-
-                confirmRetrait(type) {
-                    this.typeRetrait = type;
-                    this.generateTicket('sans_rdv', { 
-                        service_id: this.selectedServiceId,
-                        type_retrait: type
-                    });
+                    this.generateTicket('sans_rdv', { service_id: serviceId });
                 },
                 
                 startRdv() {

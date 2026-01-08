@@ -192,7 +192,7 @@ class BookingController extends Controller
         $request->validate([
             'numero_dossier' => 'required|string'
         ]);
-
+        
         try {
             // Utiliser le service CNI dédié
             $result = $this->oneciCniService->verifyNumeroDossier(

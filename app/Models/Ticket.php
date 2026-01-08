@@ -18,14 +18,21 @@ class Ticket extends Model
         'heure_rdv',
         'called_at',
         'completed_at',
-        'metadata'
+        'metadata',
+        'client_id',
+        'retrait_type_piece',
+        'retrait_numero_recepisse',
+        'retrait_scan_recepisse',
+        'retrait_numero_piece_finale',
+        'retrait_date_expiration_piece',
     ];
 
     protected $casts = [
         'heure_rdv' => 'datetime:H:i',
         'called_at' => 'datetime',
         'completed_at' => 'datetime',
-        'metadata' => 'array'
+        'metadata' => 'array',
+        'retrait_date_expiration_piece' => 'date',
     ];
 
     // Constantes pour les statuts
@@ -100,6 +107,11 @@ class Ticket extends Model
     public function guichet()
     {
         return $this->belongsTo(Guichet::class);
+    }
+
+    public function client()
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function retraitCarte()

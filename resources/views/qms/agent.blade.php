@@ -226,7 +226,7 @@
             },
             
             fetchQueueData() {
-                fetch(`/qms/api/queue/${this.centreId}`)
+                fetch(`/qms/api/queue/${this.centreId}?guichet_id=${this.selectedGuichet}`)
                     .then(res => res.json())
                     .then(data => {
                         this.waitingList = data.waiting;

@@ -20,19 +20,38 @@ class OneciCniVerificationService
         // Essayer de récupérer le token depuis le cache pour éviter de spammer l'API d'auth
         return Cache::remember('oneci_cni_token', 3000, function () {
             try {
-                $response = Http::asForm()
-                    ->timeout(10)
+                Log::info('Tentative de récupération du token ONECI CNI', ['url' => $this->baseUrl . '/token']);
+                
+                $response = Http::withoutVerifying()
+                    ->withoutRedirecting() // Empêcher de suivre la redirection vers localhost
+                    ->asForm()
+                    ->withHeaders([
+                        'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                    ])
+                    ->timeout(15)
                     ->post($this->baseUrl . '/token', [
-                    'oneciprecni_client' => $this->clientId,
-                    'oneciprecni_secret' => $this->clientSecret,
-                ]);
+                        'oneciprecni_client' => $this->clientId,
+                        'oneciprecni_secret' => $this->clientSecret,
+                    ]);
 
                 if ($response->successful()) {
                     $data = $response->json();
-                    return $data['access_token'] ?? null;
+                    $token = $data['access_token'] ?? null;
+                    
+                    if ($token) {
+                        Log::info('Token ONECI CNI récupéré avec succès');
+                    } else {
+                        Log::error('Token ONECI CNI absent de la réponse', ['data' => $data]);
+                    }
+                    
+                    return $token;
                 }
 
-                Log::error('Erreur Auth ONECI CNI', ['response' => $response->body()]);
+                Log::error('Erreur Auth ONECI CNI', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'client_id' => $this->clientId
+                ]);
                 return null;
             } catch (\Exception $e) {
                 Log::error('Exception Auth ONECI CNI: ' . $e->getMessage());
@@ -58,7 +77,8 @@ class OneciCniVerificationService
 
             Log::info('Vérification ONECI CNI', ['dossier' => $numeroDossier]);
 
-            $response = Http::withToken($token)
+            $response = Http::withoutVerifying()
+                ->withToken($token)
                 ->asForm()
                 ->timeout(15)
                 ->post($this->baseUrl . '/info', [

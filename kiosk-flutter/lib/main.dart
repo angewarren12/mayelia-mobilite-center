@@ -12,8 +12,13 @@ import 'screens/rdv_input_screen.dart';
 import 'screens/confirmation_screen.dart';
 import 'widgets/kiosk_header.dart';
 
+import 'package:wakelock_plus/wakelock_plus.dart';
+
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Empêcher la tablette de se mettre en veille (et de couper le Bluetooth)
+  WakelockPlus.enable();
 
   // Forcer l'orientation paysage (optionnel - commenter si pas souhaité)
   // SystemChrome.setPreferredOrientations([
@@ -50,8 +55,8 @@ class KioskScreen extends StatefulWidget {
 
 class _KioskScreenState extends State<KioskScreen> {
   // Vous pouvez aussi les charger depuis les paramètres ou une configuration
-  static const int centreId = 2;
-  static const String centreNom = 'Centre de Daloa';
+  static const int centreId = 1;
+  static const String centreNom = 'Centre de San pedro';
 
   late final ApiService apiService;
   late final BluetoothService bluetoothService;

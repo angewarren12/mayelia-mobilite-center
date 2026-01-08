@@ -1,252 +1,228 @@
 @extends('layouts.dashboard')
 
 @section('title', 'Retraits de carte')
-@section('subtitle', 'Gestion de la remise physique des pièces CNI et Résident')
+@section('subtitle', 'Gestion de la remise physique et Stocks')
 
 @section('content')
-<div class="space-y-6" x-data="{ showFinalModal: false, ticketId: null, ticketNumero: '' }">
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-xl shadow-sm p-6 border-b-4 border-mayelia-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-500 font-medium">Tickets en attente</p>
-                    <p class="text-3xl font-bold text-gray-800">{{ $tickets->where('statut', 'en_attente')->count() }}</p>
-                </div>
-                <div class="bg-mayelia-50 p-3 rounded-lg text-mayelia-600">
-                    <i class="fas fa-ticket-alt text-2xl"></i>
+<div class="space-y-6" x-data="{ showFinalModal: false, retraitId: null, clientNom: '' }">
+    
+    <!-- Zone Stock & Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Stock CNI -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center">
+            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mr-4">
+                <i class="fas fa-id-card text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-xs text-gray-400 font-black uppercase tracking-wider">Stock CNI</p>
+                <div class="flex items-baseline">
+                    <span class="text-2xl font-black text-gray-800">{{ $stocks['CNI']->quantite ?? 0 }}</span>
+                    <span class="ml-1 text-[10px] text-gray-400 font-bold italic">cartes</span>
                 </div>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 border-b-4 border-blue-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-500 font-medium">En cours de traitement</p>
-                    <p class="text-3xl font-bold text-gray-800">{{ $tickets->where('statut', 'en_cours')->count() }}</p>
-                </div>
-                <div class="bg-blue-50 p-3 rounded-lg text-blue-600">
-                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+
+        <!-- Stock Résident -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center">
+            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center mr-4">
+                <i class="fas fa-id-badge text-2xl"></i>
+            </div>
+            <div>
+                <p class="text-xs text-gray-400 font-black uppercase tracking-wider">Stock Résident</p>
+                <div class="flex items-baseline">
+                    <span class="text-2xl font-black text-gray-800">{{ $stocks['Résident']->quantite ?? 0 }}</span>
+                    <span class="ml-1 text-[10px] text-gray-400 font-bold italic">cartes</span>
                 </div>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 border-b-4 border-orange-500">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-500 font-medium">Attente remise physique</p>
-                    <p class="text-3xl font-bold text-gray-800">{{ $tickets->filter(fn($t) => optional($t->retraitCarte)->numero_recepisse)->count() }}</p>
-                </div>
-                <div class="bg-orange-50 p-3 rounded-lg text-orange-600">
-                    <i class="fas fa-hand-holding text-2xl"></i>
-                </div>
+
+        <!-- Stats Retraits du jour -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex items-center">
+            <div class="w-12 h-12 bg-green-50 text-green-600 rounded-xl flex items-center justify-center mr-4">
+                <i class="fas fa-check-double text-2xl"></i>
             </div>
+            <div>
+                <p class="text-xs text-gray-400 font-black uppercase tracking-wider">Retraits Jour</p>
+                <p class="text-2xl font-black text-gray-800">{{ $retraits->where('statut', 'termine')->where('updated_at', '>=', today())->count() }}</p>
+            </div>
+        </div>
+
+        <!-- Action Stock -->
+        <div class="flex items-center">
+            <a href="{{ route('retraits.stock') }}" class="w-full bg-gray-800 text-white rounded-2xl p-5 flex items-center justify-between hover:bg-gray-900 transition-all shadow-lg shadow-gray-200">
+                <div>
+                    <p class="text-xs opacity-70 font-bold uppercase">Gérer le stock</p>
+                    <p class="text-sm font-black">Réception de cartes</p>
+                </div>
+                <i class="fas fa-boxes text-2xl opacity-50"></i>
+            </a>
         </div>
     </div>
 
-    <!-- Filters Section -->
-    <div class="bg-white rounded-xl shadow-sm p-6 overflow-hidden">
-        <form action="{{ route('retraits.index') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="md:col-span-2">
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Recherche</label>
-                    <div class="relative">
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Numéro, nom ou téléphone..." class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:outline-none text-sm transition-all">
-                        <div class="absolute left-3 top-2.5 text-gray-400">
-                            <i class="fas fa-search"></i>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Statut</label>
-                    <select name="statut" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:outline-none text-sm transition-all">
-                        <option value="">Tous les statuts</option>
-                        <option value="en_attente" {{ request('statut') == 'en_attente' ? 'selected' : '' }}>En attente</option>
-                        <option value="appelé" {{ request('statut') == 'appelé' ? 'selected' : '' }}>Appelé</option>
-                        <option value="en_cours" {{ request('statut') == 'en_cours' ? 'selected' : '' }}>En cours</option>
-                        <option value="terminé" {{ request('statut') == 'terminé' ? 'selected' : '' }}>Récupéré</option>
-                    </select>
-                </div>
-                <div class="flex items-end space-x-2">
-                    <button type="submit" class="flex-1 bg-mayelia-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm hover:bg-mayelia-700 transition-colors">
-                        <i class="fas fa-filter mr-2"></i>Filtrer
-                    </button>
-                    <a href="{{ route('retraits.index') }}" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm flex items-center justify-center hover:bg-gray-200 shadow-sm transition-colors border border-gray-200" title="Réinitialiser">
-                        <i class="fas fa-undo"></i>
-                    </a>
-                </div>
+    <!-- Filtres -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <form action="{{ route('retraits.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Rechercher un client, récépissé..." class="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-mayelia-500 font-medium">
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 border-t pt-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Date début</label>
-                    <input type="date" name="start_date" value="{{ request('start_date') }}" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:outline-none text-sm transistion-all">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Date fin</label>
-                    <input type="date" name="end_date" value="{{ request('end_date') }}" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-mayelia-500 focus:outline-none text-sm transistion-all">
-                </div>
-                <div class="md:col-start-4 flex items-end">
-                    <a href="{{ route('retraits.export-pdf', request()->all()) }}" class="w-full bg-red-600 text-white px-4 py-2 rounded-lg font-bold text-sm shadow-sm hover:bg-red-700 transition-colors flex items-center justify-center">
-                        <i class="fas fa-file-pdf mr-2"></i> Exporter PDF
-                    </a>
-                </div>
+            <div>
+                <select name="statut" class="w-full px-4 py-3 bg-gray-50 border-none rounded-xl focus:ring-2 focus:ring-mayelia-500 font-medium text-gray-500">
+                    <option value="">Tous les statuts</option>
+                    <option value="en_cours" {{ request('statut') == 'en_cours' ? 'selected' : '' }}>En cours</option>
+                    <option value="terminé" {{ request('statut') == 'terminé' ? 'selected' : '' }}>Terminé</option>
+                </select>
+            </div>
+            <div class="flex space-x-2">
+                <button type="submit" class="flex-1 bg-mayelia-600 text-white rounded-xl font-bold hover:bg-mayelia-700 transition-all">
+                    Filtrer
+                </button>
+                <a href="{{ route('retraits.index') }}" class="px-4 py-3 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200">
+                    <i class="fas fa-undo"></i>
+                </a>
             </div>
         </form>
     </div>
 
-    <!-- Tickets Table -->
-    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
-        <div class="p-6 border-b border-gray-100 flex justify-between items-center text-sm md:text-base">
-            <h3 class="font-bold text-gray-800">Liste des retraits</h3>
-            <div class="flex items-center space-x-4">
-                <form action="{{ route('retraits.create-manual') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="bg-mayelia-600 text-white px-4 py-2 rounded-lg font-bold text-xs md:text-sm shadow-sm hover:bg-mayelia-700 transition-colors">
-                        <i class="fas fa-plus mr-1 md:mr-2"></i> Nouveau retrait
-                    </button>
-                </form>
-            </div>
+    <!-- Liste -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-6 border-b border-gray-50 flex justify-between items-center">
+            <h3 class="font-black text-gray-800 text-lg uppercase tracking-tight">Cahier de Retraits</h3>
+            <a href="{{ route('retraits.create') }}" class="px-6 py-2.5 bg-mayelia-600 text-white rounded-xl font-black text-sm hover:bg-mayelia-700 shadow-lg shadow-mayelia-100 transition-all">
+                <i class="fas fa-plus mr-2"></i> Nouveau Retrait
+            </a>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead>
-                    <tr class="bg-gray-50 text-gray-500 text-[10px] md:text-xs uppercase tracking-wider font-semibold border-b border-gray-100">
-                        <th class="px-6 py-4">Numéro / Client</th>
-                        <th class="px-6 py-4">Type / Récépissé</th>
-                        <th class="px-6 py-4">Statut</th>
+                    <tr class="bg-gray-50 text-[10px] font-black uppercase text-gray-400 tracking-widest border-b border-gray-100">
+                        <th class="px-6 py-4">Client / Contact</th>
+                        <th class="px-6 py-4">Récépissé / Type</th>
+                        <th class="px-6 py-4">Status / Stock Impact</th>
                         <th class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
-                    @forelse($tickets as $ticket)
+                <tbody class="divide-y divide-gray-50">
+                    @forelse($retraits as $retrait)
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                <span class="px-2 py-0.5 bg-mayelia-50 text-mayelia-700 rounded-md font-bold text-[11px] w-max mb-1 border border-mayelia-100">
-                                    {{ $ticket->numero }}
-                                </span>
-                                @if($ticket->retraitCarte && $ticket->retraitCarte->client)
-                                    <span class="text-sm font-bold text-gray-800 leading-tight">{{ $ticket->retraitCarte->client->nom_complet }}</span>
-                                    <span class="text-[11px] text-gray-500">{{ $ticket->retraitCarte->client->telephone }}</span>
+                                <span class="text-sm font-black text-gray-800 uppercase">{{ $retrait->client->nom_complet }}</span>
+                                <span class="text-[11px] font-bold text-mayelia-600">{{ $retrait->client->telephone }}</span>
+                                @if($retrait->ticket)
+                                    <span class="text-[9px] bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded mt-1 w-max font-black tracking-tighter">Ticket QMS: {{ $retrait->ticket->numero }}</span>
                                 @else
-                                    <span class="text-[11px] text-gray-400 italic">Client non identifié</span>
+                                    <span class="text-[9px] bg-gray-50 text-gray-400 px-1.5 py-0.5 rounded mt-1 w-max font-bold">Sans ticket</span>
                                 @endif
-                                <span class="text-[10px] text-gray-400 mt-1">{{ $ticket->created_at->format('d/m H:i') }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                @php
-                                    $typeRetrait = optional($ticket->retraitCarte)->type_piece ?? 'CNI';
-                                    $icon = $typeRetrait === 'CNI' ? 'fa-id-card' : 'fa-id-badge';
-                                @endphp
-                                <div class="flex items-center text-sm font-medium text-gray-700 mb-1">
-                                    <i class="fas {{ $icon }} mr-2 text-gray-400 text-xs text-center w-4"></i>
-                                    <span>{{ $typeRetrait }}</span>
-                                </div>
-                                <span class="text-[11px] text-gray-500 bg-gray-100 px-2 py-0.5 rounded w-max">
-                                    {{ optional($ticket->retraitCarte)->numero_recepisse ?? '---' }}
-                                </span>
+                                <span class="text-xs font-black text-gray-700 tracking-tight">{{ $retrait->numero_recepisse }}</span>
+                                <span class="text-[10px] text-gray-400 font-bold italic">{{ $retrait->type_piece }}</span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            @if($ticket->statut === 'en_attente')
-                                <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-bold uppercase tracking-tight">En attente</span>
-                            @elseif($ticket->statut === 'appelé')
-                                <span class="px-2 py-0.5 bg-mayelia-500 text-white rounded text-[10px] font-bold uppercase tracking-tight">Appelé</span>
-                            @elseif($ticket->statut === 'terminé')
-                                <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-tight">Récupéré</span>
-                            @elseif($ticket->statut === 'en_cours')
-                                @if(optional($ticket->retraitCarte)->numero_recepisse)
-                                    <span class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px] font-bold uppercase tracking-tight">Prêt pour remise</span>
-                                @else
-                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase tracking-tight">En cours</span>
-                                @endif
+                            @if($retrait->statut === 'termine')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-green-100 text-green-700 uppercase">
+                                    <i class="fas fa-check-circle mr-1"></i> Remis
+                                </span>
+                                <div class="text-[9px] text-gray-400 mt-1 font-bold">Pièce: {{ $retrait->numero_piece_finale }}</div>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black bg-orange-100 text-orange-700 uppercase">
+                                    <i class="fas fa-clock mr-1"></i> En attente remise
+                                </span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <div class="flex justify-end items-center space-x-2">
-                                @if($ticket->statut === 'terminé')
-                                     <span class="text-[10px] text-gray-400 italic">le {{ $ticket->completed_at?->format('H:i') }}</span>
-                                @elseif(optional($ticket->retraitCarte)->numero_recepisse)
-                                    <button @click="showFinalModal = true; ticketId = '{{ $ticket->id }}'; ticketNumero = '{{ $ticket->numero }}'" class="px-3 py-1.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-bold text-[10px] shadow-sm flex items-center transition-all">
-                                        <i class="fas fa-check-circle mr-1.5"></i> Remise
+                            <div class="flex justify-end gap-2">
+                                @if($retrait->statut === 'en_cours')
+                                    <a href="{{ route('retraits.traitement', $retrait) }}" class="p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-mayelia-50 hover:text-mayelia-600 transition-colors" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button @click="showFinalModal = true; retraitId = '{{ $retrait->id }}'; clientNom = '{{ addslashes($retrait->client->nom_complet) }}'" 
+                                            class="px-4 py-2 bg-orange-600 text-white rounded-xl font-black text-[10px] uppercase hover:bg-orange-700 shadow-md transition-all">
+                                        Remettre la carte
                                     </button>
                                 @else
-                                    <a href="{{ route('retraits.traitement', $ticket) }}" class="px-3 py-1.5 bg-mayelia-600 text-white rounded-lg hover:bg-mayelia-700 font-bold text-[10px] shadow-sm transition-all">
-                                        Traiter
-                                    </a>
+                                    <span class="text-[10px] text-gray-400 italic">Clôturé le {{ $retrait->updated_at->format('d/m à H:i') }}</span>
                                 @endif
+
+                                @isAdmin
+                                <form action="{{ route('retraits.destroy', $retrait) }}" method="POST" onsubmit="return confirm('Supprimer ce retrait ?')" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                @endisAdmin
                             </div>
                         </td>
                     </tr>
                     @empty
                     <tr>
                         <td colspan="4" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center">
-                                <div class="bg-gray-50 p-4 rounded-full mb-4">
-                                    <i class="fas fa-search text-3xl text-gray-200"></i>
-                                </div>
-                                <p class="text-gray-400 font-medium">Aucun retrait trouvé.</p>
-                                <p class="text-xs text-gray-300 mt-1">Essayez de modifier vos critères de recherche.</p>
-                            </div>
+                            <i class="fas fa-folder-open text-4xl text-gray-100 mb-4 block"></i>
+                            <p class="text-gray-400 font-bold uppercase text-xs tracking-widest">Aucun historique de retrait</p>
                         </td>
                     </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        @if($tickets->hasPages())
-        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100">
-            {{ $tickets->links() }}
+        @if($retraits->hasPages())
+        <div class="p-6 bg-gray-50 border-t border-gray-100">
+            {{ $retraits->links() }}
         </div>
         @endif
     </div>
 
-    <!-- Finalisation Modal -->
+    <!-- Modal Finalisation (Inspiré du précédent mais avec déstockage) -->
     <div x-show="showFinalModal" class="fixed inset-0 z-50 overflow-y-auto" x-cloak>
-        <div class="flex items-center justify-center min-h-screen px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 transition-opacity" aria-hidden="true" @click="showFinalModal = false">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="fixed inset-0 bg-gray-900 opacity-60 transition-opacity" @click="showFinalModal = false"></div>
+            
+            <div class="bg-white rounded-3xl shadow-2xl relative z-10 w-full max-w-md overflow-hidden transform transition-all border border-gray-100">
+                <div class="bg-gradient-to-r from-orange-500 to-orange-600 p-6 text-white text-center">
+                    <i class="fas fa-id-card-alt text-4xl mb-2 opacity-50"></i>
+                    <h3 class="text-xl font-black uppercase tracking-tight">Finaliser la remise</h3>
+                    <p class="text-xs text-orange-100 font-bold uppercase opacity-80" x-text="clientNom"></p>
+                </div>
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <form :action="`/retraits/${ticketId}/finaliser`" method="POST">
+                <form :action="`/retraits/${retraitId}/finaliser`" method="POST" class="p-8 space-y-5">
                     @csrf
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
-                                <i class="fas fa-id-card text-orange-600"></i>
-                            </div>
-                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">
-                                    Finaliser le retrait - Ticket <span x-text="ticketNumero"></span>
-                                </h3>
-                                <div class="mt-4 space-y-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Numéro de la pièce finale <span class="text-red-500">*</span></label>
-                                        <input type="text" name="numero_piece" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mayelia-500 focus:outline-none" placeholder="Numéro CNI / Résident">
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Date d'expiration <span class="text-red-500">*</span></label>
-                                        <input type="date" name="date_expiration" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-mayelia-500 focus:outline-none">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 tracking-wider">Numéro de la carte finale</label>
+                        <input type="text" name="numero_piece" required class="w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-black text-gray-800 uppercase" placeholder="EX: CNI-XXXXXXX">
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-6 py-2 bg-mayelia-600 text-base font-bold text-white hover:bg-mayelia-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-mayelia-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Confirmer la remise
+
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 tracking-wider">Date d'expiration</label>
+                        <input type="date" name="date_expiration" required class="w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-bold text-gray-700">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-400 uppercase mb-1.5 tracking-wider">Confirmer téléphone</label>
+                        <input type="tel" name="telephone" required class="w-full px-4 py-3 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-orange-500 font-black text-orange-600">
+                    </div>
+
+                    <div class="pt-4 flex flex-col gap-3">
+                        <button type="submit" class="w-full py-4 bg-orange-600 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-orange-700 shadow-xl shadow-orange-100 transition-all flex items-center justify-center">
+                            <i class="fas fa-check-circle mr-2 text-lg"></i> Valider et Déstocker
                         </button>
-                        <button type="button" @click="showFinalModal = false" class="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Annuler
+                        <button type="button" @click="showFinalModal = false" class="w-full py-3 text-gray-400 font-bold uppercase text-[10px] hover:text-gray-600 transition-all">
+                            Annuler l'opération
                         </button>
                     </div>
                 </form>
+
+                <div class="bg-orange-50 p-4 border-t border-orange-100 flex items-center justify-center gap-3">
+                    <i class="fas fa-exclamation-triangle text-orange-400"></i>
+                    <p class="text-[9px] text-orange-700 font-black uppercase tracking-tight">Cette action déduira 1 unité du stock physique du centre.</p>
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 @endsection

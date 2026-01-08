@@ -81,11 +81,32 @@
             <!-- Paramètres -->
             <div class="space-y-6">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Intervalle (millisecondes)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Intervalle Slider (ms)</label>
                     <div class="flex items-center space-x-2">
                         <input type="number" x-model="config.interval" @change="updateSettings" min="1000" step="500" 
                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-mayelia-500 focus:ring-mayelia-500 sm:text-sm">
                         <span class="text-gray-500 text-sm">ms</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Volume des Annonces</label>
+                    <div class="flex items-center space-x-4">
+                        <input type="range" x-model="config.volume" @change="updateSettings" min="0" max="1" step="0.1" 
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-mayelia-600">
+                        <span class="text-gray-900 font-bold w-12 text-sm" x-text="Math.round(config.volume * 100) + '%'"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Répétition de l'Appel</label>
+                    <div class="flex items-center space-x-2">
+                        <select x-model="config.repeat" @change="updateSettings" 
+                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-mayelia-500 focus:ring-mayelia-500 sm:text-sm">
+                            <option value="1">1 fois</option>
+                            <option value="2">2 fois (Recommandé)</option>
+                            <option value="3">3 fois</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -276,6 +297,8 @@
                     // S'assurer que les valeurs par défaut sont là
                     if (!this.config.interval) this.config.interval = 4000;
                     if (!this.config.images) this.config.images = [];
+                    if (this.config.volume === undefined) this.config.volume = 1.0;
+                    if (!this.config.repeat) this.config.repeat = 2;
                 },
 
                 toggleEnabled() {
@@ -292,7 +315,9 @@
                         },
                         body: JSON.stringify({
                             enabled: this.config.enabled,
-                            interval: this.config.interval
+                            interval: this.config.interval,
+                            volume: this.config.volume,
+                            repeat: this.config.repeat
                         })
                     })
                     .then(res => res.json())

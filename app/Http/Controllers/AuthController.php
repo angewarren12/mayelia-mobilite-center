@@ -41,6 +41,10 @@ class AuthController extends Controller
                 if ($user->role === 'oneci') {
                     return redirect()->route('oneci.dashboard');
                 }
+
+                if ($user->isSuperAdmin()) {
+                    return redirect()->route('super-admin.select-centre');
+                }
             }
             
             return redirect()->intended('/dashboard');
